@@ -1,5 +1,10 @@
 import { db } from './db'
 
+// Generate unique ID
+function generateId() {
+  return crypto.randomUUID()
+}
+
 // Mock Supabase API for local database
 export const supabase = {
   from: (table: string) => ({
@@ -53,9 +58,17 @@ export const supabase = {
       select: () => ({
         single: async () => {
           try {
-            const id = await (db as any)[table].add(values)
-            const data = await (db as any)[table].get(id)
-            return { data, error: null }
+            const dataWithId = Array.isArray(values)
+              ? values.map(v => ({ id: generateId(), created_at: new Date().toISOString(), ...v }))
+              : { id: generateId(), created_at: new Date().toISOString(), ...values }
+
+            if (Array.isArray(dataWithId)) {
+              await (db as any)[table].bulkAdd(dataWithId)
+              return { data: dataWithId, error: null }
+            } else {
+              await (db as any)[table].add(dataWithId)
+              return { data: dataWithId, error: null }
+            }
           } catch (error) {
             return { data: null, error }
           }
@@ -63,7 +76,15 @@ export const supabase = {
       }),
       then: async (resolve: any) => {
         try {
-          await (db as any)[table].add(values)
+          const dataWithId = Array.isArray(values)
+            ? values.map(v => ({ id: generateId(), created_at: new Date().toISOString(), ...v }))
+            : { id: generateId(), created_at: new Date().toISOString(), ...values }
+
+          if (Array.isArray(dataWithId)) {
+            await (db as any)[table].bulkAdd(dataWithId)
+          } else {
+            await (db as any)[table].add(dataWithId)
+          }
           resolve({ error: null })
         } catch (error) {
           resolve({ error })

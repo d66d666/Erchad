@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { Upload, AlertCircle } from 'lucide-react'
+import * as XLSX from 'xlsx'
 
 interface ExcelImportProps {
   groups?: Array<{ id: string; name: string }>
@@ -24,20 +25,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
     setSuccess('')
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const response = await fetch(`${supabaseUrl}/functions/v1/import_excel`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('فشل الاستيراد')
-      }
-
-      const { data } = await response.json()
+      const arrayBuffer = await file.arrayBuffer()
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const data = XLSX.utils.sheet_to_json(worksheet)
 
       if (!data || data.length === 0) {
         throw new Error('الملف فارغ أو صيغته غير صحيحة')

@@ -475,6 +475,18 @@ function App() {
           }}
         />
       )}
+
+      <footer className="mt-12 pb-6 text-center">
+        <div className="inline-block bg-gradient-to-r from-blue-50 to-slate-50 px-8 py-4 rounded-2xl shadow-sm border border-gray-200">
+          <p className="text-gray-600 text-sm font-medium">
+            تصميم وتطوير:{' '}
+            <span className="font-bold text-blue-600">الأستاذ وائل الفيفي</span>
+          </p>
+          <p className="text-gray-500 text-xs mt-1" dir="ltr">
+            📱 0558890902
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }

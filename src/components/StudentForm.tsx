@@ -76,7 +76,7 @@ export function StudentForm({
       } else {
         const { error: insertError } = await supabase
           .from('students')
-          .insert([data])
+          .insert(data)
 
         if (insertError) throw insertError
       }

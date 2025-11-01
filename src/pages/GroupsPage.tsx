@@ -214,14 +214,12 @@ export function GroupsPage() {
     try {
       setFormLoading(true)
 
-      const { error } = await supabase.from('students').insert([
-        {
-          ...formData,
-          group_id: selectedGroupId,
-          special_status_id: formData.special_status_id || null,
-          status: 'نشط',
-        },
-      ])
+      const { error } = await supabase.from('students').insert({
+        ...formData,
+        group_id: selectedGroupId,
+        special_status_id: formData.special_status_id || null,
+        status: 'نشط',
+      })
 
       if (error) throw error
 

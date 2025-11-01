@@ -33,7 +33,7 @@ export function ManageModal({
       const tableName = type === 'groups' ? 'groups' : 'special_statuses'
       const { error: insertError } = await supabase
         .from(tableName)
-        .insert([{ name: newItem.trim() }])
+        .insert({ name: newItem.trim() })
 
       if (insertError) throw insertError
       setNewItem('')

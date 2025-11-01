@@ -35,12 +35,12 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         throw new Error('الملف فارغ أو صيغته غير صحيحة')
       }
 
-      // استخراج أسماء المجموعات الفريدة من الملف
+      // استخراج أسماء المجموعات الفريدة من الملف (تحويلها لنصوص)
       const uniqueGroupNames = [
         ...new Set(
           data
             .filter((row: any) => row['المجموعة'])
-            .map((row: any) => row['المجموعة'])
+            .map((row: any) => String(row['المجموعة']).trim())
         ),
       ]
 
@@ -52,7 +52,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       if (fetchError) throw fetchError
 
       const existingGroupsMap = new Map(
-        (existingGroups || []).map((g) => [g.name, g.id])
+        (existingGroups || []).map((g) => [String(g.name).trim(), g.id])
       )
 
       // إنشاء المجموعات الجديدة فقط
@@ -77,7 +77,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       const insertData = data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
         .map((row: any) => {
-          const groupName = row['المجموعة']
+          const groupName = String(row['المجموعة']).trim()
           const groupId = existingGroupsMap.get(groupName)
 
           if (!groupId) {
@@ -85,11 +85,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           }
 
           return {
-            name: row['اسم الطالب'],
-            national_id: row['السجل المدني'],
-            phone: row['جوال الطالب'] || '',
-            guardian_phone: row['جوالي ولي الامر'] || '',
-            grade: row['الصف'] || '',
+            name: String(row['اسم الطالب']).trim(),
+            national_id: String(row['السجل المدني']).trim(),
+            phone: row['جوال الطالب'] ? String(row['جوال الطالب']).trim() : '',
+            guardian_phone: row['جوالي ولي الامر'] ? String(row['جوالي ولي الامر']).trim() : '',
+            grade: row['الصف'] ? String(row['الصف']).trim() : '',
             group_id: groupId,
             status: row['الحالة'] === 'استئذان' ? 'استئذان' : 'نشط',
             special_status_id: null,

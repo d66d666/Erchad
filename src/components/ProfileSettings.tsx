@@ -74,6 +74,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       }
 
       alert('تم حفظ البيانات بنجاح')
+      window.location.reload()
       onClose()
     } catch (error) {
       console.error('Error saving profile:', error)

@@ -71,35 +71,51 @@ export const supabase = {
       select: () => ({
         single: async () => {
           try {
+            // Check if table exists in db
+            if (!(db as any)[table]) {
+              throw new Error(`Table "${table}" does not exist in database`)
+            }
+
             const dataWithId = Array.isArray(values)
               ? values.map(v => ({ id: generateId(), created_at: new Date().toISOString(), ...v }))
               : { id: generateId(), created_at: new Date().toISOString(), ...values }
 
             if (Array.isArray(dataWithId)) {
-              await (db as any)[table].bulkAdd(dataWithId)
+              if (dataWithId.length > 0) {
+                await (db as any)[table].bulkAdd(dataWithId)
+              }
               return { data: dataWithId, error: null }
             } else {
               await (db as any)[table].add(dataWithId)
               return { data: dataWithId, error: null }
             }
           } catch (error) {
+            console.error(`Error inserting into ${table}:`, error)
             return { data: null, error }
           }
         }
       }),
       then: async (resolve: any) => {
         try {
+          // Check if table exists in db
+          if (!(db as any)[table]) {
+            throw new Error(`Table "${table}" does not exist in database`)
+          }
+
           const dataWithId = Array.isArray(values)
             ? values.map(v => ({ id: generateId(), created_at: new Date().toISOString(), ...v }))
             : { id: generateId(), created_at: new Date().toISOString(), ...values }
 
           if (Array.isArray(dataWithId)) {
-            await (db as any)[table].bulkAdd(dataWithId)
+            if (dataWithId.length > 0) {
+              await (db as any)[table].bulkAdd(dataWithId)
+            }
           } else {
             await (db as any)[table].add(dataWithId)
           }
           resolve({ error: null })
         } catch (error) {
+          console.error(`Error inserting into ${table}:`, error)
           resolve({ error })
         }
       }

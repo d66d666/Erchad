@@ -77,10 +77,7 @@ export function SendToTeacherModal({
       }
 
       // إنشاء رسالة واتساب
-      let message = `*الطلاب ذوي الحالات الخاصة*\n\n`
-      message += `الأستاذ/ة: ${teacher.name}\n`
-      message += `التخصص: ${teacher.specialization}\n\n`
-      message += `---\n\n`
+      let message = ''
 
       // تجميع الطلاب حسب المجموعة
       selectedGroupIds.forEach(groupId => {
@@ -88,19 +85,14 @@ export function SendToTeacherModal({
         const groupStudents = filteredStudents.filter(s => s.group_id === groupId)
 
         if (groupStudents.length > 0) {
-          message += `📚 *${group?.name || 'مجموعة'}*\n\n`
-          groupStudents.forEach((student, index) => {
-            message += `${index + 1}. *${student.name}*\n`
-            message += `   السجل: ${student.national_id}\n`
-            message += `   الحالة الخاصة: ${student.special_status?.name || '-'}\n`
-            message += `   جوال الطالب: ${student.phone}\n`
-            message += `   جوال ولي الأمر: ${student.guardian_phone}\n\n`
+          groupStudents.forEach((student) => {
+            message += `اسم الطالب : ${student.name}\n`
+            message += `الصف : ${student.grade || '-'}\n`
+            message += `المجموعة : ${group?.name || '-'}\n`
+            message += `الحالة : ${student.special_status?.name || '-'}\n\n`
           })
-          message += `---\n\n`
         }
       })
-
-      message += `\nتم إرسال هذه الرسالة من نظام الإرشاد الطلابي`
 
       // حفظ ربط المعلم بالمجموعات
       const teacherGroupsData = selectedGroupIds.map(groupId => ({
@@ -165,7 +157,7 @@ export function SendToTeacherModal({
               <option value="">-- اختر المعلم --</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} - {teacher.specialization} ({teacher.phone})
+                  {teacher.name} - {teacher.phone}
                 </option>
               ))}
             </select>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter } from 'lucide-react'
@@ -42,6 +43,41 @@ export function ReceptionPage() {
   }
 
   async function fetchStudents() {
+    // جلب الطلاب من Supabase أولاً
+    const { data: supabaseStudents } = await supabase
+      .from('students')
+      .select('*')
+      .order('name')
+
+    // مزامنة مع IndexedDB
+    if (supabaseStudents && supabaseStudents.length > 0) {
+      await db.students.clear()
+      for (const student of supabaseStudents) {
+        await db.students.put(student)
+      }
+    }
+
+    // جلب المجموعات والحالات
+    const { data: supabaseGroups } = await supabase.from('groups').select('*')
+    const { data: supabaseStatuses } = await supabase.from('special_statuses').select('*')
+
+    // مزامنة المجموعات
+    if (supabaseGroups && supabaseGroups.length > 0) {
+      await db.groups.clear()
+      for (const group of supabaseGroups) {
+        await db.groups.put(group)
+      }
+    }
+
+    // مزامنة الحالات الخاصة
+    if (supabaseStatuses && supabaseStatuses.length > 0) {
+      await db.special_statuses.clear()
+      for (const status of supabaseStatuses) {
+        await db.special_statuses.put(status)
+      }
+    }
+
+    // قراءة من IndexedDB بعد المزامنة
     const allStudents = await db.students.toArray()
     const groups = await db.groups.toArray()
     const statuses = await db.special_statuses.toArray()

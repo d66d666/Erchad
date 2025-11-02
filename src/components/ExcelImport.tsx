@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { db } from '../lib/db'
 import { Upload, AlertCircle } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
@@ -72,10 +73,19 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
         if (insertGroupError) throw insertGroupError
 
-        // إضافة المجموعات الجديدة للخريطة
-        insertedGroups?.forEach((g) => {
-          existingGroupsMap.set(`${g.stage}|${g.name}`, g.id)
-        })
+        // إضافة المجموعات الجديدة للخريطة وإلى IndexedDB
+        if (insertedGroups) {
+          for (const g of insertedGroups) {
+            existingGroupsMap.set(`${g.stage}|${g.name}`, g.id)
+            await db.groups.put({
+              id: g.id,
+              stage: g.stage,
+              name: g.name,
+              display_order: 0,
+              created_at: new Date().toISOString()
+            })
+          }
+        }
       }
 
       // جلب الطلاب الموجودين للتحقق من التحديث أو الإضافة
@@ -129,11 +139,19 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
       // إضافة الطلاب الجدد
       if (insertData.length > 0) {
-        const { error: insertError } = await supabase
+        const { data: insertedStudents, error: insertError } = await supabase
           .from('students')
           .insert(insertData)
+          .select()
 
         if (insertError) throw insertError
+
+        // إضافة للـ IndexedDB المحلي
+        if (insertedStudents) {
+          for (const student of insertedStudents) {
+            await db.students.put(student)
+          }
+        }
       }
 
       // تحديث الطلاب الموجودين
@@ -145,7 +163,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           .update(updateFields)
           .eq('id', id)
 
-        if (!updateError) updatedCount++
+        if (!updateError) {
+          updatedCount++
+          // تحديث في IndexedDB
+          await db.students.update(id, updateFields)
+        }
       }
 
       // استيراد المعلمين
@@ -177,13 +199,17 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             .maybeSingle()
 
           if (!existingTeacher.data) {
-            await supabase.from('teachers').insert(teacher)
+            const { data: newTeacher } = await supabase.from('teachers').insert(teacher).select().single()
+            if (newTeacher) {
+              await db.teachers.put(newTeacher)
+            }
           } else {
             // تحديث بيانات المعلم الموجود
             await supabase
               .from('teachers')
               .update({ name: teacher.name, specialization: teacher.specialization })
               .eq('phone', teacher.phone)
+            await db.teachers.update(existingTeacher.data.id, { name: teacher.name, specialization: teacher.specialization })
           }
         }
       }

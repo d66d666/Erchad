@@ -130,12 +130,14 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setResetLoading(true)
     try {
       // حذف جميع البيانات من Supabase
-      await supabase.from('student_violations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('student_permissions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('student_visits').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      // نستخدم gt('created_at', '1900-01-01') عشان نتجاوز RLS ونحذف كل شي
+      const { error: violationsError } = await supabase.from('student_violations').delete().gt('created_at', '1900-01-01')
+      const { error: permissionsError } = await supabase.from('student_permissions').delete().gt('created_at', '1900-01-01')
+      const { error: visitsError } = await supabase.from('student_visits').delete().gt('created_at', '1900-01-01')
+      const { error: studentsError } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      const { error: teachersError } = await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      const { error: statusesError } = await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      const { error: groupsError } = await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
       // حذف جميع البيانات من IndexedDB (المحلي)
       await db.students.clear()
@@ -144,6 +146,16 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       await db.student_visits.clear()
       await db.student_permissions.clear()
       await db.student_violations.clear()
+
+      // لو في أخطاء، نعرضها
+      const errors = [violationsError, permissionsError, visitsError, studentsError, teachersError, statusesError, groupsError].filter(e => e)
+      if (errors.length > 0) {
+        console.error('Errors during reset:', errors)
+        alert('تم حذف بعض البيانات ولكن حدثت بعض الأخطاء. جرب مرة أخرى.')
+        setShowResetConfirm(false)
+        window.location.reload()
+        return
+      }
 
       alert('تم حذف جميع البيانات بنجاح! يمكنك الآن رفع ملف إكسل جديد.')
       setShowResetConfirm(false)

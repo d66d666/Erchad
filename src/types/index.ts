@@ -2,6 +2,7 @@ export interface Group {
   id: string
   name: string
   stage: string
+  display_order: number
   created_at: string
 }
 

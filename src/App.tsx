@@ -61,7 +61,7 @@ function App() {
     try {
       setLoading(true)
       const [groupsRes, statusesRes, studentsRes, profileRes, teachersRes] = await Promise.all([
-        supabase.from('groups').select('*').order('name'),
+        db.groups.toArray(),
         supabase
           .from('special_statuses')
           .select('*')
@@ -71,7 +71,20 @@ function App() {
         supabase.from('teachers').select('id').order('name'),
       ])
 
-      if (groupsRes.data) setGroups(groupsRes.data)
+      if (groupsRes) {
+        const sortedGroups = groupsRes.sort((a, b) => {
+          const stageOrder: Record<string, number> = {
+            'الصف الاول الثانوي': 1,
+            'الصف الثاني الثانوي': 2,
+            'الصف الثالث الثانوي': 3,
+          }
+          const stageA = stageOrder[a.stage] || 999
+          const stageB = stageOrder[b.stage] || 999
+          if (stageA !== stageB) return stageA - stageB
+          return (a.display_order || 999) - (b.display_order || 999)
+        })
+        setGroups(sortedGroups)
+      }
       if (statusesRes.data) setSpecialStatuses(statusesRes.data)
       if (studentsRes.data) setStudents(studentsRes.data as Student[])
       if (profileRes.data) {

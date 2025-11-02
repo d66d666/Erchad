@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
-import { X, Trash2, Plus, Layers } from 'lucide-react'
+import { X, Trash2, Plus, Layers, ChevronUp, ChevronDown } from 'lucide-react'
 import { Group } from '../types'
 
 interface ManageModalProps {
@@ -42,10 +42,16 @@ export function ManageModal({
     try {
       if (type === 'groups') {
         const newId = crypto.randomUUID()
+        const maxOrder = await db.groups
+          .where('stage').equals(newStage.trim())
+          .toArray()
+          .then(groups => Math.max(0, ...groups.map(g => g.display_order || 0)))
+
         await db.groups.add({
           id: newId,
           stage: newStage.trim(),
           name: newItem.trim(),
+          display_order: maxOrder + 1,
           created_at: new Date().toISOString(),
         })
       } else {
@@ -83,6 +89,32 @@ export function ManageModal({
     }
   }
 
+  const handleMoveUp = async (group: Group, stageGroups: Group[]) => {
+    const currentIndex = stageGroups.findIndex(g => g.id === group.id)
+    if (currentIndex <= 0) return
+
+    const previousGroup = stageGroups[currentIndex - 1]
+    const tempOrder = group.display_order
+
+    await db.groups.update(group.id, { display_order: previousGroup.display_order })
+    await db.groups.update(previousGroup.id, { display_order: tempOrder })
+
+    onDataUpdated()
+  }
+
+  const handleMoveDown = async (group: Group, stageGroups: Group[]) => {
+    const currentIndex = stageGroups.findIndex(g => g.id === group.id)
+    if (currentIndex >= stageGroups.length - 1) return
+
+    const nextGroup = stageGroups[currentIndex + 1]
+    const tempOrder = group.display_order
+
+    await db.groups.update(group.id, { display_order: nextGroup.display_order })
+    await db.groups.update(nextGroup.id, { display_order: tempOrder })
+
+    onDataUpdated()
+  }
+
   if (!isOpen) return null
 
   const title = type === 'groups' ? 'إدارة المجموعات' : 'إدارة الحالات الخاصة'
@@ -105,12 +137,17 @@ export function ManageModal({
         }, {} as Record<string, Group[]>)
       : {}
 
-  // Sort stages by defined order
-  const sortedStages = Object.entries(groupedByStage).sort((a, b) => {
-    const orderA = stageOrder[a[0]] || 999
-    const orderB = stageOrder[b[0]] || 999
-    return orderA - orderB
-  })
+  // Sort stages by defined order and sort groups within each stage by display_order
+  const sortedStages = Object.entries(groupedByStage)
+    .sort((a, b) => {
+      const orderA = stageOrder[a[0]] || 999
+      const orderB = stageOrder[b[0]] || 999
+      return orderA - orderB
+    })
+    .map(([stage, groups]) => [
+      stage,
+      groups.sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
+    ] as [string, Group[]])
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -143,19 +180,38 @@ export function ManageModal({
                     </div>
                   </div>
                   <div className="p-3 space-y-2 bg-gray-50">
-                    {stageGroups.map((group) => (
+                    {stageGroups.map((group, index) => (
                       <div
                         key={group.id}
                         className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
                       >
                         <span className="font-medium text-gray-800">{group.name}</span>
-                        <button
-                          onClick={() => handleDelete(group.id)}
-                          disabled={deleteLoading === group.id}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleMoveUp(group, stageGroups)}
+                            disabled={index === 0}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="\u062a\u062d\u0631\u064a\u0643 \u0644\u0644\u0623\u0639\u0644\u0649"
+                          >
+                            <ChevronUp size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleMoveDown(group, stageGroups)}
+                            disabled={index === stageGroups.length - 1}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="\u062a\u062d\u0631\u064a\u0643 \u0644\u0644\u0623\u0633\u0641\u0644"
+                          >
+                            <ChevronDown size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(group.id)}
+                            disabled={deleteLoading === group.id}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
+                            title="\u062d\u0630\u0641"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

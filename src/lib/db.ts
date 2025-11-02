@@ -63,8 +63,8 @@ export class StudentsDatabase extends Dexie {
 
   constructor() {
     super('StudentsDatabase')
-    this.version(3).stores({
-      groups: 'id, name, stage',
+    this.version(4).stores({
+      groups: 'id, name, stage, display_order',
       students: 'id, student_id, name, group_id, has_permission, special_status',
       special_statuses: 'id, name',
       student_visits: 'id, student_id, visit_date',
@@ -72,6 +72,12 @@ export class StudentsDatabase extends Dexie {
       student_violations: 'id, student_id, violation_date',
       teacher_profile: 'id',
       login_credentials: 'id, username'
+    }).upgrade(trans => {
+      return trans.table('groups').toCollection().modify(group => {
+        if (group.display_order === undefined) {
+          group.display_order = 999
+        }
+      })
     })
   }
 }

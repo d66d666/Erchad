@@ -36,6 +36,15 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         throw new Error('الملف فارغ أو صيغته غير صحيحة')
       }
 
+      // التحقق من وجود الأعمدة المطلوبة
+      const requiredColumns = ['اسم الطالب', 'السجل المدني', 'الصف', 'المجموعة']
+      const firstRow = data[0] as any
+      const missingColumns = requiredColumns.filter(col => !(col in firstRow))
+
+      if (missingColumns.length > 0) {
+        throw new Error(`الملف يفتقد الأعمدة التالية: ${missingColumns.join('، ')}\n\nالأعمدة المطلوبة: اسم الطالب، السجل المدني، الصف، المجموعة`)
+      }
+
       // استخراج المجموعات الفريدة مع المراحل من الملف
       const uniqueGroups = [
         ...new Map(

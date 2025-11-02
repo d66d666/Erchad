@@ -78,9 +78,23 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         })
       }
 
-      const insertData = data
+      // جلب الطلاب الموجودين للتحقق من التحديث أو الإضافة
+      const { data: existingStudents, error: studentsError } = await supabase
+        .from('students')
+        .select('id, national_id')
+
+      if (studentsError) throw studentsError
+
+      const existingStudentsMap = new Map(
+        (existingStudents || []).map((s) => [s.national_id, s.id])
+      )
+
+      const insertData: any[] = []
+      const updateData: any[] = []
+
+      data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
-        .map((row: any) => {
+        .forEach((row: any) => {
           const stage = String(row['الصف']).trim()
           const groupName = String(row['المجموعة']).trim()
           const groupKey = `${stage}|${groupName}`
@@ -90,9 +104,10 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             throw new Error(`فشل في إنشاء المجموعة "${groupName}" في "${stage}"`)
           }
 
-          return {
+          const nationalId = String(row['السجل المدني']).trim()
+          const studentData = {
             name: String(row['اسم الطالب']).trim(),
-            national_id: String(row['السجل المدني']).trim(),
+            national_id: nationalId,
             phone: row['جوال الطالب'] ? String(row['جوال الطالب']).trim() : '',
             guardian_phone: (row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر'])
               ? String(row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر']).trim()
@@ -102,13 +117,36 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             status: row['الحالة'] === 'استئذان' ? 'استئذان' : 'نشط',
             special_status_id: null,
           }
+
+          // إذا كان الطالب موجود، نحدث بياناته، وإلا نضيفه
+          const existingStudentId = existingStudentsMap.get(nationalId)
+          if (existingStudentId) {
+            updateData.push({ id: existingStudentId, ...studentData })
+          } else {
+            insertData.push(studentData)
+          }
         })
 
-      const { error: insertError } = await supabase
-        .from('students')
-        .insert(insertData)
+      // إضافة الطلاب الجدد
+      if (insertData.length > 0) {
+        const { error: insertError } = await supabase
+          .from('students')
+          .insert(insertData)
 
-      if (insertError) throw insertError
+        if (insertError) throw insertError
+      }
+
+      // تحديث الطلاب الموجودين
+      let updatedCount = 0
+      for (const student of updateData) {
+        const { id, ...updateFields } = student
+        const { error: updateError } = await supabase
+          .from('students')
+          .update(updateFields)
+          .eq('id', id)
+
+        if (!updateError) updatedCount++
+      }
 
       // استيراد المعلمين
       const teachersData = data
@@ -157,8 +195,15 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       const teachersImportedMessage = uniqueTeachers.length > 0
         ? ` واستيراد ${uniqueTeachers.length} معلم`
         : ''
+      const updatedMessage = updatedCount > 0
+        ? ` وتحديث ${updatedCount} طالب`
+        : ''
+      const insertedMessage = insertData.length > 0
+        ? `تم إضافة ${insertData.length} طالب جديد`
+        : ''
+
       setSuccess(
-        `تم استيراد ${insertData.length} طالب بنجاح${groupsCreatedMessage}${teachersImportedMessage}`
+        `${insertedMessage}${updatedMessage}${groupsCreatedMessage}${teachersImportedMessage}` || 'تمت العملية بنجاح'
       )
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -252,15 +297,37 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           </div>
         </div>
 
-        <div className="mt-3 p-2 bg-yellow-50 border border-yellow-300 rounded">
-          <p className="text-xs text-yellow-800">
-            <strong>💡 ملاحظات مهمة:</strong>
+        <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+          <p className="text-sm font-bold text-yellow-900 mb-2">
+            💡 ملاحظات مهمة
           </p>
-          <ul className="text-xs text-yellow-800 mr-4 mt-1 space-y-1">
+          <ul className="text-xs text-yellow-800 mr-4 space-y-1.5">
             <li>• يمكن استيراد الطلاب فقط أو الطلاب والمعلمين معاً في نفس الملف</li>
             <li>• عمود "جوالي ولي الامر" يقبل أيضاً: "جوال ولي الامر" أو "جوال ولي الأمر"</li>
             <li>• المجموعات يتم إنشاؤها تلقائياً إذا لم تكن موجودة</li>
           </ul>
+        </div>
+
+        <div className="mt-3 p-3 bg-green-50 border-2 border-green-400 rounded-lg">
+          <p className="text-sm font-bold text-green-900 mb-2">
+            🔄 نقل الطلاب للمرحلة الدراسية الجديدة
+          </p>
+          <div className="text-xs text-green-800 space-y-2">
+            <p className="font-semibold">يمكنك تحديث مجموعات الطلاب الموجودين عن طريق:</p>
+            <ol className="mr-4 space-y-1">
+              <li>1. تجهيز ملف Excel بنفس التنسيق أعلاه</li>
+              <li>2. استخدام نفس <strong>السجل المدني</strong> للطالب</li>
+              <li>3. تغيير الصف والمجموعة للمرحلة الجديدة</li>
+              <li>4. عند رفع الملف، سيتم تحديث بيانات الطلاب تلقائياً</li>
+            </ol>
+            <div className="mt-2 p-2 bg-white rounded border border-green-300">
+              <p className="font-semibold mb-1">مثال:</p>
+              <p className="text-xs">• إذا كان الطالب في "الصف الأول الثانوي - مجموعة 1"</p>
+              <p className="text-xs">• وتريد نقله إلى "الصف الثاني الثانوي - مجموعة 3"</p>
+              <p className="text-xs">• فقط قم بتغيير الصف والمجموعة في ملف Excel مع الاحتفاظ بنفس السجل المدني</p>
+              <p className="text-xs font-bold text-green-700 mt-1">✅ سيتم التحديث تلقائياً!</p>
+            </div>
+          </div>
         </div>
       </div>
 

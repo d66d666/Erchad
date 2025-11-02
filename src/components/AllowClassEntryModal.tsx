@@ -73,21 +73,9 @@ export function AllowClassEntryModal({
       })
 
       // إنشاء رسالة السماح بالدخول
-      let message = `*${schoolName || 'المدرسة'}*\n`
-      message += `🏫 السماح بدخول الفصل\n\n`
-      message += `---\n\n`
-      message += `*معلومات الطالب:*\n`
-      message += `• الاسم: *${student.name}*\n`
-      message += `• السجل المدني: ${student.national_id}\n`
-      message += `• الصف: ${student.grade}\n`
-      message += `• المجموعة: ${student.group?.name || '-'}\n\n`
-      message += `---\n\n`
-      message += `✅ *السماح بدخول الطالب للفصل*\n\n`
-      message += `📅 التاريخ: ${currentDate}\n`
-      message += `🕐 الوقت: ${currentTime}\n\n`
-      message += `---\n\n`
-      message += `المرشد الطلابي: *${counselorName || 'اسم المرشد'}*\n\n`
-      message += `_تم إنشاء هذه الرسالة من نظام الإرشاد الطلابي_`
+      let message = `✅ *السماح بدخول الطالب للفصل*\n\n`
+      message += `اسم الطالب: *${student.name}*\n\n`
+      message += `المرسل: ${counselorName || 'المرشد الطلابي'}`
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
@@ -160,11 +148,10 @@ export function AllowClassEntryModal({
 
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h4 className="font-semibold text-gray-900 mb-2">معاينة الرسالة:</h4>
-            <div className="text-sm text-gray-700 whitespace-pre-line space-y-1">
-              <p><strong>{schoolName || 'المدرسة'}</strong></p>
-              <p>🏫 السماح بدخول الفصل</p>
-              <p className="mt-2">✅ السماح بدخول الطالب <strong>{student.name}</strong> للفصل</p>
-              <p className="mt-2">المرشد الطلابي: <strong>{counselorName || 'اسم المرشد'}</strong></p>
+            <div className="text-sm text-gray-700 whitespace-pre-line space-y-2">
+              <p className="text-green-600 font-medium">✅ السماح بدخول الطالب للفصل</p>
+              <p>اسم الطالب: <strong>{student.name}</strong></p>
+              <p>المرسل: {counselorName || 'المرشد الطلابي'}</p>
             </div>
           </div>
 

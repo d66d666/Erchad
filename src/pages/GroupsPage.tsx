@@ -51,7 +51,14 @@ export function GroupsPage() {
         setTeacherName(profileRes.data.name || '')
       }
 
-      setGroups(groupsData.sort((a, b) => a.name.localeCompare(b.name)))
+      // Sort groups by stage and display_order
+      const sortedGroups = groupsData.sort((a, b) => {
+        const stageA = stageOrder[a.stage] || 999
+        const stageB = stageOrder[b.stage] || 999
+        if (stageA !== stageB) return stageA - stageB
+        return (a.display_order || 999) - (b.display_order || 999)
+      })
+      setGroups(sortedGroups)
       setStudents(studentsData as Student[])
       setSpecialStatuses(statusesData)
     } finally {
@@ -74,12 +81,17 @@ export function GroupsPage() {
     return acc
   }, {} as Record<string, Group[]>)
 
-  // Sort stages by defined order
-  const sortedStages = Object.entries(groupedByStage).sort((a, b) => {
-    const orderA = stageOrder[a[0]] || 999
-    const orderB = stageOrder[b[0]] || 999
-    return orderA - orderB
-  })
+  // Sort stages by defined order and sort groups within each stage
+  const sortedStages = Object.entries(groupedByStage)
+    .sort((a, b) => {
+      const orderA = stageOrder[a[0]] || 999
+      const orderB = stageOrder[b[0]] || 999
+      return orderA - orderB
+    })
+    .map(([stage, stageGroups]) => [
+      stage,
+      stageGroups.sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
+    ] as [string, Group[]])
 
   const toggleStage = (stage: string) => {
     setExpandedStages((prev) => {

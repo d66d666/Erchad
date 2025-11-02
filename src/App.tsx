@@ -58,7 +58,7 @@ function App() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [groupsRes, statusesRes, studentsRes, profileRes] = await Promise.all([
+      const [groupsRes, statusesRes, studentsRes, profileRes, teachersRes] = await Promise.all([
         supabase.from('groups').select('*').order('name'),
         supabase
           .from('special_statuses')
@@ -66,6 +66,7 @@ function App() {
           .order('name'),
         supabase.from('students').select('*').order('name'),
         supabase.from('teacher_profile').select('*').maybeSingle(),
+        supabase.from('teachers').select('id').order('name'),
       ])
 
       if (groupsRes.data) setGroups(groupsRes.data)
@@ -75,6 +76,7 @@ function App() {
         setTeacherName(profileRes.data.name || '')
         setSchoolName(profileRes.data.school_name || '')
       }
+      if (teachersRes.data) setTotalTeachers(teachersRes.data.length)
     } finally {
       setLoading(false)
     }
@@ -135,7 +137,7 @@ function App() {
       }))
 
   const totalStudents = students.length
-  const activeStudents = students.filter(s => s.status === 'نشط').length
+  const [totalTeachers, setTotalTeachers] = useState(0)
   const absentStudents = students.filter(s => s.status === 'استئذان').length
   const specialStatusStudents = students.filter(s => s.special_status_id !== null).length
 
@@ -254,10 +256,10 @@ function App() {
             <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">الطلاب النشطون</p>
-                  <p className="text-3xl font-bold mt-1">{activeStudents}</p>
+                  <p className="text-green-100 text-sm">المعلمين</p>
+                  <p className="text-3xl font-bold mt-1">{totalTeachers}</p>
                 </div>
-                <UserCheck size={40} className="text-green-200" />
+                <GraduationCap size={40} className="text-green-200" />
               </div>
             </div>
 

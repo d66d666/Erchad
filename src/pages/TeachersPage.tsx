@@ -250,15 +250,26 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
       if (teacher) {
         const { error: updateError } = await supabase
           .from('teachers')
-          .update({ name, phone, specialization })
+          .update({
+            name: name.trim(),
+            phone: phone.trim(),
+            specialization: specialization.trim()
+          })
           .eq('id', teacher.id)
 
-        if (updateError) throw updateError
+        if (updateError) {
+          console.error('Update error:', updateError)
+          throw new Error(`فشل تحديث المعلم: ${updateError.message}`)
+        }
 
-        await supabase
+        const { error: deleteError } = await supabase
           .from('teacher_groups')
           .delete()
           .eq('teacher_id', teacher.id)
+
+        if (deleteError) {
+          console.error('Delete groups error:', deleteError)
+        }
 
         if (selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
@@ -270,16 +281,26 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             .from('teacher_groups')
             .insert(teacherGroupsData)
 
-          if (groupsError) throw groupsError
+          if (groupsError) {
+            console.error('Insert groups error:', groupsError)
+            throw new Error(`فشل ربط المجموعات: ${groupsError.message}`)
+          }
         }
       } else {
         const { data: newTeacher, error: insertError } = await supabase
           .from('teachers')
-          .insert({ name, phone, specialization })
+          .insert({
+            name: name.trim(),
+            phone: phone.trim(),
+            specialization: specialization.trim()
+          })
           .select()
           .single()
 
-        if (insertError) throw insertError
+        if (insertError) {
+          console.error('Insert error:', insertError)
+          throw new Error(`فشل إضافة المعلم: ${insertError.message}`)
+        }
 
         if (newTeacher && selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
@@ -291,15 +312,19 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             .from('teacher_groups')
             .insert(teacherGroupsData)
 
-          if (groupsError) throw groupsError
+          if (groupsError) {
+            console.error('Insert groups error:', groupsError)
+            throw new Error(`فشل ربط المجموعات: ${groupsError.message}`)
+          }
         }
       }
 
       onSave()
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving teacher:', error)
-      alert('حدث خطأ أثناء الحفظ')
+      const errorMessage = error?.message || 'حدث خطأ غير معروف'
+      alert(`حدث خطأ أثناء الحفظ:\n${errorMessage}`)
     } finally {
       setLoading(false)
     }

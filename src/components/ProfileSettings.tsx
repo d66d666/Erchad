@@ -129,6 +129,15 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const handleResetDatabase = async () => {
     setResetLoading(true)
     try {
+      // حذف جميع البيانات من Supabase
+      await supabase.from('student_violations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('student_permissions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('student_visits').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
+      // حذف جميع البيانات من IndexedDB (المحلي)
       await db.students.clear()
       await db.groups.clear()
       await db.special_statuses.clear()
@@ -317,7 +326,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                   تصفير قاعدة البيانات
                 </h3>
                 <p className="text-sm text-red-700 mb-4">
-                  تحذير: سيتم حذف جميع البيانات بشكل نهائي (الطلاب، الفصول، الزيارات، الاستئذانات، المخالفات).
+                  تحذير: سيتم حذف جميع البيانات بشكل نهائي (الطلاب، المعلمين، الفصول، الزيارات، الاستئذانات، المخالفات، الحالات الخاصة).
                   هذا الإجراء لا يمكن التراجع عنه!
                 </p>
                 <p className="text-sm text-gray-700">

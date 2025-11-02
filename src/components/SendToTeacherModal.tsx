@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { X, Send, Check } from 'lucide-react'
+import { X, Send } from 'lucide-react'
 import { Teacher, Group, Student } from '../types'
 
 interface SendToTeacherModalProps {
@@ -17,7 +17,6 @@ export function SendToTeacherModal({
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -45,17 +44,10 @@ export function SendToTeacherModal({
     if (data) setGroups(data)
   }
 
-  const toggleGroupSelection = (groupId: string) => {
-    if (selectedGroupIds.includes(groupId)) {
-      setSelectedGroupIds(selectedGroupIds.filter(id => id !== groupId))
-    } else {
-      setSelectedGroupIds([...selectedGroupIds, groupId])
-    }
-  }
 
   const handleSend = async () => {
-    if (!selectedTeacherId || selectedGroupIds.length === 0) {
-      alert('الرجاء اختيار المعلم والمجموعات')
+    if (!selectedTeacherId) {
+      alert('الرجاء اختيار المعلم')
       return
     }
 
@@ -65,13 +57,8 @@ export function SendToTeacherModal({
       const teacher = teachers.find(t => t.id === selectedTeacherId)
       if (!teacher) return
 
-      // فلترة الطلاب حسب المجموعات المختارة
-      const filteredStudents = specialStatusStudents.filter(
-        student => selectedGroupIds.includes(student.group_id)
-      )
-
-      if (filteredStudents.length === 0) {
-        alert('لا يوجد طلاب ذوي حالات خاصة في المجموعات المختارة')
+      if (specialStatusStudents.length === 0) {
+        alert('لا يوجد طلاب ذوي حالات خاصة')
         setLoading(false)
         return
       }
@@ -79,30 +66,14 @@ export function SendToTeacherModal({
       // إنشاء رسالة واتساب
       let message = ''
 
-      // تجميع الطلاب حسب المجموعة
-      selectedGroupIds.forEach(groupId => {
-        const group = groups.find(g => g.id === groupId)
-        const groupStudents = filteredStudents.filter(s => s.group_id === groupId)
-
-        if (groupStudents.length > 0) {
-          groupStudents.forEach((student) => {
-            message += `اسم الطالب : ${student.name}\n`
-            message += `الصف : ${student.grade || '-'}\n`
-            message += `المجموعة : ${group?.name || '-'}\n`
-            message += `الحالة : ${student.special_status?.name || '-'}\n\n`
-          })
-        }
+      // إرسال جميع الطلاب ذوي الحالات الخاصة
+      specialStatusStudents.forEach((student) => {
+        const group = groups.find(g => g.id === student.group_id)
+        message += `اسم الطالب : ${student.name}\n`
+        message += `الصف : ${student.grade || '-'}\n`
+        message += `المجموعة : ${group?.name || '-'}\n`
+        message += `الحالة : ${student.special_status?.name || '-'}\n\n`
       })
-
-      // حفظ ربط المعلم بالمجموعات
-      const teacherGroupsData = selectedGroupIds.map(groupId => ({
-        teacher_id: selectedTeacherId,
-        group_id: groupId,
-      }))
-
-      await supabase
-        .from('teacher_groups')
-        .upsert(teacherGroupsData, { onConflict: 'teacher_id,group_id', ignoreDuplicates: true })
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
@@ -141,7 +112,7 @@ export function SendToTeacherModal({
         <div className="p-6 space-y-6">
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <p className="text-sm text-blue-800">
-              سيتم إرسال بيانات الطلاب ذوي الحالات الخاصة في المجموعات المختارة إلى المعلم عبر واتساب
+              سيتم إرسال بيانات جميع الطلاب ذوي الحالات الخاصة إلى المعلم عبر واتساب
             </p>
           </div>
 
@@ -163,48 +134,11 @@ export function SendToTeacherModal({
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              اختر المجموعات ({selectedGroupIds.length} مختار)
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
-              {groups.map((group) => {
-                const isSelected = selectedGroupIds.includes(group.id)
-                const groupStudentsCount = specialStatusStudents.filter(
-                  s => s.group_id === group.id
-                ).length
-
-                return (
-                  <button
-                    key={group.id}
-                    onClick={() => toggleGroupSelection(group.id)}
-                    className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                      isSelected
-                        ? 'bg-green-50 border-green-500 text-green-900'
-                        : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span>{group.name}</span>
-                      <div className="flex items-center gap-1">
-                        {groupStudentsCount > 0 && (
-                          <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">
-                            {groupStudentsCount}
-                          </span>
-                        )}
-                        {isSelected && <Check size={16} className="text-green-600" />}
-                      </div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
 
           <div className="flex gap-3 pt-4">
             <button
               onClick={handleSend}
-              disabled={loading || !selectedTeacherId || selectedGroupIds.length === 0}
+              disabled={loading || !selectedTeacherId}
               className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
             >
               <Send size={20} />

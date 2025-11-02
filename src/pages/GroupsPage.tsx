@@ -323,32 +323,32 @@ export function GroupsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl shadow-lg p-6 text-white">
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <button
               onClick={handlePrintAll}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all hover:shadow-md"
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all hover:shadow-md"
             >
               <Printer size={20} />
               <span>طباعة الكل</span>
             </button>
             <button
               onClick={() => setShowManageGroupsModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all hover:shadow-md"
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-600 text-white rounded-xl font-semibold hover:bg-slate-700 transition-all hover:shadow-md"
             >
               <Layers size={20} />
               <span>إدارة المجموعات</span>
             </button>
           </div>
-          <label className="flex items-center gap-3 bg-white bg-opacity-20 px-4 py-3 rounded-xl cursor-pointer hover:bg-opacity-30 transition-all">
+          <label className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl cursor-pointer hover:bg-slate-100 transition-all border border-slate-200">
             <input
               type="checkbox"
               checked={showStatusDetails}
               onChange={(e) => setShowStatusDetails(e.target.checked)}
               className="w-5 h-5 rounded cursor-pointer"
             />
-            <span className="text-white font-semibold">إظهار تفاصيل الحالة</span>
+            <span className="text-slate-700 font-semibold">إظهار تفاصيل الحالة</span>
           </label>
         </div>
       </div>
@@ -371,21 +371,21 @@ export function GroupsPage() {
               <div key={stage} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
                 <button
                   onClick={() => toggleStage(stage)}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-500 p-6 flex items-center justify-between hover:from-green-700 hover:to-green-600 transition-all"
+                  className="w-full bg-gradient-to-r from-slate-100 to-slate-50 p-6 flex items-center justify-between hover:from-slate-200 hover:to-slate-100 transition-all border-b border-slate-200"
                 >
                   <div className="flex items-center gap-3">
-                    <Layers size={28} className="text-white" />
+                    <Layers size={28} className="text-slate-600" />
                     <div className="text-right">
-                      <h2 className="text-2xl font-bold text-white">{stage}</h2>
-                      <p className="text-green-100 text-sm">
+                      <h2 className="text-2xl font-bold text-slate-800">{stage}</h2>
+                      <p className="text-slate-500 text-sm">
                         {stageGroups.length} مجموعة • {totalStudents} طالب
                       </p>
                     </div>
                   </div>
                   {isExpanded ? (
-                    <ChevronUp size={28} className="text-white" />
+                    <ChevronUp size={28} className="text-slate-600" />
                   ) : (
-                    <ChevronDown size={28} className="text-white" />
+                    <ChevronDown size={28} className="text-slate-600" />
                   )}
                 </button>
 
@@ -395,22 +395,22 @@ export function GroupsPage() {
                       const groupStudents = students.filter(s => s.group_id === group.id)
                       return (
                         <div key={group.id} className="border border-gray-200 rounded-xl overflow-hidden">
-                          <div className="bg-gradient-to-r from-blue-500 to-blue-400 p-4 flex items-center justify-between">
+                          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 flex items-center justify-between border-b border-blue-200">
                             <div>
-                              <h3 className="text-xl font-bold text-white">{group.name}</h3>
-                              <p className="text-blue-100 text-sm">عدد الطلاب: {groupStudents.length}</p>
+                              <h3 className="text-xl font-bold text-blue-900">{group.name}</h3>
+                              <p className="text-blue-600 text-sm">عدد الطلاب: {groupStudents.length}</p>
                             </div>
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handlePrint(group, groupStudents)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-white text-blue-700 rounded-lg font-semibold hover:bg-blue-50 transition-all text-sm border border-blue-200"
                               >
                                 <Printer size={18} />
                                 طباعة
                               </button>
                               <button
                                 onClick={() => handleAddStudent(group.id)}
-                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all text-sm"
                               >
                                 <UserPlus size={18} />
                                 إضافة طالب
@@ -484,7 +484,7 @@ export function GroupsPage() {
       {showAddStudentModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-500 p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-500 p-6 flex items-center justify-between">
               <h3 className="text-2xl font-bold text-white">إضافة طالب جديد</h3>
               <button
                 onClick={handleCloseModal}
@@ -598,7 +598,7 @@ export function GroupsPage() {
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="flex-1 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {formLoading ? 'جاري الحفظ...' : 'حفظ الطالب'}
                 </button>
@@ -618,7 +618,7 @@ export function GroupsPage() {
       {showManageGroupsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-500 p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-gradient-to-r from-slate-600 to-slate-500 p-6 flex items-center justify-between">
               <h3 className="text-2xl font-bold text-white">إدارة المراحل والمجموعات</h3>
               <button
                 onClick={() => setShowManageGroupsModal(false)}
@@ -629,7 +629,7 @@ export function GroupsPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-blue-50 rounded-xl p-6 border-2 border-blue-200">
+              <div className="bg-slate-50 rounded-xl p-6 border-2 border-slate-200">
                 <h4 className="text-lg font-bold text-gray-900 mb-4">إضافة مجموعة جديدة</h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -640,7 +640,7 @@ export function GroupsPage() {
                       type="text"
                       value={groupFormData.stage}
                       onChange={(e) => setGroupFormData({ ...groupFormData, stage: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500"
                       placeholder="مثال: الصف الأول الثانوي"
                     />
                   </div>
@@ -652,14 +652,14 @@ export function GroupsPage() {
                       type="text"
                       value={groupFormData.name}
                       onChange={(e) => setGroupFormData({ ...groupFormData, name: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500"
                       placeholder="مثال: مجموعة 1"
                     />
                   </div>
                 </div>
                 <button
                   onClick={handleAddGroup}
-                  className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+                  className="mt-4 w-full bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
                 >
                   <Plus size={20} />
                   إضافة المجموعة
@@ -670,7 +670,7 @@ export function GroupsPage() {
                 <h4 className="text-lg font-bold text-gray-900 mb-4">المجموعات الحالية</h4>
                 {Object.entries(groupedByStage).map(([stage, stageGroups]) => (
                   <div key={stage} className="mb-6">
-                    <h5 className="text-md font-bold text-green-700 mb-3 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
+                    <h5 className="text-md font-bold text-slate-700 mb-3 flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-lg">
                       <Layers size={20} />
                       {stage}
                     </h5>

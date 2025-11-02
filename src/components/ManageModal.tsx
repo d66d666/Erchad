@@ -122,10 +122,10 @@ export function ManageModal({
             {type === 'groups' ? (
               Object.entries(groupedByStage).map(([stage, stageGroups]) => (
                 <div key={stage} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="bg-green-50 px-4 py-3 border-b border-gray-200">
+                  <div className="bg-slate-50 px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center gap-2">
-                      <Layers size={18} className="text-green-600" />
-                      <span className="font-bold text-green-800">{stage}</span>
+                      <Layers size={18} className="text-slate-600" />
+                      <span className="font-bold text-slate-800">{stage}</span>
                     </div>
                   </div>
                   <div className="p-3 space-y-2 bg-gray-50">

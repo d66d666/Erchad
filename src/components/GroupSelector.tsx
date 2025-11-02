@@ -56,16 +56,16 @@ export function GroupSelector({
             <div key={stage} className="border border-gray-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleStage(stage)}
-                className="w-full px-4 py-2 bg-green-50 hover:bg-green-100 text-gray-800 font-semibold transition-colors flex items-center justify-between"
+                className="w-full px-4 py-2 bg-slate-50 hover:bg-slate-100 text-gray-800 font-semibold transition-colors flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <Layers size={18} className="text-green-600" />
+                  <Layers size={18} className="text-slate-600" />
                   <span>{stage}</span>
                 </div>
                 {isExpanded ? (
-                  <ChevronUp size={18} className="text-green-600" />
+                  <ChevronUp size={18} className="text-slate-600" />
                 ) : (
-                  <ChevronDown size={18} className="text-green-600" />
+                  <ChevronDown size={18} className="text-slate-600" />
                 )}
               </button>
 

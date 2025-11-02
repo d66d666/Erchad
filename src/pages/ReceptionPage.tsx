@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { Student, StudentVisit } from '../types'
+import { db, StudentVisit } from '../lib/db'
+import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter } from 'lucide-react'
+
+interface VisitWithStudent extends StudentVisit {
+  student?: {
+    name: string
+    national_id: string
+    guardian_phone: string
+    visit_count: number
+  }
+}
 
 export function ReceptionPage() {
   const [students, setStudents] = useState<Student[]>([])
-  const [visits, setVisits] = useState<StudentVisit[]>([])
+  const [visits, setVisits] = useState<VisitWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
@@ -17,39 +26,72 @@ export function ReceptionPage() {
     notes: ''
   })
   const [loading, setLoading] = useState(false)
+  const [teacherName, setTeacherName] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchVisits()
+    fetchTeacherProfile()
   }, [])
 
-  async function fetchStudents() {
-    const { data } = await supabase
-      .from('students')
-      .select('*, group:groups(name), special_status:special_statuses(name), visit_count')
-      .order('name')
+  async function fetchTeacherProfile() {
+    const profile = await db.teacher_profile.toCollection().first()
+    if (profile?.name) {
+      setTeacherName(profile.name)
+    }
+  }
 
-    if (data) setStudents(data as Student[])
+  async function fetchStudents() {
+    const allStudents = await db.students.toArray()
+    const groups = await db.groups.toArray()
+    const statuses = await db.special_statuses.toArray()
+
+    const studentsWithRelations = allStudents.map(student => {
+      const group = groups.find(g => g.id === student.group_id)
+      const special_status = statuses.find(s => s.id === student.special_status_id)
+      return {
+        ...student,
+        group: group ? { name: group.name } : undefined,
+        special_status: special_status ? { name: special_status.name } : undefined
+      }
+    })
+
+    setStudents(studentsWithRelations as Student[])
   }
 
   async function fetchVisits(filterDate?: string) {
-    let query = supabase
-      .from('student_visits')
-      .select('*, student:students(name, national_id, guardian_phone, visit_count)')
-      .order('visit_date', { ascending: false })
+    let allVisits = await db.student_visits.orderBy('visit_date').reverse().toArray()
 
     if (filterDate) {
       const startOfDay = new Date(filterDate)
       startOfDay.setHours(0, 0, 0, 0)
       const endOfDay = new Date(filterDate)
       endOfDay.setHours(23, 59, 59, 999)
-      query = query.gte('visit_date', startOfDay.toISOString()).lte('visit_date', endOfDay.toISOString())
+
+      allVisits = allVisits.filter(v => {
+        const visitDate = new Date(v.visit_date)
+        return visitDate >= startOfDay && visitDate <= endOfDay
+      })
     } else {
-      query = query.limit(50)
+      allVisits = allVisits.slice(0, 50)
     }
 
-    const { data } = await query
-    if (data) setVisits(data as StudentVisit[])
+    const visitsWithStudents = await Promise.all(
+      allVisits.map(async (visit) => {
+        const student = await db.students.get(visit.student_id)
+        return {
+          ...visit,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone,
+            visit_count: student.visit_count || 0
+          } : undefined
+        }
+      })
+    )
+
+    setVisits(visitsWithStudents)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,31 +99,39 @@ export function ReceptionPage() {
     if (!selectedStudent) return
 
     setLoading(true)
-    const { error } = await supabase.from('student_visits').insert({
-      student_id: selectedStudent.id,
-      ...formData
-    })
+    try {
+      const visitId = crypto.randomUUID()
+      const visitDate = new Date().toISOString()
 
-    if (!error) {
+      await db.student_visits.add({
+        id: visitId,
+        student_id: selectedStudent.id,
+        visit_date: visitDate,
+        reason: formData.reason,
+        action_taken: formData.action_taken,
+        referred_to: formData.referred_to,
+        notes: formData.notes,
+        created_at: visitDate
+      })
+
+      const currentCount = selectedStudent.visit_count || 0
+      await db.students.update(selectedStudent.id, {
+        visit_count: currentCount + 1
+      })
+
       alert('تم تسجيل الزيارة بنجاح')
       setFormData({ reason: '', action_taken: '', referred_to: 'لا يوجد', notes: '' })
       setSelectedStudent(null)
       fetchStudents()
       fetchVisits(dateFilter)
-    } else {
-      alert('حدث خطأ: ' + error.message)
+    } catch (error) {
+      console.error('Error saving visit:', error)
+      alert('حدث خطأ أثناء الحفظ')
     }
     setLoading(false)
   }
 
-  async function printVisit(visit: StudentVisit) {
-    const { data: teacherProfile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
-
-    const teacherName = teacherProfile?.name || ''
-
+  async function printVisit(visit: VisitWithStudent) {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
 
@@ -139,7 +189,7 @@ export function ReceptionPage() {
     `)
   }
 
-  function sendWhatsApp(visit: StudentVisit) {
+  function sendWhatsApp(visit: VisitWithStudent) {
     if (!visit.student?.guardian_phone) {
       alert('رقم جوال ولي الأمر غير مسجل')
       return

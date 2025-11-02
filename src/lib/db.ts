@@ -5,7 +5,9 @@ export interface StudentVisit {
   id?: string
   student_id: string
   visit_date: string
-  reason?: string
+  reason: string
+  action_taken: string
+  referred_to: string
   notes?: string
   created_at?: string
 }

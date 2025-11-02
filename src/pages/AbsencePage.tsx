@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { Student, StudentViolation } from '../types'
+import { db, StudentViolation } from '../lib/db'
+import { Student } from '../types'
 import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send } from 'lucide-react'
+
+interface ViolationWithStudent extends StudentViolation {
+  student?: {
+    name: string
+    national_id: string
+    guardian_phone: string
+    violation_count: number
+  }
+}
 
 export function AbsencePage() {
   const [students, setStudents] = useState<Student[]>([])
-  const [violations, setViolations] = useState<StudentViolation[]>([])
+  const [violations, setViolations] = useState<ViolationWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [formData, setFormData] = useState({
@@ -17,39 +26,72 @@ export function AbsencePage() {
   const [loading, setLoading] = useState(false)
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [teacherName, setTeacherName] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchViolations()
+    fetchTeacherProfile()
   }, [])
 
-  async function fetchStudents() {
-    const { data } = await supabase
-      .from('students')
-      .select('*, group:groups(name), special_status:special_statuses(name), violation_count')
-      .order('name')
+  async function fetchTeacherProfile() {
+    const profile = await db.teacher_profile.toCollection().first()
+    if (profile?.name) {
+      setTeacherName(profile.name)
+    }
+  }
 
-    if (data) setStudents(data as Student[])
+  async function fetchStudents() {
+    const allStudents = await db.students.toArray()
+    const groups = await db.groups.toArray()
+    const statuses = await db.special_statuses.toArray()
+
+    const studentsWithRelations = allStudents.map(student => {
+      const group = groups.find(g => g.id === student.group_id)
+      const special_status = statuses.find(s => s.id === student.special_status_id)
+      return {
+        ...student,
+        group: group ? { name: group.name } : undefined,
+        special_status: special_status ? { name: special_status.name } : undefined
+      }
+    })
+
+    setStudents(studentsWithRelations as Student[])
   }
 
   async function fetchViolations(filterDate?: string) {
-    let query = supabase
-      .from('student_violations')
-      .select('*, student:students(name, national_id, guardian_phone, violation_count)')
-      .order('violation_date', { ascending: false })
+    let allViolations = await db.student_violations.orderBy('violation_date').reverse().toArray()
 
     if (filterDate) {
       const startOfDay = new Date(filterDate)
       startOfDay.setHours(0, 0, 0, 0)
       const endOfDay = new Date(filterDate)
       endOfDay.setHours(23, 59, 59, 999)
-      query = query.gte('violation_date', startOfDay.toISOString()).lte('violation_date', endOfDay.toISOString())
+
+      allViolations = allViolations.filter(v => {
+        const violationDate = new Date(v.violation_date)
+        return violationDate >= startOfDay && violationDate <= endOfDay
+      })
     } else {
-      query = query.limit(50)
+      allViolations = allViolations.slice(0, 50)
     }
 
-    const { data } = await query
-    if (data) setViolations(data as StudentViolation[])
+    const violationsWithStudents = await Promise.all(
+      allViolations.map(async (violation) => {
+        const student = await db.students.get(violation.student_id)
+        return {
+          ...violation,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone,
+            violation_count: student.violation_count || 0
+          } : undefined
+        }
+      })
+    )
+
+    setViolations(violationsWithStudents)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,24 +99,39 @@ export function AbsencePage() {
     if (!selectedStudent) return
 
     setLoading(true)
-    const { error } = await supabase.from('student_violations').insert({
-      student_id: selectedStudent.id,
-      ...formData
-    })
+    try {
+      const violationId = crypto.randomUUID()
+      const violationDate = new Date().toISOString()
 
-    if (!error) {
+      await db.student_violations.add({
+        id: violationId,
+        student_id: selectedStudent.id,
+        violation_type: formData.violation_type,
+        violation_date: violationDate,
+        description: formData.description,
+        action_taken: formData.action_taken,
+        notes: formData.notes,
+        created_at: violationDate
+      })
+
+      const currentCount = selectedStudent.violation_count || 0
+      await db.students.update(selectedStudent.id, {
+        violation_count: currentCount + 1
+      })
+
       alert('تم تسجيل المخالفة بنجاح')
       setFormData({ violation_type: 'هروب من الحصة', description: '', action_taken: '', notes: '' })
       setSelectedStudent(null)
       fetchStudents()
       fetchViolations(dateFilter)
-    } else {
-      alert('حدث خطأ: ' + error.message)
+    } catch (error) {
+      console.error('Error saving violation:', error)
+      alert('حدث خطأ أثناء الحفظ')
     }
     setLoading(false)
   }
 
-  function sendWhatsApp(violation: StudentViolation) {
+  function sendWhatsApp(violation: ViolationWithStudent) {
     if (!violation.student?.guardian_phone) {
       alert('رقم جوال ولي الأمر غير مسجل')
       return
@@ -99,14 +156,7 @@ export function AbsencePage() {
     window.open(whatsappUrl, '_blank')
   }
 
-  async function printViolation(violation: StudentViolation) {
-    const { data: teacherProfile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
-
-    const teacherName = teacherProfile?.name || ''
-
+  async function printViolation(violation: ViolationWithStudent) {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
 
@@ -122,14 +172,14 @@ export function AbsencePage() {
             .header .meta { color: #666; font-size: 12px; margin-top: 10px; }
             .section { margin-bottom: 20px; }
             .section label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-            .section div { padding: 10px; background: #f9fafb; border-radius: 5px; }
-            .violation-type { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 5px; font-weight: bold; }
+            .section div { padding: 10px; background: #fef2f2; border-radius: 5px; border: 1px solid #fca5a5; }
+            .violation-type { background: #fee2e2; border: 2px solid #dc2626; font-size: 18px; text-align: center; padding: 15px; font-weight: bold; }
             @media print { body { padding: 20px; } }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>تقرير مخالفة طالب</h1>
+            <h1>⚠️ تقرير مخالفة سلوكية</h1>
             <p>التاريخ: ${new Date(violation.violation_date).toLocaleString('ar-SA')}</p>
             ${teacherName ? `<div class="meta">بواسطة: ${teacherName}</div>` : ''}
           </div>
@@ -159,6 +209,11 @@ export function AbsencePage() {
             <div>${violation.notes}</div>
           </div>
           ` : ''}
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ccc;">
+            <p style="text-align: center; color: #666; font-size: 14px;">
+              عدد المخالفات المسجلة للطالب: ${violation.student?.violation_count || 1}
+            </p>
+          </div>
           <script>window.print(); window.onafterprint = () => window.close();</script>
         </body>
       </html>
@@ -169,23 +224,12 @@ export function AbsencePage() {
     s.name.includes(searchTerm) || s.national_id.includes(searchTerm)
   )
 
-  const violationTypes = [
-    'هروب من الحصة',
-    'غياب بدون عذر',
-    'تأخر صباحي',
-    'عدم إحضار الكتب',
-    'سلوك غير لائق',
-    'استخدام الجوال',
-    'عدم ارتداء الزي المدرسي',
-    'أخرى'
-  ]
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center gap-3 mb-6">
           <AlertTriangle size={28} className="text-red-600" />
-          <h2 className="text-2xl font-bold text-gray-800">المخالفات السلوكية</h2>
+          <h2 className="text-2xl font-bold text-gray-800">المخالفات</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -248,14 +292,19 @@ export function AbsencePage() {
                   نوع المخالفة
                 </label>
                 <select
-                  required
                   value={formData.violation_type}
                   onChange={(e) => setFormData({ ...formData, violation_type: e.target.value as any })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
-                  {violationTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
+                  <option value="هروب من الحصة">هروب من الحصة</option>
+                  <option value="تأخر صباحي">تأخر صباحي</option>
+                  <option value="غياب بدون عذر">غياب بدون عذر</option>
+                  <option value="عدم إحضار الكتب">عدم إحضار الكتب</option>
+                  <option value="عدم حل الواجبات">عدم حل الواجبات</option>
+                  <option value="سلوك غير لائق">سلوك غير لائق</option>
+                  <option value="شجار">شجار</option>
+                  <option value="إزعاج">إزعاج</option>
+                  <option value="أخرى">أخرى</option>
                 </select>
               </div>
 
@@ -269,7 +318,7 @@ export function AbsencePage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   rows={3}
-                  placeholder="اكتب تفاصيل المخالفة..."
+                  placeholder="اكتب وصف تفصيلي للمخالفة..."
                 />
               </div>
 
@@ -371,12 +420,16 @@ export function AbsencePage() {
         ) : (
           <div className="space-y-3">
             {violations.map(violation => (
-              <div key={violation.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div key={violation.id} className="border border-red-200 rounded-lg p-4 bg-red-50">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-bold text-gray-800">{violation.student?.name}</h4>
                     <p className="text-sm text-gray-600">
                       {new Date(violation.violation_date).toLocaleString('ar-SA')}
+                    </p>
+                    <p className="text-sm font-bold text-red-600 mt-1">
+                      <AlertTriangle size={14} className="inline ml-1" />
+                      {violation.violation_type}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -398,9 +451,6 @@ export function AbsencePage() {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <div className="bg-red-100 text-red-800 px-3 py-2 rounded-lg font-semibold">
-                    نوع المخالفة: {violation.violation_type}
-                  </div>
                   <div><span className="font-semibold">الوصف:</span> {violation.description}</div>
                   <div><span className="font-semibold">الإجراء:</span> {violation.action_taken}</div>
                   {violation.notes && (

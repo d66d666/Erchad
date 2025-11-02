@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { Student, StudentPermission } from '../types'
+import { db, StudentPermission } from '../lib/db'
+import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter } from 'lucide-react'
+
+interface PermissionWithStudent extends StudentPermission {
+  student?: {
+    name: string
+    national_id: string
+    guardian_phone: string
+    permission_count: number
+    group?: { name: string }
+  }
+}
 
 export function PermissionPage() {
   const [students, setStudents] = useState<Student[]>([])
-  const [permissions, setPermissions] = useState<StudentPermission[]>([])
+  const [permissions, setPermissions] = useState<PermissionWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
@@ -15,42 +25,80 @@ export function PermissionPage() {
     notes: ''
   })
   const [loading, setLoading] = useState(false)
+  const [teacherName, setTeacherName] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchPermissions()
+    fetchTeacherProfile()
   }, [])
 
-  async function fetchStudents() {
-    const { data } = await supabase
-      .from('students')
-      .select('*, group:groups(name), special_status:special_statuses(name), permission_count')
-      .eq('status', 'نشط')
-      .order('name')
+  async function fetchTeacherProfile() {
+    const profile = await db.teacher_profile.toCollection().first()
+    if (profile?.name) {
+      setTeacherName(profile.name)
+    }
+  }
 
-    if (data) setStudents(data as Student[])
+  async function fetchStudents() {
+    const allStudents = await db.students.where('status').equals('نشط').toArray()
+    const groups = await db.groups.toArray()
+    const statuses = await db.special_statuses.toArray()
+
+    const studentsWithRelations = allStudents.map(student => {
+      const group = groups.find(g => g.id === student.group_id)
+      const special_status = statuses.find(s => s.id === student.special_status_id)
+      return {
+        ...student,
+        group: group ? { name: group.name } : undefined,
+        special_status: special_status ? { name: special_status.name } : undefined
+      }
+    })
+
+    setStudents(studentsWithRelations as Student[])
   }
 
   async function fetchPermissions(filterDate?: string) {
-    let query = supabase
-      .from('student_permissions')
-      .select('*, student:students(name, national_id, guardian_phone, permission_count, group:groups(name))')
-      .order('permission_date', { ascending: false })
+    let allPermissions = await db.student_permissions.orderBy('permission_date').reverse().toArray()
 
     if (filterDate) {
       const startOfDay = new Date(filterDate)
       startOfDay.setHours(0, 0, 0, 0)
       const endOfDay = new Date(filterDate)
       endOfDay.setHours(23, 59, 59, 999)
-      query = query.gte('permission_date', startOfDay.toISOString()).lte('permission_date', endOfDay.toISOString())
+
+      allPermissions = allPermissions.filter(p => {
+        const permissionDate = new Date(p.permission_date)
+        return permissionDate >= startOfDay && permissionDate <= endOfDay
+      })
     } else {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      query = query.gte('permission_date', today.toISOString())
+      allPermissions = allPermissions.filter(p => {
+        const permissionDate = new Date(p.permission_date)
+        return permissionDate >= today
+      })
     }
 
-    const { data } = await query
-    if (data) setPermissions(data as StudentPermission[])
+    const groups = await db.groups.toArray()
+    const permissionsWithStudents = await Promise.all(
+      allPermissions.map(async (permission) => {
+        const student = await db.students.get(permission.student_id)
+        const group = student ? groups.find(g => g.id === student.group_id) : undefined
+        return {
+          ...permission,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone,
+            permission_count: student.permission_count || 0,
+            group: group ? { name: group.name } : undefined
+          } : undefined
+        }
+      })
+    )
+
+    setPermissions(permissionsWithStudents)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -58,22 +106,25 @@ export function PermissionPage() {
     if (!selectedStudent) return
 
     setLoading(true)
+    try {
+      const permissionId = crypto.randomUUID()
+      const permissionDate = new Date().toISOString()
 
-    const { data: permissionData, error } = await supabase
-      .from('student_permissions')
-      .insert({
+      await db.student_permissions.add({
+        id: permissionId,
         student_id: selectedStudent.id,
-        ...formData,
-        guardian_notified: true
+        permission_date: permissionDate,
+        reason: formData.reason,
+        duration: '',
+        notes: formData.notes,
+        created_at: permissionDate
       })
-      .select()
-      .single()
 
-    if (!error) {
-      await supabase
-        .from('students')
-        .update({ status: 'استئذان' })
-        .eq('id', selectedStudent.id)
+      const currentCount = selectedStudent.permission_count || 0
+      await db.students.update(selectedStudent.id, {
+        status: 'استئذان',
+        permission_count: currentCount + 1
+      })
 
       sendWhatsAppNotification(selectedStudent, formData.reason)
 
@@ -82,8 +133,9 @@ export function PermissionPage() {
       setSelectedStudent(null)
       fetchStudents()
       fetchPermissions(dateFilter)
-    } else {
-      alert('حدث خطأ: ' + error.message)
+    } catch (error) {
+      console.error('Error saving permission:', error)
+      alert('حدث خطأ أثناء الحفظ')
     }
     setLoading(false)
   }
@@ -115,7 +167,7 @@ export function PermissionPage() {
     window.open(whatsappUrl, '_blank')
   }
 
-  function sendWhatsAppForPermission(permission: StudentPermission) {
+  function sendWhatsAppForPermission(permission: PermissionWithStudent) {
     if (!permission.student?.guardian_phone) {
       alert('رقم جوال ولي الأمر غير مسجل')
       return
@@ -142,23 +194,17 @@ export function PermissionPage() {
     window.open(whatsappUrl, '_blank')
   }
 
-  async function printPermission(permission: StudentPermission) {
-    const { data: teacherProfile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
-
-    const teacherName = teacherProfile?.name || ''
-    const permissionDate = new Date(permission.permission_date)
-
+  async function printPermission(permission: PermissionWithStudent) {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
+
+    const permissionDate = new Date(permission.permission_date)
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
         <head>
-          <title>نموذج استئذان طالب</title>
+          <title>إذن مغادرة طالب</title>
           <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
             .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
@@ -166,14 +212,14 @@ export function PermissionPage() {
             .header .meta { color: #666; font-size: 12px; margin-top: 10px; }
             .section { margin-bottom: 20px; }
             .section label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-            .section div { padding: 10px; background: #f9fafb; border-radius: 5px; }
-            .highlight { background: #fed7aa; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; font-size: 18px; font-weight: bold; color: #9a3412; }
+            .section div { padding: 10px; background: #fef3c7; border-radius: 5px; border: 1px solid #fcd34d; }
+            .time-box { background: #dbeafe; border: 1px solid #60a5fa; font-size: 18px; text-align: center; padding: 15px; }
             @media print { body { padding: 20px; } }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>نموذج استئذان طالب</h1>
+            <h1>⚠️ إذن مغادرة طالب</h1>
             ${teacherName ? `<div class="meta">بواسطة: ${teacherName}</div>` : ''}
           </div>
           <div class="section">
@@ -184,10 +230,18 @@ export function PermissionPage() {
             <label>الفصل:</label>
             <div>${permission.student?.group?.name || '-'}</div>
           </div>
-          <div class="highlight">
-            ⏰ وقت الاستئذان: ${permissionDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
-            <br>
-            📅 ${permissionDate.toLocaleDateString('ar-SA')}
+          <div class="section">
+            <label>⏰ وقت الاستئذان:</label>
+            <div class="time-box">
+              ${permissionDate.toLocaleString('ar-SA', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
           </div>
           <div class="section">
             <label>سبب الاستئذان:</label>
@@ -199,14 +253,33 @@ export function PermissionPage() {
             <div>${permission.notes}</div>
           </div>
           ` : ''}
-          <div class="section">
-            <label>حالة الإبلاغ:</label>
-            <div>${permission.guardian_notified ? '✅ تم إبلاغ ولي الأمر' : '❌ لم يتم الإبلاغ'}</div>
+          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ccc;">
+            <p style="text-align: center; color: #666; font-size: 14px;">
+              تم إشعار ولي الأمر عبر واتساب<br>
+              الرجاء التأكد من استلام الطالب من قبل ولي الأمر
+            </p>
           </div>
           <script>window.print(); window.onafterprint = () => window.close();</script>
         </body>
       </html>
     `)
+  }
+
+  async function returnStudent(permission: PermissionWithStudent) {
+    if (!permission.student) return
+
+    const confirmReturn = confirm(`هل تريد تأكيد عودة الطالب: ${permission.student.name}؟`)
+    if (!confirmReturn) return
+
+    try {
+      await db.students.update(permission.student_id, { status: 'نشط' })
+      alert('تم تأكيد عودة الطالب')
+      fetchStudents()
+      fetchPermissions(dateFilter)
+    } catch (error) {
+      console.error('Error updating student status:', error)
+      alert('حدث خطأ أثناء تحديث الحالة')
+    }
   }
 
   const filteredStudents = students.filter(s =>
@@ -218,7 +291,7 @@ export function PermissionPage() {
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center gap-3 mb-6">
           <LogOut size={28} className="text-orange-600" />
-          <h2 className="text-2xl font-bold text-gray-800">استئذان الطلاب</h2>
+          <h2 className="text-2xl font-bold text-gray-800">الاستئذان</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -268,7 +341,7 @@ export function PermissionPage() {
                   <div><span className="font-semibold">الاسم:</span> {selectedStudent.name}</div>
                   <div><span className="font-semibold">السجل المدني:</span> {selectedStudent.national_id}</div>
                   <div><span className="font-semibold">الفصل:</span> {selectedStudent.group?.name}</div>
-                  <div><span className="font-semibold">جوال ولي الأمر:</span> {selectedStudent.guardian_phone}</div>
+                  <div><span className="font-semibold">الصف:</span> {selectedStudent.grade}</div>
                   <div className="col-span-2">
                     <span className="font-semibold">عدد الاستئذانات السابقة:</span>
                     <span className="text-orange-600 font-bold mr-2">{selectedStudent.permission_count || 0}</span>
@@ -286,7 +359,7 @@ export function PermissionPage() {
                   onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   rows={3}
-                  placeholder="اكتب سبب استئذان الطالب..."
+                  placeholder="اكتب سبب الاستئذان..."
                 />
               </div>
 
@@ -303,23 +376,12 @@ export function PermissionPage() {
                 />
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-sm text-yellow-800">
-                <div className="flex items-start gap-2">
-                  <Send size={16} className="mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold mb-1">سيتم إرسال رسالة واتساب تلقائياً</p>
-                    <p>سيتم إبلاغ ولي الأمر برسالة واتساب تتضمن سبب الاستئذان ووقت المغادرة</p>
-                  </div>
-                </div>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
               >
-                <LogOut size={20} />
-                {loading ? 'جاري التسجيل...' : 'تسجيل الاستئذان وإرسال واتساب'}
+                {loading ? 'جاري الحفظ...' : 'تسجيل الاستئذان وإشعار ولي الأمر'}
               </button>
             </>
           )}
@@ -330,7 +392,7 @@ export function PermissionPage() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Clock size={24} />
-            {dateFilter ? 'استئذانات المفلترة' : 'استئذانات اليوم'} ({permissions.length})
+            سجل الاستئذانات {dateFilter ? 'المفلترة' : 'اليوم'}
           </h3>
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -385,51 +447,41 @@ export function PermissionPage() {
         ) : (
           <div className="space-y-3">
             {permissions.map(permission => (
-              <div key={permission.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div key={permission.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-bold text-gray-800">{permission.student?.name}</h4>
-                    <p className="text-sm text-gray-600">
-                      {permission.student?.group?.name}
+                    <p className="text-sm text-gray-600">{permission.student?.group?.name}</p>
+                    <p className="text-sm text-orange-600 font-semibold mt-1">
+                      <Clock size={14} className="inline ml-1" />
+                      {new Date(permission.permission_date).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-orange-600">
-                        {new Date(permission.permission_date).toLocaleTimeString('ar-SA', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                      {permission.guardian_notified && (
-                        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-semibold">
-                          <Send size={12} />
-                          تم الإبلاغ
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => printPermission(permission)}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
-                        title="طباعة"
-                      >
-                        <Printer size={16} />
-                        طباعة
-                      </button>
-                      <button
-                        onClick={() => sendWhatsAppForPermission(permission)}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
-                        title="إرسال واتساب"
-                      >
-                        <Send size={16} />
-                        واتساب
-                      </button>
-                    </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => printPermission(permission)}
+                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                    >
+                      <Printer size={16} />
+                      طباعة
+                    </button>
+                    <button
+                      onClick={() => sendWhatsAppForPermission(permission)}
+                      className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                    >
+                      <Send size={16} />
+                      واتساب
+                    </button>
+                    <button
+                      onClick={() => returnStudent(permission)}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      عودة الطالب
+                    </button>
                   </div>
                 </div>
 
-                <div className="space-y-1 text-sm">
+                <div className="space-y-2 text-sm">
                   <div><span className="font-semibold">السبب:</span> {permission.reason}</div>
                   {permission.notes && (
                     <div className="text-gray-600">

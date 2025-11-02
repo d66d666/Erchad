@@ -29,13 +29,26 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const fetchProfile = async () => {
     try {
-      const profile = await db.teacher_profile.toCollection().first()
+      // جلب البروفايل من Supabase أولاً
+      const { data: supabaseProfile } = await supabase
+        .from('teacher_profile')
+        .select('*')
+        .maybeSingle()
 
-      if (profile) {
-        setProfileId(profile.id || '')
-        setTeacherName(profile.name || '')
-        setTeacherPhone(profile.phone || '')
-        setSchoolName(profile.school_name || '')
+      // مزامنة مع IndexedDB
+      if (supabaseProfile) {
+        await db.teacher_profile.clear()
+        await db.teacher_profile.put(supabaseProfile)
+
+        setProfileId(supabaseProfile.id || '')
+        setTeacherName(supabaseProfile.name || '')
+        setTeacherPhone(supabaseProfile.phone || '')
+        setSchoolName(supabaseProfile.school_name || '')
+      } else {
+        // لو ما في بيانات في Supabase، نترك الحقول فاضية
+        setTeacherName('')
+        setTeacherPhone('')
+        setSchoolName('')
       }
 
       // Fetch current username
@@ -55,21 +68,40 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setLoading(true)
 
     try {
+      const profileData = {
+        name: teacherName,
+        phone: teacherPhone,
+        school_name: schoolName,
+      }
+
       if (profileId) {
-        await db.teacher_profile.update(profileId, {
-          name: teacherName,
-          phone: teacherPhone,
-          school_name: schoolName,
-        })
+        // تحديث في Supabase
+        const { error: updateError } = await supabase
+          .from('teacher_profile')
+          .update(profileData)
+          .eq('id', profileId)
+
+        if (updateError) throw updateError
+
+        // تحديث في IndexedDB
+        await db.teacher_profile.update(profileId, profileData)
       } else {
+        // إنشاء جديد في Supabase
         const newId = crypto.randomUUID()
-        await db.teacher_profile.add({
+        const newProfile = {
           id: newId,
-          name: teacherName,
-          phone: teacherPhone,
-          school_name: schoolName,
+          ...profileData,
           created_at: new Date().toISOString(),
-        })
+        }
+
+        const { error: insertError } = await supabase
+          .from('teacher_profile')
+          .insert(newProfile)
+
+        if (insertError) throw insertError
+
+        // إضافة في IndexedDB
+        await db.teacher_profile.add(newProfile)
         setProfileId(newId)
       }
 

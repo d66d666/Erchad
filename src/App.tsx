@@ -73,6 +73,12 @@ function App() {
         supabase.from('teachers').select('*').order('name'),
       ])
 
+      // حفظ البروفايل في IndexedDB
+      if (profileRes.data) {
+        await db.teacher_profile.clear()
+        await db.teacher_profile.put(profileRes.data)
+      }
+
       // حفظ المجموعات في IndexedDB
       if (groupsRes.data) {
         await db.groups.clear()
@@ -120,9 +126,14 @@ function App() {
         setTotalTeachers(teachersRes.data.length)
       }
 
+      // تحديث اسم المعلم واسم المدرسة من البيانات المحملة
       if (profileRes.data) {
         setTeacherName(profileRes.data.name || '')
         setSchoolName(profileRes.data.school_name || '')
+      } else {
+        // إذا لا يوجد بروفايل، نترك الحقول فاضية
+        setTeacherName('')
+        setSchoolName('')
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -282,8 +293,12 @@ function App() {
                 <Users className="text-white" size={32} />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">الإرشاد الطلابي</h1>
-                <p className="text-base text-gray-600 mt-1 font-medium">{schoolName || 'إدارة شاملة لبيانات الطلاب المدرسية'}</p>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {schoolName || 'الإرشاد الطلابي'}
+                </h1>
+                <p className="text-base text-gray-600 mt-1 font-medium">
+                  {schoolName ? 'نظام إدارة شاملة لبيانات الطلاب' : 'قم بإضافة اسم المدرسة من الإعدادات'}
+                </p>
               </div>
             </div>
 

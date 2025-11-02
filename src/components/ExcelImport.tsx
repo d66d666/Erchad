@@ -104,12 +104,42 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
       if (insertError) throw insertError
 
+      // استيراد المعلمين
+      const teachersData = data
+        .filter((row: any) => row['اسم المعلم'] && row['رقم جوال المعلم'])
+        .map((row: any) => ({
+          name: String(row['اسم المعلم']).trim(),
+          phone: String(row['رقم جوال المعلم']).trim(),
+          specialization: row['التخصص'] ? String(row['التخصص']).trim() : '',
+        }))
+
+      // إزالة المعلمين المكررين
+      const uniqueTeachersMap = new Map()
+      teachersData.forEach((teacher: any) => {
+        const key = `${teacher.name}-${teacher.phone}`
+        if (!uniqueTeachersMap.has(key)) {
+          uniqueTeachersMap.set(key, teacher)
+        }
+      })
+      const uniqueTeachers = Array.from(uniqueTeachersMap.values())
+
+      if (uniqueTeachers.length > 0) {
+        const { error: teacherError } = await supabase
+          .from('teachers')
+          .upsert(uniqueTeachers, { onConflict: 'phone', ignoreDuplicates: false })
+
+        if (teacherError) console.error('Teacher import error:', teacherError)
+      }
+
       const groupsCreatedMessage =
         newGroupNames.length > 0
           ? ` وإنشاء ${newGroupNames.length} مجموعة جديدة`
           : ''
+      const teachersImportedMessage = uniqueTeachers.length > 0
+        ? ` واستيراد ${uniqueTeachers.length} معلم`
+        : ''
       setSuccess(
-        `تم استيراد ${insertData.length} طالب بنجاح${groupsCreatedMessage}`
+        `تم استيراد ${insertData.length} طالب بنجاح${groupsCreatedMessage}${teachersImportedMessage}`
       )
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -150,10 +180,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           <strong>تنسيق الملف المطلوب:</strong>
           <br />
           اسم الطالب | السجل المدني | جوال الطالب | جوال ولي الامر | الصف |
-          المجموعة | الحالة
+          المجموعة | الحالة | اسم المعلم | رقم جوال المعلم | التخصص
         </p>
         <p className="text-xs text-blue-600 mt-2">
-          ملاحظة: يمكن كتابة "جوال ولي الامر" أو "جوالي ولي الامر" أو "جوال ولي الأمر"
+          ملاحظة: يمكن كتابة "جوال ولي الامر" أو "جوالي ولي الامر" أو "جوال ولي الأمر"<br />
+          بيانات المعلم اختيارية - يمكن استيراد الطلاب فقط
         </p>
       </div>
 

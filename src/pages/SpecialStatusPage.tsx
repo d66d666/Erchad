@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
-import { Heart, Printer, FileText } from 'lucide-react'
+import { Heart, Printer, FileText, Send } from 'lucide-react'
+import { SendToTeacherModal } from '../components/SendToTeacherModal'
 
 export function SpecialStatusPage({
   students,
@@ -14,6 +15,7 @@ export function SpecialStatusPage({
 }) {
   const [labPhone, setLabPhone] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
+  const [showSendToTeacherModal, setShowSendToTeacherModal] = useState(false)
 
   useEffect(() => {
     fetchLabContact()
@@ -219,6 +221,14 @@ export function SpecialStatusPage({
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowSendToTeacherModal(true)}
+              disabled={studentsWithSpecialStatus.length === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send size={20} />
+              <span>إرسال للمعلم</span>
+            </button>
+            <button
               onClick={handlePrintAll}
               disabled={studentsWithSpecialStatus.length === 0}
               className="flex items-center gap-2 px-5 py-2.5 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
@@ -324,6 +334,12 @@ export function SpecialStatusPage({
           <p className="text-gray-500 text-xl">لا يوجد طلاب بحالات خاصة</p>
         </div>
       )}
+
+      <SendToTeacherModal
+        isOpen={showSendToTeacherModal}
+        onClose={() => setShowSendToTeacherModal(false)}
+        specialStatusStudents={studentsWithSpecialStatus}
+      />
     </div>
   )
 }

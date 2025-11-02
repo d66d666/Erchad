@@ -70,3 +70,21 @@ export interface StudentViolation {
   created_at: string
   student?: Student
 }
+
+export interface Teacher {
+  id: string
+  name: string
+  phone: string
+  specialization: string
+  created_at: string
+  updated_at: string
+}
+
+export interface TeacherGroup {
+  id: string
+  teacher_id: string
+  group_id: string
+  created_at: string
+  teacher?: Teacher
+  group?: Group
+}

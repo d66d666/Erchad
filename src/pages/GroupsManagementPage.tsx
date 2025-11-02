@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react'
 import { db } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Group } from '../types'
 
 interface GroupsManagementPageProps {
@@ -23,8 +24,22 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
   }, [])
 
   const fetchGroups = async () => {
-    const allGroups = await db.groups.toArray()
-    setGroups(allGroups)
+    // Fetch from Supabase first
+    const { data: supabaseGroups } = await supabase
+      .from('groups')
+      .select('*')
+      .order('display_order', { ascending: true })
+
+    if (supabaseGroups) {
+      // Sync to IndexedDB
+      await db.groups.clear()
+      await db.groups.bulkAdd(supabaseGroups)
+      setGroups(supabaseGroups)
+    } else {
+      // Fallback to IndexedDB
+      const allGroups = await db.groups.toArray()
+      setGroups(allGroups)
+    }
   }
 
   const fetchStudentCounts = async () => {
@@ -46,26 +61,41 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
 
     setLoading(true)
     try {
-      const stageGroups = await db.groups
-        .where('stage')
-        .equals(newStage.trim())
-        .toArray()
-      const maxOrder = stageGroups.length > 0
+      // Get max order from Supabase
+      const { data: stageGroups } = await supabase
+        .from('groups')
+        .select('*')
+        .eq('stage', newStage.trim())
+
+      const maxOrder = stageGroups && stageGroups.length > 0
         ? Math.max(...stageGroups.map(g => g.display_order || 0))
         : 0
 
-      await db.groups.add({
+      const newGroup = {
         id: crypto.randomUUID(),
         stage: newStage.trim(),
         name: newGroupName.trim(),
         display_order: maxOrder + 1,
         created_at: new Date().toISOString(),
-      })
+      }
+
+      // Insert to Supabase
+      const { error } = await supabase
+        .from('groups')
+        .insert(newGroup)
+
+      if (error) throw error
+
+      // Add to IndexedDB
+      await db.groups.add(newGroup)
 
       setNewStage('')
       setNewGroupName('')
       await fetchGroups()
       await fetchStudentCounts()
+    } catch (error) {
+      console.error('Error adding group:', error)
+      alert('حدث خطأ أثناء إضافة المجموعة')
     } finally {
       setLoading(false)
     }
@@ -73,9 +103,24 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
 
   const handleDeleteGroup = async (id: string) => {
     if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
-    await db.groups.delete(id)
-    await fetchGroups()
-    await fetchStudentCounts()
+
+    try {
+      // Delete from Supabase
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      // Delete from IndexedDB
+      await db.groups.delete(id)
+      await fetchGroups()
+      await fetchStudentCounts()
+    } catch (error) {
+      console.error('Error deleting group:', error)
+      alert('حدث خطأ أثناء حذف المجموعة')
+    }
   }
 
   const handleEditGroup = (group: Group) => {
@@ -87,15 +132,32 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
   const handleSaveEdit = async () => {
     if (!editingGroup || !editName.trim() || !editStage.trim()) return
 
-    await db.groups.update(editingGroup.id, {
-      name: editName.trim(),
-      stage: editStage.trim(),
-    })
+    try {
+      // Update in Supabase
+      const { error } = await supabase
+        .from('groups')
+        .update({
+          name: editName.trim(),
+          stage: editStage.trim(),
+        })
+        .eq('id', editingGroup.id)
 
-    setEditingGroup(null)
-    setEditName('')
-    setEditStage('')
-    await fetchGroups()
+      if (error) throw error
+
+      // Update in IndexedDB
+      await db.groups.update(editingGroup.id, {
+        name: editName.trim(),
+        stage: editStage.trim(),
+      })
+
+      setEditingGroup(null)
+      setEditName('')
+      setEditStage('')
+      await fetchGroups()
+    } catch (error) {
+      console.error('Error updating group:', error)
+      alert('حدث خطأ أثناء تحديث المجموعة')
+    }
   }
 
   const handleCancelEdit = () => {
@@ -112,9 +174,18 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
     const currentOrder = group.display_order || currentIndex + 1
     const prevOrder = prevGroup.display_order || currentIndex
 
-    await db.groups.update(group.id, { display_order: prevOrder })
-    await db.groups.update(prevGroup.id, { display_order: currentOrder })
-    await fetchGroups()
+    try {
+      // Update in Supabase
+      await supabase.from('groups').update({ display_order: prevOrder }).eq('id', group.id)
+      await supabase.from('groups').update({ display_order: currentOrder }).eq('id', prevGroup.id)
+
+      // Update in IndexedDB
+      await db.groups.update(group.id, { display_order: prevOrder })
+      await db.groups.update(prevGroup.id, { display_order: currentOrder })
+      await fetchGroups()
+    } catch (error) {
+      console.error('Error moving group:', error)
+    }
   }
 
   const handleMoveDown = async (group: Group, stageGroups: Group[]) => {
@@ -125,9 +196,18 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
     const currentOrder = group.display_order || currentIndex + 1
     const nextOrder = nextGroup.display_order || currentIndex + 2
 
-    await db.groups.update(group.id, { display_order: nextOrder })
-    await db.groups.update(nextGroup.id, { display_order: currentOrder })
-    await fetchGroups()
+    try {
+      // Update in Supabase
+      await supabase.from('groups').update({ display_order: nextOrder }).eq('id', group.id)
+      await supabase.from('groups').update({ display_order: currentOrder }).eq('id', nextGroup.id)
+
+      // Update in IndexedDB
+      await db.groups.update(group.id, { display_order: nextOrder })
+      await db.groups.update(nextGroup.id, { display_order: currentOrder })
+      await fetchGroups()
+    } catch (error) {
+      console.error('Error moving group:', error)
+    }
   }
 
   const stageOrder: Record<string, number> = {

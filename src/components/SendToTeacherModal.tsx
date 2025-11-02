@@ -16,7 +16,11 @@ export function SendToTeacherModal({
 }: SendToTeacherModalProps) {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
+  const [allGroups, setAllGroups] = useState<Group[]>([])
+  const [stages, setStages] = useState<string[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
+  const [selectedStage, setSelectedStage] = useState('')
+  const [selectedGroupId, setSelectedGroupId] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -39,15 +43,40 @@ export function SendToTeacherModal({
     const { data } = await supabase
       .from('groups')
       .select('*')
-      .order('name')
+      .order('display_order')
 
-    if (data) setGroups(data)
+    if (data) {
+      setAllGroups(data)
+      const uniqueStages = [...new Set(data.map(g => g.stage))]
+      setStages(uniqueStages)
+    }
   }
+
+  useEffect(() => {
+    if (selectedStage) {
+      const stageGroups = allGroups.filter(g => g.stage === selectedStage)
+      setGroups(stageGroups)
+      setSelectedGroupId('')
+    } else {
+      setGroups([])
+      setSelectedGroupId('')
+    }
+  }, [selectedStage, allGroups])
 
 
   const handleSend = async () => {
     if (!selectedTeacherId) {
       alert('الرجاء اختيار المعلم')
+      return
+    }
+
+    if (!selectedStage) {
+      alert('الرجاء اختيار المرحلة')
+      return
+    }
+
+    if (!selectedGroupId) {
+      alert('الرجاء اختيار المجموعة')
       return
     }
 
@@ -57,22 +86,28 @@ export function SendToTeacherModal({
       const teacher = teachers.find(t => t.id === selectedTeacherId)
       if (!teacher) return
 
-      if (specialStatusStudents.length === 0) {
-        alert('لا يوجد طلاب ذوي حالات خاصة')
+      // فلتر الطلاب حسب المجموعة المختارة
+      const filteredStudents = specialStatusStudents.filter(
+        student => student.group_id === selectedGroupId
+      )
+
+      if (filteredStudents.length === 0) {
+        alert('لا يوجد طلاب ذوي حالات خاصة في هذه المجموعة')
         setLoading(false)
         return
       }
 
       // إنشاء رسالة واتساب
       let message = ''
+      const selectedGroup = allGroups.find(g => g.id === selectedGroupId)
 
-      // إرسال جميع الطلاب ذوي الحالات الخاصة
-      specialStatusStudents.forEach((student) => {
-        const group = groups.find(g => g.id === student.group_id)
-        message += `اسم الطالب : ${student.name}\n`
-        message += `الصف : ${student.grade || '-'}\n`
-        message += `المجموعة : ${group?.name || '-'}\n`
-        message += `الحالة : ${student.special_status?.name || '-'}\n\n`
+      message += `*الحالات الخاصة - ${selectedGroup?.stage} - ${selectedGroup?.name}*\n\n`
+
+      filteredStudents.forEach((student, index) => {
+        message += `${index + 1}. *${student.name}*\n`
+        message += `   الحالة: ${student.special_status?.name || '-'}\n`
+        message += `   جوال الطالب: ${student.phone || '-'}\n`
+        message += `   جوال ولي الأمر: ${student.parent_phone || '-'}\n\n`
       })
 
       // فتح واتساب
@@ -112,13 +147,13 @@ export function SendToTeacherModal({
         <div className="p-6 space-y-6">
           <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
             <p className="text-sm text-blue-800">
-              سيتم إرسال بيانات جميع الطلاب ذوي الحالات الخاصة إلى المعلم عبر واتساب
+              سيتم إرسال بيانات الطلاب ذوي الحالات الخاصة في المجموعة المحددة إلى المعلم عبر واتساب
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              اختر المعلم
+              اختر المعلم <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedTeacherId}
@@ -128,17 +163,57 @@ export function SendToTeacherModal({
               <option value="">-- اختر المعلم --</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} - {teacher.phone}
+                  {teacher.name} - {teacher.specialization}
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              اختر المرحلة <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedStage}
+              onChange={(e) => setSelectedStage(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="">-- اختر المرحلة --</option>
+              {stages.map((stage) => (
+                <option key={stage} value={stage}>
+                  {stage}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              اختر المجموعة <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+              disabled={!selectedStage}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option value="">-- اختر المجموعة --</option>
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+            {!selectedStage && (
+              <p className="text-xs text-gray-500 mt-1">اختر المرحلة أولاً</p>
+            )}
           </div>
 
 
           <div className="flex gap-3 pt-4">
             <button
               onClick={handleSend}
-              disabled={loading || !selectedTeacherId}
+              disabled={loading || !selectedTeacherId || !selectedStage || !selectedGroupId}
               className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
             >
               <Send size={20} />

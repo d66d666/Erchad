@@ -98,7 +98,7 @@ export function AllowClassEntryModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <DoorOpen className="text-white" size={24} />
             <h2 className="text-2xl font-bold text-white">السماح بدخول الفصل</h2>
@@ -112,9 +112,9 @@ export function AllowClassEntryModal({
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="bg-green-50 rounded-lg p-4 border-2 border-green-200">
-            <h3 className="font-bold text-green-900 mb-2">معلومات الطالب:</h3>
-            <div className="space-y-1 text-sm text-green-800">
+          <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+            <h3 className="font-bold text-blue-900 mb-2">معلومات الطالب:</h3>
+            <div className="space-y-1 text-sm text-blue-900">
               <p><strong>الاسم:</strong> {student.name}</p>
               <p><strong>السجل المدني:</strong> {student.national_id}</p>
               <p><strong>الصف:</strong> {student.grade}</p>
@@ -135,7 +135,7 @@ export function AllowClassEntryModal({
             <select
               value={selectedTeacherId}
               onChange={(e) => setSelectedTeacherId(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">-- اختر المعلم --</option>
               {teachers.map((teacher) => (
@@ -149,7 +149,7 @@ export function AllowClassEntryModal({
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <h4 className="font-semibold text-gray-900 mb-2">معاينة الرسالة:</h4>
             <div className="text-sm text-gray-700 whitespace-pre-line space-y-2">
-              <p className="text-green-600 font-medium">✅ السماح بدخول الطالب للفصل</p>
+              <p className="text-blue-600 font-bold">✅ السماح بدخول الطالب للفصل</p>
               <p>اسم الطالب: <strong>{student.name}</strong></p>
               <p>المرسل: {counselorName || 'المرشد الطلابي'}</p>
             </div>
@@ -159,7 +159,7 @@ export function AllowClassEntryModal({
             <button
               onClick={handleSend}
               disabled={loading || !selectedTeacherId}
-              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
             >
               <Send size={20} />
               {loading ? 'جاري الإرسال...' : 'إرسال عبر واتساب'}

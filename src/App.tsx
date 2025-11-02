@@ -112,8 +112,25 @@ function App() {
             updated_at: new Date().toISOString()
           })
         }
+
+        // Update existing groups to have display_order if missing
+        const allGroups = await db.groups.toArray()
+        const groupsToUpdate = allGroups.filter(g => g.display_order === undefined || g.display_order === null)
+        if (groupsToUpdate.length > 0) {
+          const stageGroups: Record<string, any[]> = {}
+          groupsToUpdate.forEach(g => {
+            if (!stageGroups[g.stage]) stageGroups[g.stage] = []
+            stageGroups[g.stage].push(g)
+          })
+
+          for (const [stage, groups] of Object.entries(stageGroups)) {
+            for (let i = 0; i < groups.length; i++) {
+              await db.groups.update(groups[i].id, { display_order: i + 1 })
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error initializing login credentials:', error)
+        console.error('Error initializing:', error)
       }
 
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true'

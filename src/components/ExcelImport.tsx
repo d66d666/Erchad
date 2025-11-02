@@ -66,24 +66,33 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       )
 
       if (newGroups.length > 0) {
-        const { data: insertedGroups, error: insertGroupError } = await supabase
-          .from('groups')
-          .insert(newGroups.map((g) => ({ stage: g.stage, name: g.name })))
-          .select('id, name, stage')
-
-        if (insertGroupError) throw insertGroupError
-
-        // إضافة المجموعات الجديدة للخريطة وإلى IndexedDB
-        if (insertedGroups) {
-          for (const g of insertedGroups) {
-            existingGroupsMap.set(`${g.stage}|${g.name}`, g.id)
-            await db.groups.put({
-              id: g.id,
-              stage: g.stage,
-              name: g.name,
+        // إنشاء المجموعات واحدة بواحدة لتفادي مشاكل RLS
+        for (const group of newGroups) {
+          try {
+            const newId = crypto.randomUUID()
+            const newGroup = {
+              id: newId,
+              stage: group.stage,
+              name: group.name,
               display_order: 0,
               created_at: new Date().toISOString()
-            })
+            }
+
+            const { error: insertGroupError } = await supabase
+              .from('groups')
+              .insert(newGroup)
+
+            if (insertGroupError) {
+              console.error('Error creating group:', insertGroupError)
+              throw new Error(`فشل في إنشاء المجموعة "${group.name}" في "${group.stage}": ${insertGroupError.message}`)
+            }
+
+            // إضافة للخريطة و IndexedDB
+            existingGroupsMap.set(`${group.stage}|${group.name}`, newId)
+            await db.groups.put(newGroup)
+          } catch (err) {
+            console.error('Error in group creation:', err)
+            throw err
           }
         }
       }
@@ -214,9 +223,12 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         }
       }
 
+      const groupsCreatedCount = uniqueGroups.filter(
+        (group) => !existingGroupsMap.has(`${group.stage}|${group.name}`)
+      ).length
       const groupsCreatedMessage =
-        newGroups.length > 0
-          ? ` وإنشاء ${newGroups.length} مجموعة جديدة`
+        groupsCreatedCount > 0
+          ? ` وإنشاء ${groupsCreatedCount} مجموعة جديدة`
           : ''
       const teachersImportedMessage = uniqueTeachers.length > 0
         ? ` واستيراد ${uniqueTeachers.length} معلم`

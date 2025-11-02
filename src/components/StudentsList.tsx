@@ -92,13 +92,14 @@ export function StudentsList({
     const date = now.toLocaleDateString('ar-SA')
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
 
-    // Fetch teacher name
+    // Fetch teacher name and school name
     const { data: teacherProfile } = await supabase
       .from('teacher_profile')
       .select('*')
       .maybeSingle()
 
     const teacherName = teacherProfile?.name || ''
+    const schoolName = teacherProfile?.school_name || schoolInfo?.school_name || 'اسم المدرسة'
 
 
     const printWindow = window.open('', '', 'width=800,height=600')
@@ -270,7 +271,7 @@ export function StudentsList({
         <body>
           <div class="page-container">
             <div class="header">
-              <div class="school-name">${schoolInfo?.school_name || 'اسم المدرسة'}</div>
+              <div class="school-name">${schoolName}</div>
               <h1>بطاقة بيانات الطالب</h1>
               <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}${teacherName ? ' - بواسطة: ' + teacherName : ''}</div>
             </div>

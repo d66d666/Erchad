@@ -42,10 +42,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           data
             .filter((row: any) => row['المجموعة'] && row['الصف'])
             .map((row: any) => {
-              const stage = String(row['الصف']).trim()
-              const name = String(row['المجموعة']).trim()
+              const stage = String(row['الصف'] || '').trim()
+              const name = String(row['المجموعة'] || '').trim()
               return [`${stage}|${name}`, { stage, name }]
             })
+            .filter(([key, group]: any) => group.stage && group.name)
         ).values(),
       ]
 
@@ -114,13 +115,21 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
         .forEach((row: any) => {
-          const stage = String(row['الصف']).trim()
-          const groupName = String(row['المجموعة']).trim()
+          const stage = String(row['الصف'] || '').trim()
+          const groupName = String(row['المجموعة'] || '').trim()
+
+          if (!stage || !groupName) {
+            console.warn('تخطي طالب بدون صف أو مجموعة:', row)
+            return
+          }
+
           const groupKey = `${stage}|${groupName}`
           const groupId = existingGroupsMap.get(groupKey)
 
           if (!groupId) {
-            throw new Error(`فشل في إنشاء المجموعة "${groupName}" في "${stage}"`)
+            console.error('المجموعة غير موجودة:', { stage, groupName, groupKey })
+            console.error('المجموعات المتاحة:', Array.from(existingGroupsMap.keys()))
+            throw new Error(`المجموعة "${groupName}" في "${stage}" غير موجودة`)
           }
 
           const nationalId = String(row['السجل المدني']).trim()

@@ -41,7 +41,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
     try {
       if (profileId) {
-        await supabase
+        // تحديث البروفايل الموجود
+        const { error } = await supabase
           .from('teacher_profile')
           .update({
             name: teacherName,
@@ -50,11 +51,28 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             updated_at: new Date().toISOString(),
           })
           .eq('id', profileId)
+
+        if (error) throw error
+      } else {
+        // إنشاء بروفايل جديد
+        const { data, error } = await supabase
+          .from('teacher_profile')
+          .insert({
+            name: teacherName,
+            phone: teacherPhone,
+            school_name: schoolName,
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+        if (data) setProfileId(data.id)
       }
 
       onClose()
     } catch (error) {
       console.error('Error saving profile:', error)
+      alert('حدث خطأ في حفظ البيانات')
     } finally {
       setLoading(false)
     }

@@ -63,19 +63,23 @@ function App() {
   const fetchData = async () => {
     try {
       setLoading(true)
+
+      // جلب البيانات من Supabase
       const [groupsRes, statusesRes, studentsRes, profileRes, teachersRes] = await Promise.all([
-        db.groups.toArray(),
-        supabase
-          .from('special_statuses')
-          .select('*')
-          .order('name'),
+        supabase.from('groups').select('*').order('stage'),
+        supabase.from('special_statuses').select('*').order('name'),
         supabase.from('students').select('*').order('name'),
         supabase.from('teacher_profile').select('*').maybeSingle(),
-        supabase.from('teachers').select('id').order('name'),
+        supabase.from('teachers').select('*').order('name'),
       ])
 
-      if (groupsRes) {
-        const sortedGroups = groupsRes.sort((a, b) => {
+      // حفظ المجموعات في IndexedDB
+      if (groupsRes.data) {
+        await db.groups.clear()
+        for (const group of groupsRes.data) {
+          await db.groups.put(group)
+        }
+        const sortedGroups = groupsRes.data.sort((a: Group, b: Group) => {
           const stageOrder: Record<string, number> = {
             'الصف الاول الثانوي': 1,
             'الصف الثاني الثانوي': 2,
@@ -88,13 +92,40 @@ function App() {
         })
         setGroups(sortedGroups)
       }
-      if (statusesRes.data) setSpecialStatuses(statusesRes.data)
-      if (studentsRes.data) setStudents(studentsRes.data as Student[])
+
+      // حفظ الحالات الخاصة في IndexedDB
+      if (statusesRes.data) {
+        await db.special_statuses.clear()
+        for (const status of statusesRes.data) {
+          await db.special_statuses.put(status)
+        }
+        setSpecialStatuses(statusesRes.data)
+      }
+
+      // حفظ الطلاب في IndexedDB
+      if (studentsRes.data) {
+        await db.students.clear()
+        for (const student of studentsRes.data) {
+          await db.students.put(student)
+        }
+        setStudents(studentsRes.data as Student[])
+      }
+
+      // حفظ المعلمين في IndexedDB
+      if (teachersRes.data) {
+        await db.teachers.clear()
+        for (const teacher of teachersRes.data) {
+          await db.teachers.put(teacher)
+        }
+        setTotalTeachers(teachersRes.data.length)
+      }
+
       if (profileRes.data) {
         setTeacherName(profileRes.data.name || '')
         setSchoolName(profileRes.data.school_name || '')
       }
-      if (teachersRes.data) setTotalTeachers(teachersRes.data.length)
+    } catch (error) {
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }

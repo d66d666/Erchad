@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
+import { db } from './lib/db'
 import { Student, Group, SpecialStatus } from './types'
 import { StudentForm } from './components/StudentForm'
 import { StudentsList } from './components/StudentsList'

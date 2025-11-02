@@ -156,7 +156,7 @@ export function PermissionPage() {
           student_id: p.student_id,
           permission_date: p.permission_date,
           reason: p.reason,
-          duration: p.duration || '',
+          guardian_notified: p.guardian_notified,
           notes: p.notes || '',
           created_at: p.created_at
         })))
@@ -182,8 +182,8 @@ export function PermissionPage() {
           student_id: selectedStudent.id,
           permission_date: permissionDate,
           reason: formData.reason,
-          duration: '',
-          notes: formData.notes
+          notes: formData.notes,
+          guardian_notified: true
         })
         .select()
         .single()
@@ -214,7 +214,7 @@ export function PermissionPage() {
           student_id: permissionData.student_id,
           permission_date: permissionData.permission_date,
           reason: permissionData.reason,
-          duration: permissionData.duration || '',
+          guardian_notified: permissionData.guardian_notified,
           notes: permissionData.notes || '',
           created_at: permissionData.created_at
         })

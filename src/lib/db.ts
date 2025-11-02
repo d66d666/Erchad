@@ -16,8 +16,8 @@ export interface StudentPermission {
   id?: string
   student_id: string
   permission_date: string
-  reason?: string
-  duration?: string
+  reason: string
+  guardian_notified?: boolean
   notes?: string
   created_at?: string
 }

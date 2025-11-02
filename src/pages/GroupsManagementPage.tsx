@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Layers } from 'lucide-react'
+import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react'
 import { db } from '../lib/db'
 import { Group } from '../types'
 
@@ -13,6 +13,9 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
   const [newGroupName, setNewGroupName] = useState('')
   const [loading, setLoading] = useState(false)
   const [studentCounts, setStudentCounts] = useState<Record<string, number>>({})
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editStage, setEditStage] = useState('')
 
   useEffect(() => {
     fetchGroups()
@@ -73,6 +76,58 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
     await db.groups.delete(id)
     await fetchGroups()
     await fetchStudentCounts()
+  }
+
+  const handleEditGroup = (group: Group) => {
+    setEditingGroup(group)
+    setEditName(group.name)
+    setEditStage(group.stage)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingGroup || !editName.trim() || !editStage.trim()) return
+
+    await db.groups.update(editingGroup.id, {
+      name: editName.trim(),
+      stage: editStage.trim(),
+    })
+
+    setEditingGroup(null)
+    setEditName('')
+    setEditStage('')
+    await fetchGroups()
+  }
+
+  const handleCancelEdit = () => {
+    setEditingGroup(null)
+    setEditName('')
+    setEditStage('')
+  }
+
+  const handleMoveUp = async (group: Group, stageGroups: Group[]) => {
+    const currentIndex = stageGroups.findIndex(g => g.id === group.id)
+    if (currentIndex === 0) return
+
+    const prevGroup = stageGroups[currentIndex - 1]
+    const currentOrder = group.display_order || currentIndex + 1
+    const prevOrder = prevGroup.display_order || currentIndex
+
+    await db.groups.update(group.id, { display_order: prevOrder })
+    await db.groups.update(prevGroup.id, { display_order: currentOrder })
+    await fetchGroups()
+  }
+
+  const handleMoveDown = async (group: Group, stageGroups: Group[]) => {
+    const currentIndex = stageGroups.findIndex(g => g.id === group.id)
+    if (currentIndex === stageGroups.length - 1) return
+
+    const nextGroup = stageGroups[currentIndex + 1]
+    const currentOrder = group.display_order || currentIndex + 1
+    const nextOrder = nextGroup.display_order || currentIndex + 2
+
+    await db.groups.update(group.id, { display_order: nextOrder })
+    await db.groups.update(nextGroup.id, { display_order: currentOrder })
+    await fetchGroups()
   }
 
   const stageOrder: Record<string, number> = {
@@ -174,27 +229,91 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
                 </div>
 
                 <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-3">
                     {stageGroups
                       .sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
-                      .map((group) => (
+                      .map((group, index) => (
                         <div
                           key={group.id}
-                          className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border-2 border-emerald-200 hover:shadow-md transition-all"
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="font-bold text-gray-800 text-lg">{group.name}</h4>
-                            <button
-                              onClick={() => handleDeleteGroup(group.id)}
-                              className="text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
-                              title="حذف المجموعة"
-                            >
-                              <X size={20} />
-                            </button>
-                          </div>
-                          <p className="text-sm text-teal-600">
-                            {getStudentCount(group.id)} طالب
-                          </p>
+                          {editingGroup?.id === group.id ? (
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={editStage}
+                                  onChange={(e) => setEditStage(e.target.value)}
+                                  className="px-3 py-2 border-2 border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                  placeholder="الصف"
+                                />
+                                <input
+                                  type="text"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  className="px-3 py-2 border-2 border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                  placeholder="اسم المجموعة"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={handleSaveEdit}
+                                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition-colors"
+                                >
+                                  حفظ
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg font-semibold transition-colors"
+                                >
+                                  إلغاء
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-bold text-gray-800 text-lg mb-1">{group.name}</h4>
+                                <p className="text-sm text-teal-700 font-semibold">
+                                  {getStudentCount(group.id)} طالب
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-1">
+                                  <button
+                                    onClick={() => handleMoveUp(group, stageGroups)}
+                                    disabled={index === 0}
+                                    className="text-emerald-600 hover:bg-emerald-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="تحريك لأعلى"
+                                  >
+                                    <ChevronUp size={18} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleMoveDown(group, stageGroups)}
+                                    disabled={index === stageGroups.length - 1}
+                                    className="text-emerald-600 hover:bg-emerald-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="تحريك لأسفل"
+                                  >
+                                    <ChevronDown size={18} />
+                                  </button>
+                                </div>
+                                <button
+                                  onClick={() => handleEditGroup(group)}
+                                  className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                                  title="تعديل المجموعة"
+                                >
+                                  <Edit2 size={18} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteGroup(group.id)}
+                                  className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
+                                  title="حذف المجموعة"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                   </div>

@@ -83,3 +83,17 @@ export class StudentsDatabase extends Dexie {
 }
 
 export const db = new StudentsDatabase()
+
+// Initialize default login credentials
+db.on('ready', async () => {
+  const count = await db.login_credentials.count()
+  if (count === 0) {
+    await db.login_credentials.add({
+      id: crypto.randomUUID(),
+      username: 'admin',
+      password_hash: 'admin123',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  }
+})

@@ -431,7 +431,7 @@ export function StudentsList({
                       setShowAllowEntryModal(true)
                       setExpandedId(null)
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded font-medium text-sm shadow-sm"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded font-medium text-sm shadow-sm"
                   >
                     <DoorOpen size={16} />
                     السماح بدخول الفصل
@@ -439,7 +439,7 @@ export function StudentsList({
 
                   <button
                     onClick={() => printStudent(student)}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded font-medium text-sm border border-gray-200"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-800 rounded font-medium text-sm border border-slate-300 shadow-sm"
                   >
                     <Printer size={16} />
                     طباعة بيانات الطالب
@@ -450,7 +450,7 @@ export function StudentsList({
                       setExpandedId(null)
                       onEditStudent(student)
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded font-medium text-sm border border-gray-200"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 text-amber-900 rounded font-medium text-sm border border-amber-300 shadow-sm"
                   >
                     <Edit2 size={16} />
                     تعديل
@@ -459,7 +459,7 @@ export function StudentsList({
                   <button
                     onClick={() => handleDelete(student.id)}
                     disabled={loadingDelete === student.id}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-white hover:bg-red-50 text-red-600 rounded font-medium text-sm border border-gray-200 disabled:opacity-50"
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-red-100 to-rose-100 hover:from-red-200 hover:to-rose-200 text-red-700 rounded font-medium text-sm border border-red-300 shadow-sm disabled:opacity-50"
                   >
                     <Trash2 size={16} />
                     {loadingDelete === student.id ? 'جاري...' : 'حذف'}

@@ -246,6 +246,26 @@ function App() {
                       <Download size={18} className="text-green-600" />
                       <span className="font-semibold text-gray-700">استيراد من Excel</span>
                     </button>
+                    <button
+                      onClick={() => {
+                        setShowGroupsModal(true)
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Users size={18} className="text-blue-600" />
+                      <span className="font-semibold text-gray-700">إدارة المجموعات</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowStatusesModal(true)
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Heart size={18} className="text-pink-600" />
+                      <span className="font-semibold text-gray-700">إدارة الحالات الخاصة</span>
+                    </button>
                     <div className="border-t border-gray-200 my-2"></div>
                     <button
                       onClick={() => {
@@ -463,23 +483,6 @@ function App() {
                   />
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                  <button
-                    onClick={() => setShowGroupsModal(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3 rounded-xl transition-colors"
-                  >
-                    <Users size={18} />
-                    إدارة المجموعات
-                  </button>
-
-                  <button
-                    onClick={() => setShowStatusesModal(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold py-3 rounded-xl transition-colors"
-                  >
-                    <Heart size={18} />
-                    إدارة الحالات الخاصة
-                  </button>
-                </div>
               </div>
             </aside>
           </div>

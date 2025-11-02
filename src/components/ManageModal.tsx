@@ -41,10 +41,21 @@ export function ManageModal({
     try {
       if (type === 'groups') {
         const newId = crypto.randomUUID()
+
+        // Get the highest display_order for this stage
+        const stageGroups = await db.groups
+          .where('stage')
+          .equals(newStage.trim())
+          .toArray()
+        const maxOrder = stageGroups.length > 0
+          ? Math.max(...stageGroups.map(g => g.display_order || 0))
+          : 0
+
         await db.groups.add({
           id: newId,
           stage: newStage.trim(),
           name: newItem.trim(),
+          display_order: maxOrder + 1,
           created_at: new Date().toISOString(),
         })
       } else {
@@ -107,23 +118,29 @@ export function ManageModal({
           )}
 
           <div className="space-y-3">
-            {existingItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
-              >
-                <span className="font-medium text-gray-800">
-                  {type === 'groups' && item.stage ? `${item.stage} - ${item.name}` : item.name}
-                </span>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  disabled={deleteLoading === item.id}
-                  className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+            {existingItems.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {type === 'groups' ? 'لا توجد مجموعات' : 'لا توجد حالات خاصة'}
               </div>
-            ))}
+            ) : (
+              existingItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <span className="font-medium text-gray-800">
+                    {type === 'groups' && item.stage ? `${item.stage} - ${item.name}` : item.name}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    disabled={deleteLoading === item.id}
+                    className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

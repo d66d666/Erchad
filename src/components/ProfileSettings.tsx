@@ -51,8 +51,12 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setSchoolName('')
       }
 
-      // Fetch current username
-      const credentials = await db.login_credentials.limit(1).first()
+      // Fetch current username from Supabase
+      const { data: credentials } = await supabase
+        .from('login_credentials')
+        .select('*')
+        .limit(1)
+        .maybeSingle()
 
       if (credentials) {
         setCurrentUsername(credentials.username)
@@ -133,14 +137,35 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setPasswordLoading(true)
 
     try {
-      const credentials = await db.login_credentials.where('username').equals(currentUsername).first()
+      // Get credentials from Supabase
+      const { data: credentials } = await supabase
+        .from('login_credentials')
+        .select('*')
+        .eq('username', currentUsername)
+        .maybeSingle()
 
       if (credentials && credentials.id) {
-        await db.login_credentials.update(credentials.id, {
-          username: newUsername,
-          password_hash: newPassword,
-          updated_at: new Date().toISOString()
-        })
+        // Update in Supabase
+        const { error: updateError } = await supabase
+          .from('login_credentials')
+          .update({
+            username: newUsername,
+            password_hash: newPassword,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', credentials.id)
+
+        if (updateError) throw updateError
+
+        // Update in IndexedDB
+        const localCreds = await db.login_credentials.where('username').equals(currentUsername).first()
+        if (localCreds && localCreds.id) {
+          await db.login_credentials.update(localCreds.id, {
+            username: newUsername,
+            password_hash: newPassword,
+            updated_at: new Date().toISOString()
+          })
+        }
 
         alert('تم تغيير بيانات الدخول بنجاح!')
         setCurrentUsername(newUsername)

@@ -20,7 +20,7 @@ export function SendToTeacherModal({
   const [stages, setStages] = useState<string[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
   const [selectedStage, setSelectedStage] = useState('')
-  const [selectedGroupId, setSelectedGroupId] = useState('')
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -56,12 +56,20 @@ export function SendToTeacherModal({
     if (selectedStage) {
       const stageGroups = allGroups.filter(g => g.stage === selectedStage)
       setGroups(stageGroups)
-      setSelectedGroupId('')
+      setSelectedGroupIds([])
     } else {
       setGroups([])
-      setSelectedGroupId('')
+      setSelectedGroupIds([])
     }
   }, [selectedStage, allGroups])
+
+  const toggleGroup = (groupId: string) => {
+    if (selectedGroupIds.includes(groupId)) {
+      setSelectedGroupIds(selectedGroupIds.filter(id => id !== groupId))
+    } else {
+      setSelectedGroupIds([...selectedGroupIds, groupId])
+    }
+  }
 
 
   const handleSend = async () => {
@@ -75,8 +83,8 @@ export function SendToTeacherModal({
       return
     }
 
-    if (!selectedGroupId) {
-      alert('الرجاء اختيار المجموعة')
+    if (selectedGroupIds.length === 0) {
+      alert('الرجاء اختيار مجموعة واحدة على الأقل')
       return
     }
 
@@ -86,28 +94,36 @@ export function SendToTeacherModal({
       const teacher = teachers.find(t => t.id === selectedTeacherId)
       if (!teacher) return
 
-      // فلتر الطلاب حسب المجموعة المختارة
+      // فلتر الطلاب حسب المجموعات المختارة
       const filteredStudents = specialStatusStudents.filter(
-        student => student.group_id === selectedGroupId
+        student => selectedGroupIds.includes(student.group_id)
       )
 
       if (filteredStudents.length === 0) {
-        alert('لا يوجد طلاب ذوي حالات خاصة في هذه المجموعة')
+        alert('لا يوجد طلاب ذوي حالات خاصة في المجموعات المختارة')
         setLoading(false)
         return
       }
 
       // إنشاء رسالة واتساب
       let message = ''
-      const selectedGroup = allGroups.find(g => g.id === selectedGroupId)
+      const selectedGroups = allGroups.filter(g => selectedGroupIds.includes(g.id))
 
-      message += `*الحالات الخاصة - ${selectedGroup?.stage} - ${selectedGroup?.name}*\n\n`
+      message += `*الحالات الخاصة - ${selectedStage}*\n\n`
 
-      filteredStudents.forEach((student, index) => {
-        message += `${index + 1}. *${student.name}*\n`
-        message += `   الحالة: ${student.special_status?.name || '-'}\n`
-        message += `   جوال الطالب: ${student.phone || '-'}\n`
-        message += `   جوال ولي الأمر: ${student.parent_phone || '-'}\n\n`
+      // تجميع الطلاب حسب المجموعة
+      selectedGroups.forEach((group) => {
+        const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
+        if (groupStudents.length > 0) {
+          message += `📚 *${group.name}*\n`
+          groupStudents.forEach((student, index) => {
+            message += `${index + 1}. *${student.name}*\n`
+            message += `   الحالة: ${student.special_status?.name || '-'}\n`
+            message += `   جوال الطالب: ${student.phone || '-'}\n`
+            message += `   جوال ولي الأمر: ${student.parent_phone || '-'}\n\n`
+          })
+          message += '\n'
+        }
       })
 
       // فتح واتساب
@@ -191,21 +207,55 @@ export function SendToTeacherModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               اختر المجموعة <span className="text-red-500">*</span>
             </label>
-            <select
-              value={selectedGroupId}
-              onChange={(e) => setSelectedGroupId(e.target.value)}
-              disabled={!selectedStage}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              <option value="">-- اختر المجموعة --</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
-            {!selectedStage && (
-              <p className="text-xs text-gray-500 mt-1">اختر المرحلة أولاً</p>
+            {!selectedStage ? (
+              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-500">اختر المرحلة أولاً</p>
+              </div>
+            ) : groups.length === 0 ? (
+              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-500">لا توجد مجموعات في هذه المرحلة</p>
+              </div>
+            ) : (
+              <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
+                {groups.map((group) => {
+                  const isSelected = selectedGroupIds.includes(group.id)
+                  const studentsCount = specialStatusStudents.filter(s => s.group_id === group.id).length
+                  return (
+                    <label
+                      key={group.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-green-50 border-green-500'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleGroup(group.id)}
+                        className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <div className="flex-1">
+                        <span className={`font-medium ${
+                          isSelected ? 'text-green-900' : 'text-gray-900'
+                        }`}>
+                          {group.name}
+                        </span>
+                        {studentsCount > 0 && (
+                          <span className="text-xs text-gray-500 mr-2">
+                            ({studentsCount} طالب)
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+            {selectedGroupIds.length > 0 && (
+              <p className="text-xs text-green-600 mt-2">
+                تم اختيار {selectedGroupIds.length} مجموعة
+              </p>
             )}
           </div>
 
@@ -213,7 +263,7 @@ export function SendToTeacherModal({
           <div className="flex gap-3 pt-4">
             <button
               onClick={handleSend}
-              disabled={loading || !selectedTeacherId || !selectedStage || !selectedGroupId}
+              disabled={loading || !selectedTeacherId || !selectedStage || selectedGroupIds.length === 0}
               className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
             >
               <Send size={20} />

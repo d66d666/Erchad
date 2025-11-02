@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
 import { Student, Group, SpecialStatus } from '../types'
-import { Users, Printer, UserPlus, X, Plus, Edit2, Layers } from 'lucide-react'
+import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers } from 'lucide-react'
 
 export function GroupsPage() {
   const [students, setStudents] = useState<Student[]>([])
@@ -11,7 +11,7 @@ export function GroupsPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
-  const [selectedStage, setSelectedStage] = useState<string>('الكل')
+  const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set())
   const [formData, setFormData] = useState({
     name: '',
     national_id: '',
@@ -49,18 +49,6 @@ export function GroupsPage() {
     }
   }
 
-  const stages = ['الكل', ...Array.from(new Set(groups.map(g => g.stage)))].filter(Boolean)
-
-  const filteredGroups = selectedStage === 'الكل'
-    ? groups
-    : groups.filter(g => g.stage === selectedStage)
-
-  const groupedData = filteredGroups.map((group) => ({
-    group,
-    students: students.filter((s) => s.group_id === group.id),
-    count: students.filter((s) => s.group_id === group.id).length,
-  }))
-
   const groupedByStage = groups.reduce((acc, group) => {
     if (!acc[group.stage]) {
       acc[group.stage] = []
@@ -68,6 +56,18 @@ export function GroupsPage() {
     acc[group.stage].push(group)
     return acc
   }, {} as Record<string, Group[]>)
+
+  const toggleStage = (stage: string) => {
+    setExpandedStages((prev) => {
+      const next = new Set(prev)
+      if (next.has(stage)) {
+        next.delete(stage)
+      } else {
+        next.add(stage)
+      }
+      return next
+    })
+  }
 
   const handlePrintAll = () => {
     const printContent = `
@@ -353,123 +353,132 @@ export function GroupsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4">
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {stages.map((stage) => (
-            <button
-              key={stage}
-              onClick={() => setSelectedStage(stage)}
-              className={`px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-                selectedStage === stage
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {stage}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {groupedData.length === 0 ? (
+      {Object.keys(groupedByStage).length === 0 ? (
         <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
           <Users className="mx-auto mb-4 text-gray-300" size={64} />
           <h3 className="text-xl font-bold text-gray-700 mb-2">لا توجد مجموعات</h3>
           <p className="text-gray-500">قم بإضافة مجموعات من خلال زر "إدارة المجموعات"</p>
         </div>
       ) : (
-        groupedData.map(({ group, students: groupStudents, count }) => (
-          <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm font-semibold mb-1">{group.stage}</p>
-                  <h2 className="text-2xl font-bold text-white mb-1">{group.name}</h2>
-                  <p className="text-blue-100">عدد الطلاب: {count}</p>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handlePrint(group, groupStudents)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all hover:shadow-md"
-                  >
-                    <Printer size={20} />
-                    <span>طباعة</span>
-                  </button>
-                  <button
-                    onClick={() => handleAddStudent(group.id)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all hover:shadow-md"
-                  >
-                    <UserPlus size={20} />
-                    <span>إضافة طالب</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+        <div className="space-y-4">
+          {Object.entries(groupedByStage).map(([stage, stageGroups]) => {
+            const isExpanded = expandedStages.has(stage)
+            const totalStudents = stageGroups.reduce((sum, group) => {
+              return sum + students.filter(s => s.group_id === group.id).length
+            }, 0)
 
-            {groupStudents.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">
-                <Users className="mx-auto mb-3 text-gray-300" size={48} />
-                <p className="text-lg">لا يوجد طلاب في هذه المجموعة</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b-2 border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
-                        الاسم
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
-                        السجل المدني
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
-                        جوال الطالب
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
-                        جوال ولي الأمر
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
-                        الحالة الخاصة
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {groupStudents.map((student) => {
-                      const status = specialStatuses.find(
-                        (s) => s.id === student.special_status_id
-                      )
+            return (
+              <div key={stage} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+                <button
+                  onClick={() => toggleStage(stage)}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-500 p-6 flex items-center justify-between hover:from-green-700 hover:to-green-600 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers size={28} className="text-white" />
+                    <div className="text-right">
+                      <h2 className="text-2xl font-bold text-white">{stage}</h2>
+                      <p className="text-green-100 text-sm">
+                        {stageGroups.length} مجموعة • {totalStudents} طالب
+                      </p>
+                    </div>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp size={28} className="text-white" />
+                  ) : (
+                    <ChevronDown size={28} className="text-white" />
+                  )}
+                </button>
+
+                {isExpanded && (
+                  <div className="p-4 space-y-4">
+                    {stageGroups.map((group) => {
+                      const groupStudents = students.filter(s => s.group_id === group.id)
                       return (
-                        <tr key={student.id} className="hover:bg-blue-50 transition-colors">
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                            {student.name}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {student.national_id}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {student.phone}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {student.guardian_phone}
-                          </td>
-                          <td className="px-6 py-4">
-                            {student.special_status_id ? (
-                              <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                {showStatusDetails ? (status?.name || 'لديه حالة خاصة') : 'لديه حالة خاصة'}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
-                        </tr>
+                        <div key={group.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-400 p-4 flex items-center justify-between">
+                            <div>
+                              <h3 className="text-xl font-bold text-white">{group.name}</h3>
+                              <p className="text-blue-100 text-sm">عدد الطلاب: {groupStudents.length}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handlePrint(group, groupStudents)}
+                                className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all text-sm"
+                              >
+                                <Printer size={18} />
+                                طباعة
+                              </button>
+                              <button
+                                onClick={() => handleAddStudent(group.id)}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all text-sm"
+                              >
+                                <UserPlus size={18} />
+                                إضافة طالب
+                              </button>
+                            </div>
+                          </div>
+
+                          {groupStudents.length === 0 ? (
+                            <div className="p-8 text-center text-gray-500 bg-gray-50">
+                              <Users className="mx-auto mb-2 text-gray-300" size={36} />
+                              <p>لا يوجد طلاب في هذه المجموعة</p>
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                                  <tr>
+                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">الاسم</th>
+                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">السجل المدني</th>
+                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">جوال الطالب</th>
+                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">جوال ولي الأمر</th>
+                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">الحالة الخاصة</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  {groupStudents.map((student) => {
+                                    const status = specialStatuses.find(
+                                      (s) => s.id === student.special_status_id
+                                    )
+                                    return (
+                                      <tr key={student.id} className="hover:bg-blue-50 transition-colors">
+                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                          {student.name}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                          {student.national_id}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                          {student.phone}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-600">
+                                          {student.guardian_phone}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                          {student.special_status_id ? (
+                                            <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                              {showStatusDetails ? (status?.name || 'لديه حالة خاصة') : 'لديه حالة خاصة'}
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-400">-</span>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
                       )
                     })}
-                  </tbody>
-                </table>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))
+            )
+          })}
+        </div>
       )}
 
       {showAddStudentModal && (
@@ -625,26 +634,26 @@ export function GroupsPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      المرحلة الدراسية
+                      الصف (المرحلة)
                     </label>
                     <input
                       type="text"
                       value={groupFormData.stage}
                       onChange={(e) => setGroupFormData({ ...groupFormData, stage: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                      placeholder="مثال: المرحلة المتوسطة"
+                      placeholder="مثال: الصف الأول الثانوي"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      اسم الفصل / المجموعة
+                      اسم المجموعة
                     </label>
                     <input
                       type="text"
                       value={groupFormData.name}
                       onChange={(e) => setGroupFormData({ ...groupFormData, name: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                      placeholder="مثال: 1/أ"
+                      placeholder="مثال: مجموعة 1"
                     />
                   </div>
                 </div>
@@ -661,7 +670,7 @@ export function GroupsPage() {
                 <h4 className="text-lg font-bold text-gray-900 mb-4">المجموعات الحالية</h4>
                 {Object.entries(groupedByStage).map(([stage, stageGroups]) => (
                   <div key={stage} className="mb-6">
-                    <h5 className="text-md font-bold text-green-700 mb-3 flex items-center gap-2">
+                    <h5 className="text-md font-bold text-green-700 mb-3 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg">
                       <Layers size={20} />
                       {stage}
                     </h5>
@@ -681,6 +690,7 @@ export function GroupsPage() {
                               onClick={() => handleDeleteGroup(group.id)}
                               disabled={studentCount > 0}
                               className="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                              title={studentCount > 0 ? 'لا يمكن حذف مجموعة تحتوي على طلاب' : 'حذف المجموعة'}
                             >
                               <X size={20} />
                             </button>

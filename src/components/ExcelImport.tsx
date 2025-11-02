@@ -35,53 +35,59 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         throw new Error('الملف فارغ أو صيغته غير صحيحة')
       }
 
-      // استخراج أسماء المجموعات الفريدة من الملف (تحويلها لنصوص)
-      const uniqueGroupNames = [
-        ...new Set(
+      // استخراج المجموعات الفريدة مع المراحل من الملف
+      const uniqueGroups = [
+        ...new Map(
           data
-            .filter((row: any) => row['المجموعة'])
-            .map((row: any) => String(row['المجموعة']).trim())
-        ),
+            .filter((row: any) => row['المجموعة'] && row['المرحلة'])
+            .map((row: any) => {
+              const stage = String(row['المرحلة']).trim()
+              const name = String(row['المجموعة']).trim()
+              return [`${stage}|${name}`, { stage, name }]
+            })
+        ).values(),
       ]
 
       // جلب المجموعات الموجودة حالياً
       const { data: existingGroups, error: fetchError } = await supabase
         .from('groups')
-        .select('id, name')
+        .select('id, name, stage')
 
       if (fetchError) throw fetchError
 
       const existingGroupsMap = new Map(
-        (existingGroups || []).map((g) => [String(g.name).trim(), g.id])
+        (existingGroups || []).map((g) => [`${g.stage}|${g.name}`, g.id])
       )
 
       // إنشاء المجموعات الجديدة فقط
-      const newGroupNames = uniqueGroupNames.filter(
-        (name) => !existingGroupsMap.has(name)
+      const newGroups = uniqueGroups.filter(
+        (group) => !existingGroupsMap.has(`${group.stage}|${group.name}`)
       )
 
-      if (newGroupNames.length > 0) {
-        const { data: newGroups, error: insertGroupError } = await supabase
+      if (newGroups.length > 0) {
+        const { data: insertedGroups, error: insertGroupError } = await supabase
           .from('groups')
-          .insert(newGroupNames.map((name) => ({ name })))
-          .select('id, name')
+          .insert(newGroups.map((g) => ({ stage: g.stage, name: g.name })))
+          .select('id, name, stage')
 
         if (insertGroupError) throw insertGroupError
 
         // إضافة المجموعات الجديدة للخريطة
-        newGroups?.forEach((g) => {
-          existingGroupsMap.set(g.name, g.id)
+        insertedGroups?.forEach((g) => {
+          existingGroupsMap.set(`${g.stage}|${g.name}`, g.id)
         })
       }
 
       const insertData = data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
         .map((row: any) => {
+          const stage = String(row['المرحلة']).trim()
           const groupName = String(row['المجموعة']).trim()
-          const groupId = existingGroupsMap.get(groupName)
+          const groupKey = `${stage}|${groupName}`
+          const groupId = existingGroupsMap.get(groupKey)
 
           if (!groupId) {
-            throw new Error(`فشل في إنشاء المجموعة "${groupName}"`)
+            throw new Error(`فشل في إنشاء المجموعة "${groupName}" في "${stage}"`)
           }
 
           return {
@@ -132,8 +138,8 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       }
 
       const groupsCreatedMessage =
-        newGroupNames.length > 0
-          ? ` وإنشاء ${newGroupNames.length} مجموعة جديدة`
+        newGroups.length > 0
+          ? ` وإنشاء ${newGroups.length} مجموعة جديدة`
           : ''
       const teachersImportedMessage = uniqueTeachers.length > 0
         ? ` واستيراد ${uniqueTeachers.length} معلم`

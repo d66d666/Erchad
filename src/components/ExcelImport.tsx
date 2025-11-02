@@ -88,7 +88,9 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             name: String(row['اسم الطالب']).trim(),
             national_id: String(row['السجل المدني']).trim(),
             phone: row['جوال الطالب'] ? String(row['جوال الطالب']).trim() : '',
-            guardian_phone: row['جوالي ولي الامر'] ? String(row['جوالي ولي الامر']).trim() : '',
+            guardian_phone: (row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر'])
+              ? String(row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر']).trim()
+              : '',
             grade: row['الصف'] ? String(row['الصف']).trim() : '',
             group_id: groupId,
             status: row['الحالة'] === 'استئذان' ? 'استئذان' : 'نشط',
@@ -147,8 +149,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         <p className="text-sm text-blue-800">
           <strong>تنسيق الملف المطلوب:</strong>
           <br />
-          اسم الطالب | السجل المدني | جوال الطالب | جوالي ولي الامر | الصف |
+          اسم الطالب | السجل المدني | جوال الطالب | جوال ولي الامر | الصف |
           المجموعة | الحالة
+        </p>
+        <p className="text-xs text-blue-600 mt-2">
+          ملاحظة: يمكن كتابة "جوال ولي الامر" أو "جوالي ولي الامر" أو "جوال ولي الأمر"
         </p>
       </div>
 

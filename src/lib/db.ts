@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie'
-import { Student, Group, SpecialStatus } from '../types'
+import { Student, Group, SpecialStatus, Teacher } from '../types'
 
 export interface StudentVisit {
   id?: string
@@ -60,10 +60,11 @@ export class StudentsDatabase extends Dexie {
   student_violations!: Table<StudentViolation>
   teacher_profile!: Table<TeacherProfile>
   login_credentials!: Table<LoginCredentials>
+  teachers!: Table<Teacher>
 
   constructor() {
     super('StudentsDatabase')
-    this.version(4).stores({
+    this.version(5).stores({
       groups: 'id, name, stage, display_order',
       students: 'id, student_id, name, group_id, has_permission, special_status',
       special_statuses: 'id, name',
@@ -71,7 +72,8 @@ export class StudentsDatabase extends Dexie {
       student_permissions: 'id, student_id, permission_date',
       student_violations: 'id, student_id, violation_date',
       teacher_profile: 'id',
-      login_credentials: 'id, username'
+      login_credentials: 'id, username',
+      teachers: 'id, phone, name'
     }).upgrade(trans => {
       return trans.table('groups').toCollection().modify(group => {
         if (group.display_order === undefined) {

@@ -116,6 +116,21 @@ export const supabase = {
         }
       })
     }),
+    upsert: (values: any, options?: any) => ({
+      then: async (resolve: any) => {
+        try {
+          const dataArray = Array.isArray(values) ? values : [values]
+
+          for (const item of dataArray) {
+            const dataWithId = { id: generateId(), created_at: new Date().toISOString(), ...item }
+            await (db as any)[table].put(dataWithId)
+          }
+          resolve({ error: null })
+        } catch (error) {
+          resolve({ error })
+        }
+      }
+    }),
     delete: () => ({
       eq: (column: string, value: any) => ({
         then: async (resolve: any) => {

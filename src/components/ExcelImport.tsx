@@ -39,9 +39,9 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       const uniqueGroups = [
         ...new Map(
           data
-            .filter((row: any) => row['المجموعة'] && row['المرحلة'])
+            .filter((row: any) => row['المجموعة'] && row['الصف'])
             .map((row: any) => {
-              const stage = String(row['المرحلة']).trim()
+              const stage = String(row['الصف']).trim()
               const name = String(row['المجموعة']).trim()
               return [`${stage}|${name}`, { stage, name }]
             })
@@ -81,7 +81,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       const insertData = data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
         .map((row: any) => {
-          const stage = String(row['المرحلة']).trim()
+          const stage = String(row['الصف']).trim()
           const groupName = String(row['المجموعة']).trim()
           const groupKey = `${stage}|${groupName}`
           const groupId = existingGroupsMap.get(groupKey)
@@ -97,7 +97,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             guardian_phone: (row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر'])
               ? String(row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر']).trim()
               : '',
-            grade: row['الصف'] ? String(row['الصف']).trim() : '',
+            grade: stage,
             group_id: groupId,
             status: row['الحالة'] === 'استئذان' ? 'استئذان' : 'نشط',
             special_status_id: null,
@@ -130,11 +130,24 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       const uniqueTeachers = Array.from(uniqueTeachersMap.values())
 
       if (uniqueTeachers.length > 0) {
-        const { error: teacherError } = await supabase
-          .from('teachers')
-          .upsert(uniqueTeachers, { onConflict: 'phone', ignoreDuplicates: false })
+        // استيراد المعلمين مع التحقق من عدم التكرار
+        for (const teacher of uniqueTeachers) {
+          const existingTeacher = await supabase
+            .from('teachers')
+            .select('*')
+            .eq('phone', teacher.phone)
+            .maybeSingle()
 
-        if (teacherError) console.error('Teacher import error:', teacherError)
+          if (!existingTeacher.data) {
+            await supabase.from('teachers').insert(teacher)
+          } else {
+            // تحديث بيانات المعلم الموجود
+            await supabase
+              .from('teachers')
+              .update({ name: teacher.name, specialization: teacher.specialization })
+              .eq('phone', teacher.phone)
+          }
+        }
       }
 
       const groupsCreatedMessage =
@@ -181,17 +194,74 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         </div>
       )}
 
-      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <p className="text-sm text-blue-800">
-          <strong>تنسيق الملف المطلوب:</strong>
-          <br />
-          اسم الطالب | السجل المدني | جوال الطالب | جوال ولي الامر | الصف |
-          المجموعة | الحالة | اسم المعلم | رقم جوال المعلم | التخصص
-        </p>
-        <p className="text-xs text-blue-600 mt-2">
-          ملاحظة: يمكن كتابة "جوال ولي الامر" أو "جوالي ولي الامر" أو "جوال ولي الأمر"<br />
-          بيانات المعلم اختيارية - يمكن استيراد الطلاب فقط
-        </p>
+      <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-300">
+        <h3 className="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2">
+          <Upload size={20} />
+          تنسيق ملف Excel المطلوب
+        </h3>
+
+        <div className="bg-white rounded-lg p-3 mb-3">
+          <p className="text-sm font-bold text-emerald-700 mb-2">📋 بيانات الطلاب (إلزامية):</p>
+          <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">1.</span>
+              <span><strong>اسم الطالب</strong> - اسم الطالب الكامل</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">2.</span>
+              <span><strong>السجل المدني</strong> - رقم الهوية الوطنية</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">3.</span>
+              <span><strong>جوال الطالب</strong> - رقم جوال الطالب (اختياري)</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">4.</span>
+              <span><strong>جوالي ولي الامر</strong> - رقم جوال ولي الأمر (اختياري)</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">5.</span>
+              <span><strong>الصف</strong> - مثل: الصف الأول الثانوي</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">6.</span>
+              <span><strong>المجموعة</strong> - اسم المجموعة مثل: مجموعة 1</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">7.</span>
+              <span><strong>الحالة</strong> - نشط أو استئذان (اختياري)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-3">
+          <p className="text-sm font-bold text-orange-700 mb-2">👨‍🏫 بيانات المعلمين (اختيارية):</p>
+          <div className="grid grid-cols-1 gap-1 text-xs text-gray-700">
+            <div className="flex gap-2">
+              <span className="font-semibold text-orange-600">1.</span>
+              <span><strong>اسم المعلم</strong> - اسم المعلم الكامل</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-orange-600">2.</span>
+              <span><strong>رقم جوال المعلم</strong> - رقم جوال المعلم</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-orange-600">3.</span>
+              <span><strong>التخصص</strong> - مثل: رياضيات، علوم، لغة عربية</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 p-2 bg-yellow-50 border border-yellow-300 rounded">
+          <p className="text-xs text-yellow-800">
+            <strong>💡 ملاحظات مهمة:</strong>
+          </p>
+          <ul className="text-xs text-yellow-800 mr-4 mt-1 space-y-1">
+            <li>• يمكن استيراد الطلاب فقط أو الطلاب والمعلمين معاً في نفس الملف</li>
+            <li>• عمود "جوالي ولي الامر" يقبل أيضاً: "جوال ولي الامر" أو "جوال ولي الأمر"</li>
+            <li>• المجموعات يتم إنشاؤها تلقائياً إذا لم تكن موجودة</li>
+          </ul>
+        </div>
       </div>
 
       <input

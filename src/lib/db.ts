@@ -52,8 +52,8 @@ export class StudentsDatabase extends Dexie {
 
   constructor() {
     super('StudentsDatabase')
-    this.version(1).stores({
-      groups: 'id, name',
+    this.version(2).stores({
+      groups: 'id, name, stage',
       students: 'id, student_id, name, group_id, has_permission, special_status',
       special_statuses: 'id, name',
       student_visits: 'id, student_id, visit_date',

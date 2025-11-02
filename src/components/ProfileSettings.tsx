@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { X, Save, User } from 'lucide-react'
+import { db } from '../lib/db'
+import { X, Save, User, Trash2, AlertTriangle } from 'lucide-react'
 
 interface ProfileSettingsProps {
   onClose: () => void
@@ -12,6 +12,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [profileId, setProfileId] = useState('')
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -19,13 +21,10 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const fetchProfile = async () => {
     try {
-      const { data: profile } = await supabase
-        .from('teacher_profile')
-        .select('*')
-        .maybeSingle()
+      const profile = await db.teacher_profile.toCollection().first()
 
       if (profile) {
-        setProfileId(profile.id)
+        setProfileId(profile.id || '')
         setTeacherName(profile.name || '')
         setTeacherPhone(profile.phone || '')
         setSchoolName(profile.school_name || '')
@@ -41,40 +40,52 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
     try {
       if (profileId) {
-        // تحديث البروفايل الموجود
-        const { error } = await supabase
-          .from('teacher_profile')
-          .update({
-            name: teacherName,
-            phone: teacherPhone,
-            school_name: schoolName,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', profileId)
-
-        if (error) throw error
+        await db.teacher_profile.update(profileId, {
+          name: teacherName,
+          phone: teacherPhone,
+          school_name: schoolName,
+        })
       } else {
-        // إنشاء بروفايل جديد
-        const { data, error } = await supabase
-          .from('teacher_profile')
-          .insert({
-            name: teacherName,
-            phone: teacherPhone,
-            school_name: schoolName,
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-        if (data) setProfileId(data.id)
+        const newId = crypto.randomUUID()
+        await db.teacher_profile.add({
+          id: newId,
+          name: teacherName,
+          phone: teacherPhone,
+          school_name: schoolName,
+          created_at: new Date().toISOString(),
+        })
+        setProfileId(newId)
       }
 
+      alert('تم حفظ البيانات بنجاح')
       onClose()
     } catch (error) {
       console.error('Error saving profile:', error)
       alert('حدث خطأ في حفظ البيانات')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResetDatabase = async () => {
+    setResetLoading(true)
+    try {
+      await db.students.clear()
+      await db.groups.clear()
+      await db.special_statuses.clear()
+      await db.student_visits.clear()
+      await db.student_permissions.clear()
+      await db.student_violations.clear()
+
+      alert('تم حذف جميع البيانات بنجاح! يمكنك الآن رفع ملف إكسل جديد.')
+      setShowResetConfirm(false)
+      onClose()
+      window.location.reload()
+    } catch (error) {
+      console.error('Error resetting database:', error)
+      alert('حدث خطأ أثناء حذف البيانات')
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -140,6 +151,59 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             </div>
           </div>
 
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertTriangle className="text-red-600 flex-shrink-0 mt-1" size={24} />
+              <div>
+                <h3 className="text-xl font-bold text-red-900 mb-2">
+                  تصفير قاعدة البيانات
+                </h3>
+                <p className="text-sm text-red-700 mb-4">
+                  تحذير: سيتم حذف جميع البيانات بشكل نهائي (الطلاب، الفصول، الزيارات، الاستئذانات، المخالفات).
+                  هذا الإجراء لا يمكن التراجع عنه!
+                </p>
+                <p className="text-sm text-gray-700">
+                  استخدم هذا الخيار في نهاية العام الدراسي لتصفير النظام والبدء من جديد.
+                </p>
+              </div>
+            </div>
+
+            {!showResetConfirm ? (
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(true)}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors"
+              >
+                <Trash2 size={20} />
+                تصفير قاعدة البيانات
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-3">
+                  <p className="text-sm font-bold text-yellow-900 text-center">
+                    هل أنت متأكد من حذف جميع البيانات؟
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleResetDatabase}
+                    disabled={resetLoading}
+                    className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+                  >
+                    {resetLoading ? 'جاري الحذف...' : 'نعم، احذف جميع البيانات'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 rounded-lg transition-colors"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="flex gap-3 pt-4">
             <button

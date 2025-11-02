@@ -37,7 +37,6 @@ export function GroupSelector({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-lg font-bold text-gray-800 mb-3">المجموعات</h2>
       <div className="space-y-2">
         <button
           onClick={() => onSelectGroup(null)}

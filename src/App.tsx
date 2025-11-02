@@ -11,6 +11,7 @@ import { ExcelImport } from './components/ExcelImport'
 import { EditStudentModal } from './components/EditStudentModal'
 import { ProfileSettings } from './components/ProfileSettings'
 import { GroupsPage } from './pages/GroupsPage'
+import { GroupsManagementPage } from './pages/GroupsManagementPage'
 import { SpecialStatusPage } from './pages/SpecialStatusPage'
 import { AbsencePage } from './pages/AbsencePage'
 import { ReceptionPage } from './pages/ReceptionPage'
@@ -56,6 +57,7 @@ function App() {
   const [teacherName, setTeacherName] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showGroupsManagement, setShowGroupsManagement] = useState(false)
 
   const fetchData = async () => {
     try {
@@ -278,7 +280,7 @@ function App() {
                     </button>
                     <button
                       onClick={() => {
-                        setShowGroupsModal(true)
+                        setShowGroupsManagement(true)
                         setShowSettingsMenu(false)
                       }}
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
@@ -411,15 +413,15 @@ function App() {
           </div>
         )}
 
-        {currentPage === 'teachers' && (
+        {currentPage === 'teachers' && !showGroupsManagement && (
           <TeachersPage />
         )}
 
-        {currentPage === 'groups' && (
+        {currentPage === 'groups' && !showGroupsManagement && (
           <GroupsPage />
         )}
 
-        {currentPage === 'special-status' && (
+        {currentPage === 'special-status' && !showGroupsManagement && (
           <SpecialStatusPage
             students={students}
             groups={groups}
@@ -427,19 +429,28 @@ function App() {
           />
         )}
 
-        {currentPage === 'absence' && (
+        {currentPage === 'absence' && !showGroupsManagement && (
           <AbsencePage students={students} groups={groups} />
         )}
 
-        {currentPage === 'reception' && (
+        {currentPage === 'reception' && !showGroupsManagement && (
           <ReceptionPage />
         )}
 
-        {currentPage === 'permission' && (
+        {currentPage === 'permission' && !showGroupsManagement && (
           <PermissionPage />
         )}
 
-        {currentPage === 'home' && (
+        {showGroupsManagement && (
+          <GroupsManagementPage
+            onClose={() => {
+              setShowGroupsManagement(false)
+              fetchData()
+            }}
+          />
+        )}
+
+        {currentPage === 'home' && !showGroupsManagement && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
             <div className="space-y-6">
               {editingStudent && (

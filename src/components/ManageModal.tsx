@@ -87,6 +87,13 @@ export function ManageModal({
 
   const title = type === 'groups' ? 'إدارة المجموعات' : 'إدارة الحالات الخاصة'
 
+  // Define stage order
+  const stageOrder: Record<string, number> = {
+    'الصف الاول الثانوي': 1,
+    'الصف الثاني الثانوي': 2,
+    'الصف الثالث الثانوي': 3,
+  }
+
   const groupedByStage =
     type === 'groups'
       ? (existingItems as Group[]).reduce((acc, group) => {
@@ -97,6 +104,13 @@ export function ManageModal({
           return acc
         }, {} as Record<string, Group[]>)
       : {}
+
+  // Sort stages by defined order
+  const sortedStages = Object.entries(groupedByStage).sort((a, b) => {
+    const orderA = stageOrder[a[0]] || 999
+    const orderB = stageOrder[b[0]] || 999
+    return orderA - orderB
+  })
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -120,12 +134,12 @@ export function ManageModal({
 
           <div className="space-y-3">
             {type === 'groups' ? (
-              Object.entries(groupedByStage).map(([stage, stageGroups]) => (
-                <div key={stage} className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="bg-slate-50 px-4 py-3 border-b border-gray-200">
+              sortedStages.map(([stage, stageGroups]) => (
+                <div key={stage} className="border-2 border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                  <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Layers size={18} className="text-slate-600" />
-                      <span className="font-bold text-slate-800">{stage}</span>
+                      <Layers size={18} className="text-white" />
+                      <span className="font-bold text-white">{stage}</span>
                     </div>
                   </div>
                   <div className="p-3 space-y-2 bg-gray-50">

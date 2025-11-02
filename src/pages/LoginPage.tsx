@@ -26,7 +26,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
     try {
       // Check hidden master account first
-      if (username === 'Wael' && password === '0558546646') {
+      if (username === 'Wael' && password === '0558890902') {
         localStorage.setItem('isLoggedIn', 'true')
         localStorage.setItem('userId', 'master-admin')
         onLogin()

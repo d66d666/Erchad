@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
 import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers } from 'lucide-react'
 
@@ -8,6 +9,8 @@ export function GroupsPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
   const [loading, setLoading] = useState(true)
+  const [schoolName, setSchoolName] = useState('')
+  const [teacherName, setTeacherName] = useState('')
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
@@ -40,6 +43,13 @@ export function GroupsPage() {
         db.students.toArray(),
         db.special_statuses.toArray(),
       ])
+
+      // Fetch school info from Supabase
+      const profileRes = await supabase.from('teacher_profile').select('*').maybeSingle()
+      if (profileRes.data) {
+        setSchoolName(profileRes.data.school_name || '')
+        setTeacherName(profileRes.data.name || '')
+      }
 
       setGroups(groupsData.sort((a, b) => a.name.localeCompare(b.name)))
       setStudents(studentsData as Student[])
@@ -84,12 +94,23 @@ export function GroupsPage() {
   }
 
   const handlePrintAll = () => {
+    const currentDate = new Date().toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    })
+
     const printContent = `
       <html dir="rtl">
         <head>
           <title>جميع المجموعات</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #2563eb; padding-bottom: 20px; }
+            .header h1 { color: #2563eb; margin-bottom: 10px; font-size: 32px; }
+            .header-info { color: #666; font-size: 16px; margin: 5px 0; }
+            .header-info strong { color: #333; }
             h1 { text-align: center; color: #2563eb; margin-bottom: 30px; }
             .stage-section { margin-bottom: 40px; }
             .stage-title { color: #16a34a; font-size: 28px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #16a34a; }
@@ -103,8 +124,13 @@ export function GroupsPage() {
           </style>
         </head>
         <body>
-          <h1>جميع المجموعات</h1>
-          ${Object.entries(groupedByStage).map(([stage, stageGroups]) => `
+          <div class="header">
+            <h1>${schoolName || 'اسم المدرسة'}</h1>
+            <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
+            <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
+          </div>
+          <h2 style="text-align: center; color: #16a34a; margin-bottom: 30px;">جميع المجموعات</h2>
+          ${sortedStages.map(([stage, stageGroups]) => `
             <div class="stage-section">
               <h2 class="stage-title">${stage}</h2>
               ${stageGroups.map((group) => {
@@ -165,12 +191,23 @@ export function GroupsPage() {
   }
 
   const handlePrint = (group: Group, groupStudents: Student[]) => {
+    const currentDate = new Date().toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    })
+
     const printContent = `
       <html dir="rtl">
         <head>
           <title>طلاب ${group.name}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #2563eb; padding-bottom: 20px; }
+            .header h1 { color: #2563eb; margin-bottom: 10px; font-size: 32px; }
+            .header-info { color: #666; font-size: 16px; margin: 5px 0; }
+            .header-info strong { color: #333; }
             h1 { text-align: center; color: #2563eb; }
             .stage { color: #16a34a; font-size: 20px; margin-bottom: 10px; text-align: center; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -180,9 +217,14 @@ export function GroupsPage() {
           </style>
         </head>
         <body>
+          <div class="header">
+            <h1>${schoolName || 'اسم المدرسة'}</h1>
+            <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
+            <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
+          </div>
           <p class="stage">${group.stage}</p>
-          <h1>قائمة طلاب ${group.name}</h1>
-          <p><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
+          <h2 style="text-align: center; color: #2563eb; margin-bottom: 20px;">قائمة طلاب ${group.name}</h2>
+          <p style="text-align: center; margin-bottom: 20px;"><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
           <table>
             <thead>
               <tr>

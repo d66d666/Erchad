@@ -10,6 +10,19 @@ export const supabase = {
   from: (table: string) => ({
     select: (columns: string = '*') => ({
       eq: (column: string, value: any) => ({
+        eq: (column2: string, value2: any) => ({
+          maybeSingle: async () => {
+            try {
+              const data = await (db as any)[table]
+                .where(column).equals(value)
+                .and(item => item[column2] === value2)
+                .first()
+              return { data: data || null, error: null }
+            } catch (error) {
+              return { data: null, error }
+            }
+          }
+        }),
         maybeSingle: async () => {
           try {
             const data = await (db as any)[table].where(column).equals(value).first()

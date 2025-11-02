@@ -39,10 +39,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       }
 
       // Fetch current username
-      const { data: credentials } = await supabase
-        .from('login_credentials')
-        .select('username')
-        .maybeSingle()
+      const credentials = await db.login_credentials.limit(1).first()
 
       if (credentials) {
         setCurrentUsername(credentials.username)
@@ -103,21 +100,23 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setPasswordLoading(true)
 
     try {
-      const { error: updateError } = await supabase
-        .from('login_credentials')
-        .update({
+      const credentials = await db.login_credentials.where('username').equals(currentUsername).first()
+
+      if (credentials && credentials.id) {
+        await db.login_credentials.update(credentials.id, {
           username: newUsername,
           password_hash: newPassword,
+          updated_at: new Date().toISOString()
         })
-        .eq('username', currentUsername)
 
-      if (updateError) throw updateError
-
-      alert('تم تغيير بيانات الدخول بنجاح!')
-      setCurrentUsername(newUsername)
-      setShowPasswordSection(false)
-      setNewPassword('')
-      setConfirmPassword('')
+        alert('تم تغيير بيانات الدخول بنجاح!')
+        setCurrentUsername(newUsername)
+        setShowPasswordSection(false)
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        setPasswordError('لم يتم العثور على بيانات الدخول')
+      }
     } catch (error) {
       console.error('Error changing password:', error)
       setPasswordError('حدث خطأ أثناء تغيير بيانات الدخول')

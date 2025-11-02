@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { db } from '../lib/db'
 import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle } from 'lucide-react'
 
 interface LoginPageProps {
@@ -59,15 +60,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 1)
 
-      const { error: updateError } = await supabase
-        .from('login_credentials')
-        .update({
-          reset_token: token,
-          reset_token_expires: expiresAt.toISOString(),
-        })
-        .eq('username', username)
+      const credentials = await db.login_credentials.where('username').equals(username).first()
 
-      if (updateError) throw updateError
+      if (!credentials || !credentials.id) {
+        setError('اسم المستخدم غير موجود')
+        return
+      }
+
+      await db.login_credentials.update(credentials.id, {
+        reset_token: token,
+        reset_token_expires: expiresAt.toISOString(),
+      })
 
       setResetMessage(`رمز الاستعادة الخاص بك هو: ${token}\n(صالح لمدة ساعة واحدة)`)
       setResetStep('password')
@@ -86,36 +89,32 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
-      const { data: credentials, error: fetchError } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .eq('username', username)
-        .eq('reset_token', resetToken)
-        .maybeSingle()
-
-      if (fetchError) throw fetchError
+      const credentials = await db.login_credentials
+        .where('username').equals(username)
+        .and(item => item.reset_token === resetToken)
+        .first()
 
       if (!credentials) {
         setError('الرمز غير صحيح')
         return
       }
 
-      const tokenExpires = new Date(credentials.reset_token_expires!)
-      if (tokenExpires < new Date()) {
-        setError('انتهت صلاحية الرمز')
-        return
+      if (credentials.reset_token_expires) {
+        const tokenExpires = new Date(credentials.reset_token_expires)
+        if (tokenExpires < new Date()) {
+          setError('انتهت صلاحية الرمز')
+          return
+        }
       }
 
-      const { error: updateError } = await supabase
-        .from('login_credentials')
-        .update({
+      if (credentials.id) {
+        await db.login_credentials.update(credentials.id, {
           password_hash: newPassword,
           reset_token: null,
           reset_token_expires: null,
+          updated_at: new Date().toISOString()
         })
-        .eq('id', credentials.id)
-
-      if (updateError) throw updateError
+      }
 
       setResetMessage('تم تغيير كلمة المرور بنجاح!')
       setTimeout(() => {

@@ -41,6 +41,16 @@ export interface TeacherProfile {
   created_at?: string
 }
 
+export interface LoginCredentials {
+  id?: string
+  username: string
+  password_hash: string
+  reset_token?: string | null
+  reset_token_expires?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
 export class StudentsDatabase extends Dexie {
   groups!: Table<Group>
   students!: Table<Student>
@@ -49,17 +59,19 @@ export class StudentsDatabase extends Dexie {
   student_permissions!: Table<StudentPermission>
   student_violations!: Table<StudentViolation>
   teacher_profile!: Table<TeacherProfile>
+  login_credentials!: Table<LoginCredentials>
 
   constructor() {
     super('StudentsDatabase')
-    this.version(2).stores({
+    this.version(3).stores({
       groups: 'id, name, stage',
       students: 'id, student_id, name, group_id, has_permission, special_status',
       special_statuses: 'id, name',
       student_visits: 'id, student_id, visit_date',
       student_permissions: 'id, student_id, permission_date',
       student_violations: 'id, student_id, violation_date',
-      teacher_profile: 'id'
+      teacher_profile: 'id',
+      login_credentials: 'id, username'
     })
   }
 }

@@ -85,13 +85,34 @@ function App() {
   }
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
-    setIsLoggedIn(loggedIn)
-    if (loggedIn) {
-      fetchData()
-    } else {
-      setLoading(false)
+    const initializeApp = async () => {
+      // Initialize default login credentials if not exists
+      const { db } = await import('./lib/db')
+      try {
+        const existingCredentials = await db.login_credentials.toArray()
+        if (existingCredentials.length === 0) {
+          await db.login_credentials.add({
+            id: crypto.randomUUID(),
+            username: 'admin',
+            password_hash: 'admin123',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+        }
+      } catch (error) {
+        console.error('Error initializing login credentials:', error)
+      }
+
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
+      setIsLoggedIn(loggedIn)
+      if (loggedIn) {
+        fetchData()
+      } else {
+        setLoading(false)
+      }
     }
+
+    initializeApp()
   }, [])
 
   useEffect(() => {

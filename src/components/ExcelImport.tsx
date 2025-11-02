@@ -36,13 +36,13 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         throw new Error('الملف فارغ أو صيغته غير صحيحة')
       }
 
-      // التحقق من وجود الأعمدة المطلوبة
+      // التحقق من وجود الأعمدة المطلوبة للطلاب
       const requiredColumns = ['اسم الطالب', 'السجل المدني', 'الصف', 'المجموعة']
       const firstRow = data[0] as any
       const missingColumns = requiredColumns.filter(col => !(col in firstRow))
 
       if (missingColumns.length > 0) {
-        throw new Error(`الملف يفتقد الأعمدة التالية: ${missingColumns.join('، ')}\n\nالأعمدة المطلوبة: اسم الطالب، السجل المدني، الصف، المجموعة`)
+        throw new Error(`الملف يفتقد الأعمدة التالية: ${missingColumns.join('، ')}\n\nالأعمدة المطلوبة:\n- اسم الطالب\n- السجل المدني\n- الصف\n- المجموعة\n- جوال الطالب (اختياري)\n- جوال ولي الامر (اختياري)\n- الحالة (اختياري)`)
       }
 
       // استخراج المجموعات الفريدة مع المراحل من الملف
@@ -145,13 +145,13 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           const studentData = {
             name: String(row['اسم الطالب']).trim(),
             national_id: nationalId,
-            phone: row['جوال الطالب'] ? String(row['جوال الطالب']).trim() : '',
+            phone: row['جوال الطالب'] ? String(row['جوال الطالب']).trim() : null,
             guardian_phone: (row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر'])
               ? String(row['جوال ولي الامر'] || row['جوالي ولي الامر'] || row['جوال ولي الأمر']).trim()
-              : '',
+              : null,
             grade: stage,
             group_id: groupId,
-            status: row['الحالة'] === 'استئذان' ? 'استئذان' : 'نشط',
+            status: row['الحالة'] && String(row['الحالة']).trim() === 'استئذان' ? 'استئذان' : 'نشط',
             special_status_id: null,
           }
 
@@ -165,16 +165,21 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         })
 
       // إضافة الطلاب الجدد
+      let insertedCount = 0
       if (insertData.length > 0) {
         const { data: insertedStudents, error: insertError } = await supabase
           .from('students')
           .insert(insertData)
           .select()
 
-        if (insertError) throw insertError
+        if (insertError) {
+          console.error('خطأ في إضافة الطلاب:', insertError)
+          throw new Error(`فشل في إضافة الطلاب: ${insertError.message}`)
+        }
 
         // إضافة للـ IndexedDB المحلي
         if (insertedStudents) {
+          insertedCount = insertedStudents.length
           for (const student of insertedStudents) {
             await db.students.put(student)
           }
@@ -241,25 +246,27 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         }
       }
 
-      const groupsCreatedCount = uniqueGroups.filter(
-        (group) => !existingGroupsMap.has(`${group.stage}|${group.name}`)
-      ).length
-      const groupsCreatedMessage =
-        groupsCreatedCount > 0
-          ? ` وإنشاء ${groupsCreatedCount} مجموعة جديدة`
-          : ''
-      const teachersImportedMessage = uniqueTeachers.length > 0
-        ? ` واستيراد ${uniqueTeachers.length} معلم`
-        : ''
-      const updatedMessage = updatedCount > 0
-        ? ` وتحديث ${updatedCount} طالب`
-        : ''
-      const insertedMessage = insertData.length > 0
-        ? `تم إضافة ${insertData.length} طالب جديد`
-        : ''
+      // رسالة النجاح التفصيلية
+      const messages: string[] = []
+
+      if (insertedCount > 0) {
+        messages.push(`✅ تم إضافة ${insertedCount} طالب جديد`)
+      }
+
+      if (updatedCount > 0) {
+        messages.push(`🔄 تم تحديث ${updatedCount} طالب`)
+      }
+
+      if (newGroups.length > 0) {
+        messages.push(`📚 تم إنشاء ${newGroups.length} مجموعة جديدة`)
+      }
+
+      if (uniqueTeachers.length > 0) {
+        messages.push(`👨‍🏫 تم استيراد ${uniqueTeachers.length} معلم`)
+      }
 
       setSuccess(
-        `${insertedMessage}${updatedMessage}${groupsCreatedMessage}${teachersImportedMessage}` || 'تمت العملية بنجاح'
+        messages.length > 0 ? messages.join(' • ') : 'تمت العملية بنجاح'
       )
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -314,19 +321,19 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             </div>
             <div className="flex gap-2">
               <span className="font-semibold text-blue-600">3.</span>
-              <span><strong>جوال الطالب</strong> - رقم جوال الطالب (اختياري)</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold text-blue-600">4.</span>
-              <span><strong>جوالي ولي الامر</strong> - رقم جوال ولي الأمر (اختياري)</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-semibold text-blue-600">5.</span>
               <span><strong>الصف</strong> - مثل: الصف الأول الثانوي</span>
             </div>
             <div className="flex gap-2">
-              <span className="font-semibold text-blue-600">6.</span>
+              <span className="font-semibold text-blue-600">4.</span>
               <span><strong>المجموعة</strong> - اسم المجموعة مثل: مجموعة 1</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">5.</span>
+              <span><strong>جوال الطالب</strong> - رقم جوال الطالب (اختياري)</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-semibold text-blue-600">6.</span>
+              <span><strong>جوال ولي الامر</strong> - رقم جوال ولي الأمر (اختياري)</span>
             </div>
             <div className="flex gap-2">
               <span className="font-semibold text-blue-600">7.</span>

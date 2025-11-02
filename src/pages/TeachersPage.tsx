@@ -390,10 +390,10 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
           {loadingGroups ? (
             <div className="text-center py-4 text-gray-500">جاري تحميل المجموعات...</div>
-          ) : (
+          ) : groups.length > 0 ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                المجموعات التي يدرسها ({selectedGroupIds.length} مختار)
+                المجموعات التي يدرسها (اختياري)
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4">
                 {groups.map((group) => {
@@ -415,7 +415,7 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
                 })}
               </div>
             </div>
-          )}
+          ) : null}
 
           <div className="flex gap-3 pt-4">
             <button

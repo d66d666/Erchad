@@ -16,6 +16,7 @@ import { AbsencePage } from './pages/AbsencePage'
 import { ReceptionPage } from './pages/ReceptionPage'
 import { PermissionPage } from './pages/PermissionPage'
 import { TeachersPage } from './pages/TeachersPage'
+import { LoginPage } from './pages/LoginPage'
 import {
   Home,
   Users,
@@ -35,6 +36,7 @@ import {
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
@@ -83,7 +85,13 @@ function App() {
   }
 
   useEffect(() => {
-    fetchData()
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    setIsLoggedIn(loggedIn)
+    if (loggedIn) {
+      fetchData()
+    } else {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -111,6 +119,18 @@ function App() {
 
     return matchesSearch && matchesGroup
   })
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('userId')
+    setIsLoggedIn(false)
+    setCurrentPage('home')
+  }
+
+  const handleLogin = () => {
+    setIsLoggedIn(true)
+    fetchData()
+  }
 
   const applyFilters = (students: Student[]) => {
     return students.filter((student) => {
@@ -150,6 +170,10 @@ function App() {
     { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut },
     { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle },
   ]
+
+  if (!isLoggedIn) {
+    return <LoginPage onLogin={handleLogin} />
+  }
 
   if (loading) {
     return (
@@ -220,6 +244,17 @@ function App() {
                     >
                       <Heart size={18} className="text-purple-600" />
                       <span className="font-semibold text-gray-700">إدارة الحالات الخاصة</span>
+                    </button>
+                    <div className="border-t border-gray-200 my-2"></div>
+                    <button
+                      onClick={() => {
+                        handleLogout()
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-red-50 transition-colors flex items-center gap-3"
+                    >
+                      <LogOut size={18} className="text-red-600" />
+                      <span className="font-semibold text-red-600">تسجيل الخروج</span>
                     </button>
                   </div>
                 )}

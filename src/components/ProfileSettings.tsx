@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
-import { X, Save, User, Trash2, AlertTriangle } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { X, Save, User, Trash2, AlertTriangle, Lock, Key } from 'lucide-react'
 
 interface ProfileSettingsProps {
   onClose: () => void
@@ -14,6 +15,13 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [profileId, setProfileId] = useState('')
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
+  const [showPasswordSection, setShowPasswordSection] = useState(false)
+  const [currentUsername, setCurrentUsername] = useState('')
+  const [newUsername, setNewUsername] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -28,6 +36,17 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setTeacherName(profile.name || '')
         setTeacherPhone(profile.phone || '')
         setSchoolName(profile.school_name || '')
+      }
+
+      // Fetch current username
+      const { data: credentials } = await supabase
+        .from('login_credentials')
+        .select('username')
+        .maybeSingle()
+
+      if (credentials) {
+        setCurrentUsername(credentials.username)
+        setNewUsername(credentials.username)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -64,6 +83,46 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       alert('حدث خطأ في حفظ البيانات')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordError('')
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('كلمة المرور غير متطابقة')
+      return
+    }
+
+    if (newPassword.length < 4) {
+      setPasswordError('كلمة المرور يجب أن تكون 4 أحرف على الأقل')
+      return
+    }
+
+    setPasswordLoading(true)
+
+    try {
+      const { error: updateError } = await supabase
+        .from('login_credentials')
+        .update({
+          username: newUsername,
+          password_hash: newPassword,
+        })
+        .eq('username', currentUsername)
+
+      if (updateError) throw updateError
+
+      alert('تم تغيير بيانات الدخول بنجاح!')
+      setCurrentUsername(newUsername)
+      setShowPasswordSection(false)
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (error) {
+      console.error('Error changing password:', error)
+      setPasswordError('حدث خطأ أثناء تغيير بيانات الدخول')
+    } finally {
+      setPasswordLoading(false)
     }
   }
 
@@ -148,6 +207,105 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="مثال: مدرسة الملك فهد الثانوية"
               />
+            </div>
+          </div>
+
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <Lock className="text-green-600 flex-shrink-0 mt-1" size={24} />
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-green-900 mb-2">
+                  إعدادات تسجيل الدخول
+                </h3>
+                <p className="text-sm text-green-700 mb-4">
+                  يمكنك تغيير اسم المستخدم وكلمة المرور من هنا
+                </p>
+
+                {!showPasswordSection ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordSection(true)}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    <Key size={18} />
+                    تغيير بيانات الدخول
+                  </button>
+                ) : (
+                  <div className="space-y-4 bg-white rounded-lg p-4 border border-green-200">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        اسم المستخدم الجديد
+                      </label>
+                      <input
+                        type="text"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="أدخل اسم المستخدم الجديد"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        كلمة المرور الجديدة
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="أدخل كلمة المرور الجديدة"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        تأكيد كلمة المرور
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="أعد إدخال كلمة المرور"
+                        required
+                      />
+                    </div>
+
+                    {passwordError && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-sm text-red-800">{passwordError}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleChangePassword}
+                        disabled={passwordLoading}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+                      >
+                        {passwordLoading ? 'جاري التغيير...' : 'حفظ التغييرات'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPasswordSection(false)
+                          setPasswordError('')
+                          setNewPassword('')
+                          setConfirmPassword('')
+                          setNewUsername(currentUsername)
+                        }}
+                        className="px-4 py-2 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-semibold"
+                      >
+                        إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

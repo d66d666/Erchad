@@ -96,25 +96,32 @@ export function ReceptionPage() {
   }
 
   async function fetchVisits(filterDate?: string) {
-    let allVisits = await db.student_visits.orderBy('visit_date').reverse().toArray()
+    try {
+      let query = supabase
+        .from('student_visits')
+        .select('*')
+        .order('visit_date', { ascending: false })
 
-    if (filterDate) {
-      const startOfDay = new Date(filterDate)
-      startOfDay.setHours(0, 0, 0, 0)
-      const endOfDay = new Date(filterDate)
-      endOfDay.setHours(23, 59, 59, 999)
+      if (filterDate) {
+        const startOfDay = new Date(filterDate)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(filterDate)
+        endOfDay.setHours(23, 59, 59, 999)
 
-      allVisits = allVisits.filter(v => {
-        const visitDate = new Date(v.visit_date)
-        return visitDate >= startOfDay && visitDate <= endOfDay
-      })
-    } else {
-      allVisits = allVisits.slice(0, 50)
-    }
+        query = query
+          .gte('visit_date', startOfDay.toISOString())
+          .lte('visit_date', endOfDay.toISOString())
+      } else {
+        query = query.limit(50)
+      }
 
-    const visitsWithStudents = await Promise.all(
-      allVisits.map(async (visit) => {
-        const student = await db.students.get(visit.student_id)
+      const { data: visitsData } = await query
+      const { data: studentsData } = await supabase.from('students').select('*')
+
+      const allStudents = studentsData || []
+
+      const visitsWithStudents = (visitsData || []).map((visit) => {
+        const student = allStudents.find(s => s.id === visit.student_id)
         return {
           ...visit,
           student: student ? {
@@ -125,9 +132,24 @@ export function ReceptionPage() {
           } : undefined
         }
       })
-    )
 
-    setVisits(visitsWithStudents)
+      setVisits(visitsWithStudents)
+
+      if (visitsData) {
+        await db.student_visits.bulkPut(visitsData.map(v => ({
+          id: v.id,
+          student_id: v.student_id,
+          visit_date: v.visit_date,
+          reason: v.reason,
+          action_taken: v.action_taken,
+          referred_to: v.referred_to,
+          notes: v.notes || '',
+          created_at: v.created_at
+        })))
+      }
+    } catch (error) {
+      console.error('Error fetching visits:', error)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -136,21 +158,44 @@ export function ReceptionPage() {
 
     setLoading(true)
     try {
-      const visitId = crypto.randomUUID()
       const visitDate = new Date().toISOString()
-
-      await db.student_visits.add({
-        id: visitId,
-        student_id: selectedStudent.id,
-        visit_date: visitDate,
-        reason: formData.reason,
-        action_taken: formData.action_taken,
-        referred_to: formData.referred_to,
-        notes: formData.notes,
-        created_at: visitDate
-      })
-
       const currentCount = selectedStudent.visit_count || 0
+
+      const { data: visitData, error: visitError } = await supabase
+        .from('student_visits')
+        .insert({
+          student_id: selectedStudent.id,
+          visit_date: visitDate,
+          reason: formData.reason,
+          action_taken: formData.action_taken,
+          referred_to: formData.referred_to,
+          notes: formData.notes
+        })
+        .select()
+        .single()
+
+      if (visitError) throw visitError
+
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({ visit_count: currentCount + 1 })
+        .eq('id', selectedStudent.id)
+
+      if (updateError) throw updateError
+
+      if (visitData) {
+        await db.student_visits.add({
+          id: visitData.id,
+          student_id: visitData.student_id,
+          visit_date: visitData.visit_date,
+          reason: visitData.reason,
+          action_taken: visitData.action_taken,
+          referred_to: visitData.referred_to,
+          notes: visitData.notes || '',
+          created_at: visitData.created_at
+        })
+      }
+
       await db.students.update(selectedStudent.id, {
         visit_count: currentCount + 1
       })

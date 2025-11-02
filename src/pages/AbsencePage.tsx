@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db, StudentViolation } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Student } from '../types'
 import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send } from 'lucide-react'
 
@@ -42,43 +43,65 @@ export function AbsencePage() {
   }
 
   async function fetchStudents() {
-    const allStudents = await db.students.toArray()
-    const groups = await db.groups.toArray()
-    const statuses = await db.special_statuses.toArray()
+    try {
+      const { data: studentsData } = await supabase
+        .from('students')
+        .select('*')
+        .order('name')
 
-    const studentsWithRelations = allStudents.map(student => {
-      const group = groups.find(g => g.id === student.group_id)
-      const special_status = statuses.find(s => s.id === student.special_status_id)
-      return {
-        ...student,
-        group: group ? { name: group.name } : undefined,
-        special_status: special_status ? { name: special_status.name } : undefined
-      }
-    })
+      const { data: groupsData } = await supabase.from('groups').select('*')
+      const { data: statusesData } = await supabase.from('special_statuses').select('*')
 
-    setStudents(studentsWithRelations as Student[])
+      const groups = groupsData || []
+      const statuses = statusesData || []
+
+      const studentsWithRelations = (studentsData || []).map(student => {
+        const group = groups.find(g => g.id === student.group_id)
+        const special_status = statuses.find(s => s.id === student.special_status_id)
+        return {
+          ...student,
+          group: group ? { name: group.name } : undefined,
+          special_status: special_status ? { name: special_status.name } : undefined
+        }
+      })
+
+      setStudents(studentsWithRelations as Student[])
+
+      if (studentsData) await db.students.bulkPut(studentsData)
+      if (groups.length > 0) await db.groups.bulkPut(groups)
+      if (statuses.length > 0) await db.special_statuses.bulkPut(statuses)
+    } catch (error) {
+      console.error('Error fetching students:', error)
+    }
   }
 
   async function fetchViolations(filterDate?: string) {
-    let allViolations = await db.student_violations.orderBy('violation_date').reverse().toArray()
+    try {
+      let query = supabase
+        .from('student_violations')
+        .select('*')
+        .order('violation_date', { ascending: false })
 
-    if (filterDate) {
-      const startOfDay = new Date(filterDate)
-      startOfDay.setHours(0, 0, 0, 0)
-      const endOfDay = new Date(filterDate)
-      endOfDay.setHours(23, 59, 59, 999)
+      if (filterDate) {
+        const startOfDay = new Date(filterDate)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(filterDate)
+        endOfDay.setHours(23, 59, 59, 999)
 
-      allViolations = allViolations.filter(v => {
-        const violationDate = new Date(v.violation_date)
-        return violationDate >= startOfDay && violationDate <= endOfDay
-      })
-    } else {
-      allViolations = allViolations.slice(0, 50)
-    }
+        query = query
+          .gte('violation_date', startOfDay.toISOString())
+          .lte('violation_date', endOfDay.toISOString())
+      } else {
+        query = query.limit(50)
+      }
 
-    const violationsWithStudents = await Promise.all(
-      allViolations.map(async (violation) => {
-        const student = await db.students.get(violation.student_id)
+      const { data: violationsData } = await query
+      const { data: studentsData } = await supabase.from('students').select('*')
+
+      const allStudents = studentsData || []
+
+      const violationsWithStudents = (violationsData || []).map((violation) => {
+        const student = allStudents.find(s => s.id === violation.student_id)
         return {
           ...violation,
           student: student ? {
@@ -89,9 +112,24 @@ export function AbsencePage() {
           } : undefined
         }
       })
-    )
 
-    setViolations(violationsWithStudents)
+      setViolations(violationsWithStudents)
+
+      if (violationsData) {
+        await db.student_violations.bulkPut(violationsData.map(v => ({
+          id: v.id,
+          student_id: v.student_id,
+          violation_type: v.violation_type,
+          violation_date: v.violation_date,
+          description: v.description,
+          action_taken: v.action_taken,
+          notes: v.notes || '',
+          created_at: v.created_at
+        })))
+      }
+    } catch (error) {
+      console.error('Error fetching violations:', error)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -100,21 +138,44 @@ export function AbsencePage() {
 
     setLoading(true)
     try {
-      const violationId = crypto.randomUUID()
       const violationDate = new Date().toISOString()
-
-      await db.student_violations.add({
-        id: violationId,
-        student_id: selectedStudent.id,
-        violation_type: formData.violation_type,
-        violation_date: violationDate,
-        description: formData.description,
-        action_taken: formData.action_taken,
-        notes: formData.notes,
-        created_at: violationDate
-      })
-
       const currentCount = selectedStudent.violation_count || 0
+
+      const { data: violationData, error: violationError } = await supabase
+        .from('student_violations')
+        .insert({
+          student_id: selectedStudent.id,
+          violation_type: formData.violation_type,
+          violation_date: violationDate,
+          description: formData.description,
+          action_taken: formData.action_taken,
+          notes: formData.notes
+        })
+        .select()
+        .single()
+
+      if (violationError) throw violationError
+
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({ violation_count: currentCount + 1 })
+        .eq('id', selectedStudent.id)
+
+      if (updateError) throw updateError
+
+      if (violationData) {
+        await db.student_violations.add({
+          id: violationData.id,
+          student_id: violationData.student_id,
+          violation_type: violationData.violation_type,
+          violation_date: violationData.violation_date,
+          description: violationData.description,
+          action_taken: violationData.action_taken,
+          notes: violationData.notes || '',
+          created_at: violationData.created_at
+        })
+      }
+
       await db.students.update(selectedStudent.id, {
         violation_count: currentCount + 1
       })

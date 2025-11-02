@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db, StudentPermission } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter } from 'lucide-react'
 
@@ -41,49 +42,98 @@ export function PermissionPage() {
   }
 
   async function fetchStudents() {
-    const allStudents = await db.students.where('status').equals('نشط').toArray()
-    const groups = await db.groups.toArray()
-    const statuses = await db.special_statuses.toArray()
+    try {
+      // جلب الطلاب من Supabase
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('students')
+        .select('*')
+        .eq('status', 'نشط')
+        .order('name')
 
-    const studentsWithRelations = allStudents.map(student => {
-      const group = groups.find(g => g.id === student.group_id)
-      const special_status = statuses.find(s => s.id === student.special_status_id)
-      return {
-        ...student,
-        group: group ? { name: group.name } : undefined,
-        special_status: special_status ? { name: special_status.name } : undefined
+      if (studentsError) {
+        console.error('Error fetching students:', studentsError)
+        return
       }
-    })
 
-    setStudents(studentsWithRelations as Student[])
+      // جلب المجموعات من Supabase
+      const { data: groupsData } = await supabase
+        .from('groups')
+        .select('*')
+
+      // جلب الحالات الخاصة من Supabase
+      const { data: statusesData } = await supabase
+        .from('special_statuses')
+        .select('*')
+
+      const groups = groupsData || []
+      const statuses = statusesData || []
+
+      const studentsWithRelations = (studentsData || []).map(student => {
+        const group = groups.find(g => g.id === student.group_id)
+        const special_status = statuses.find(s => s.id === student.special_status_id)
+        return {
+          ...student,
+          group: group ? { name: group.name } : undefined,
+          special_status: special_status ? { name: special_status.name } : undefined
+        }
+      })
+
+      setStudents(studentsWithRelations as Student[])
+
+      // تحديث IndexedDB المحلية
+      if (studentsData) {
+        await db.students.bulkPut(studentsData)
+      }
+      if (groups.length > 0) {
+        await db.groups.bulkPut(groups)
+      }
+      if (statuses.length > 0) {
+        await db.special_statuses.bulkPut(statuses)
+      }
+    } catch (error) {
+      console.error('Error in fetchStudents:', error)
+    }
   }
 
   async function fetchPermissions(filterDate?: string) {
-    let allPermissions = await db.student_permissions.orderBy('permission_date').reverse().toArray()
+    try {
+      // إعداد الفلتر الزمني
+      let query = supabase
+        .from('student_permissions')
+        .select('*')
+        .order('permission_date', { ascending: false })
 
-    if (filterDate) {
-      const startOfDay = new Date(filterDate)
-      startOfDay.setHours(0, 0, 0, 0)
-      const endOfDay = new Date(filterDate)
-      endOfDay.setHours(23, 59, 59, 999)
+      if (filterDate) {
+        const startOfDay = new Date(filterDate)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(filterDate)
+        endOfDay.setHours(23, 59, 59, 999)
 
-      allPermissions = allPermissions.filter(p => {
-        const permissionDate = new Date(p.permission_date)
-        return permissionDate >= startOfDay && permissionDate <= endOfDay
-      })
-    } else {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      allPermissions = allPermissions.filter(p => {
-        const permissionDate = new Date(p.permission_date)
-        return permissionDate >= today
-      })
-    }
+        query = query
+          .gte('permission_date', startOfDay.toISOString())
+          .lte('permission_date', endOfDay.toISOString())
+      } else {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        query = query.gte('permission_date', today.toISOString())
+      }
 
-    const groups = await db.groups.toArray()
-    const permissionsWithStudents = await Promise.all(
-      allPermissions.map(async (permission) => {
-        const student = await db.students.get(permission.student_id)
+      const { data: permissionsData, error: permissionsError } = await query
+
+      if (permissionsError) {
+        console.error('Error fetching permissions:', permissionsError)
+        return
+      }
+
+      // جلب المجموعات والطلاب
+      const { data: groupsData } = await supabase.from('groups').select('*')
+      const { data: studentsData } = await supabase.from('students').select('*')
+
+      const groups = groupsData || []
+      const allStudents = studentsData || []
+
+      const permissionsWithStudents = (permissionsData || []).map((permission) => {
+        const student = allStudents.find(s => s.id === permission.student_id)
         const group = student ? groups.find(g => g.id === student.group_id) : undefined
         return {
           ...permission,
@@ -96,9 +146,24 @@ export function PermissionPage() {
           } : undefined
         }
       })
-    )
 
-    setPermissions(permissionsWithStudents)
+      setPermissions(permissionsWithStudents)
+
+      // تحديث IndexedDB المحلية
+      if (permissionsData) {
+        await db.student_permissions.bulkPut(permissionsData.map(p => ({
+          id: p.id,
+          student_id: p.student_id,
+          permission_date: p.permission_date,
+          reason: p.reason,
+          duration: p.duration || '',
+          notes: p.notes || '',
+          created_at: p.created_at
+        })))
+      }
+    } catch (error) {
+      console.error('Error in fetchPermissions:', error)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -107,20 +172,54 @@ export function PermissionPage() {
 
     setLoading(true)
     try {
-      const permissionId = crypto.randomUUID()
       const permissionDate = new Date().toISOString()
-
-      await db.student_permissions.add({
-        id: permissionId,
-        student_id: selectedStudent.id,
-        permission_date: permissionDate,
-        reason: formData.reason,
-        duration: '',
-        notes: formData.notes,
-        created_at: permissionDate
-      })
-
       const currentCount = selectedStudent.permission_count || 0
+
+      // حفظ الاستئذان في Supabase
+      const { data: permissionData, error: permissionError } = await supabase
+        .from('student_permissions')
+        .insert({
+          student_id: selectedStudent.id,
+          permission_date: permissionDate,
+          reason: formData.reason,
+          duration: '',
+          notes: formData.notes
+        })
+        .select()
+        .single()
+
+      if (permissionError) {
+        console.error('Error saving permission:', permissionError)
+        throw permissionError
+      }
+
+      // تحديث حالة الطالب في Supabase
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({
+          status: 'استئذان',
+          permission_count: currentCount + 1
+        })
+        .eq('id', selectedStudent.id)
+
+      if (updateError) {
+        console.error('Error updating student:', updateError)
+        throw updateError
+      }
+
+      // حفظ في IndexedDB المحلية
+      if (permissionData) {
+        await db.student_permissions.add({
+          id: permissionData.id,
+          student_id: permissionData.student_id,
+          permission_date: permissionData.permission_date,
+          reason: permissionData.reason,
+          duration: permissionData.duration || '',
+          notes: permissionData.notes || '',
+          created_at: permissionData.created_at
+        })
+      }
+
       await db.students.update(selectedStudent.id, {
         status: 'استئذان',
         permission_count: currentCount + 1
@@ -272,7 +371,20 @@ export function PermissionPage() {
     if (!confirmReturn) return
 
     try {
+      // تحديث في Supabase
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({ status: 'نشط' })
+        .eq('id', permission.student_id)
+
+      if (updateError) {
+        console.error('Error updating student:', updateError)
+        throw updateError
+      }
+
+      // تحديث في IndexedDB
       await db.students.update(permission.student_id, { status: 'نشط' })
+
       alert('تم تأكيد عودة الطالب')
       fetchStudents()
       fetchPermissions(dateFilter)

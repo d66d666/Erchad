@@ -120,6 +120,8 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
       const insertData: any[] = []
       const updateData: any[] = []
+      const seenNationalIds = new Set<string>()
+      const duplicatesInFile: string[] = []
 
       data
         .filter((row: any) => row['اسم الطالب'] && row['السجل المدني'])
@@ -142,6 +144,14 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           }
 
           const nationalId = String(row['السجل المدني']).trim()
+
+          // التحقق من التكرار في الملف نفسه
+          if (seenNationalIds.has(nationalId)) {
+            duplicatesInFile.push(`${String(row['اسم الطالب']).trim()} (${nationalId})`)
+            return
+          }
+          seenNationalIds.add(nationalId)
+
           const studentData = {
             name: String(row['اسم الطالب']).trim(),
             national_id: nationalId,
@@ -155,7 +165,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
             special_status_id: null,
           }
 
-          // إذا كان الطالب موجود، نحدث بياناته، وإلا نضيفه
+          // إذا كان الطالب موجود في قاعدة البيانات، نحدث بياناته، وإلا نضيفه
           const existingStudentId = existingStudentsMap.get(nationalId)
           if (existingStudentId) {
             updateData.push({ id: existingStudentId, ...studentData })
@@ -164,25 +174,41 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
           }
         })
 
-      // إضافة الطلاب الجدد
+      // إذا كان هناك تكرارات في الملف، اعرض تحذير
+      if (duplicatesInFile.length > 0) {
+        console.warn('طلاب مكررين في الملف:', duplicatesInFile)
+        setError(`تنبيه: تم تخطي ${duplicatesInFile.length} طالب مكرر في الملف:\n${duplicatesInFile.slice(0, 5).join('\n')}${duplicatesInFile.length > 5 ? '\n...' : ''}`)
+      }
+
+      // إضافة الطلاب الجدد واحد بواحد لتفادي مشاكل التكرار
       let insertedCount = 0
-      if (insertData.length > 0) {
-        const { data: insertedStudents, error: insertError } = await supabase
-          .from('students')
-          .insert(insertData)
-          .select()
+      let skippedCount = 0
 
-        if (insertError) {
-          console.error('خطأ في إضافة الطلاب:', insertError)
-          throw new Error(`فشل في إضافة الطلاب: ${insertError.message}`)
-        }
+      for (const studentData of insertData) {
+        try {
+          const { data: insertedStudent, error: insertError } = await supabase
+            .from('students')
+            .insert(studentData)
+            .select()
+            .maybeSingle()
 
-        // إضافة للـ IndexedDB المحلي
-        if (insertedStudents) {
-          insertedCount = insertedStudents.length
-          for (const student of insertedStudents) {
-            await db.students.put(student)
+          if (insertError) {
+            // إذا كان الخطأ بسبب تكرار السجل المدني، نتخطاه
+            if (insertError.code === '23505' && insertError.message.includes('students_national_id_key')) {
+              console.warn(`طالب موجود مسبقاً: ${studentData.name} (${studentData.national_id})`)
+              skippedCount++
+              continue
+            }
+            throw insertError
           }
+
+          if (insertedStudent) {
+            insertedCount++
+            await db.students.put(insertedStudent)
+          }
+        } catch (err) {
+          console.error('خطأ في إضافة الطالب:', studentData.name, err)
+          skippedCount++
         }
       }
 
@@ -257,6 +283,10 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
         messages.push(`🔄 تم تحديث ${updatedCount} طالب`)
       }
 
+      if (skippedCount > 0) {
+        messages.push(`⚠️ تم تخطي ${skippedCount} طالب موجود مسبقاً`)
+      }
+
       if (newGroups.length > 0) {
         messages.push(`📚 تم إنشاء ${newGroups.length} مجموعة جديدة`)
       }
@@ -273,7 +303,9 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       }
       onImportComplete()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'حدث خطأ ما')
+      console.error('خطأ في الاستيراد:', err)
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ ما'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }

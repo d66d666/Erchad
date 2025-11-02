@@ -15,6 +15,7 @@ import { SpecialStatusPage } from './pages/SpecialStatusPage'
 import { AbsencePage } from './pages/AbsencePage'
 import { ReceptionPage } from './pages/ReceptionPage'
 import { PermissionPage } from './pages/PermissionPage'
+import { TeachersPage } from './pages/TeachersPage'
 import {
   Home,
   Users,
@@ -27,10 +28,11 @@ import {
   Heart,
   AlertCircle,
   Search,
-  User as UserIcon
+  User as UserIcon,
+  GraduationCap
 } from 'lucide-react'
 
-type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission'
+type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
 
 function App() {
   const [students, setStudents] = useState<Student[]>([])
@@ -139,6 +141,7 @@ function App() {
 
   const navItems = [
     { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home },
+    { id: 'teachers' as Page, label: 'المعلمين', icon: GraduationCap },
     { id: 'groups' as Page, label: 'المجموعات', icon: Users },
     { id: 'special-status' as Page, label: 'الحالات الخاصة', icon: Heart },
     { id: 'reception' as Page, label: 'استقبال الطلاب', icon: UserCheck },
@@ -318,6 +321,10 @@ function App() {
               }}
             />
           </div>
+        )}
+
+        {currentPage === 'teachers' && (
+          <TeachersPage />
         )}
 
         {currentPage === 'groups' && (

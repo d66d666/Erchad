@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Student, SpecialStatus, SchoolInfo } from '../types'
 import { supabase } from '../lib/supabase'
-import { Trash2, Edit2, MoreVertical, Printer } from 'lucide-react'
+import { Trash2, Edit2, MoreVertical, Printer, DoorOpen } from 'lucide-react'
+import { AllowClassEntryModal } from './AllowClassEntryModal'
 
 interface StudentsListProps {
   students: Student[]
@@ -21,6 +22,8 @@ export function StudentsList({
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [loadingDelete, setLoadingDelete] = useState<string | null>(null)
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo | null>(null)
+  const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
 
   useEffect(() => {
     fetchSchoolInfo()
@@ -422,6 +425,18 @@ export function StudentsList({
               {expandedId === student.id && (
                 <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                   <button
+                    onClick={() => {
+                      setSelectedStudent(student)
+                      setShowAllowEntryModal(true)
+                      setExpandedId(null)
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded font-medium text-sm shadow-sm"
+                  >
+                    <DoorOpen size={16} />
+                    السماح بدخول الفصل
+                  </button>
+
+                  <button
                     onClick={() => printStudent(student)}
                     className="w-full flex items-center gap-2 px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded font-medium text-sm border border-gray-200"
                   >
@@ -455,6 +470,15 @@ export function StudentsList({
             )
           })}
       </div>
+
+      <AllowClassEntryModal
+        isOpen={showAllowEntryModal}
+        onClose={() => {
+          setShowAllowEntryModal(false)
+          setSelectedStudent(null)
+        }}
+        student={selectedStudent}
+      />
     </div>
   )
 }

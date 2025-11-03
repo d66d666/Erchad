@@ -294,10 +294,10 @@ function App() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  {schoolName || 'الإرشاد الطلابي'}
+                  {schoolName || 'نظام إدارة شاملة لبيانات الطلاب'}
                 </h1>
                 <p className="text-base text-gray-600 mt-1 font-medium">
-                  {schoolName ? 'نظام إدارة شاملة لبيانات الطلاب' : 'قم بإضافة اسم المدرسة من الإعدادات'}
+                  {schoolName ? '' : 'قم بإضافة وصف النظام من الإعدادات'}
                 </p>
               </div>
             </div>

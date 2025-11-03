@@ -245,19 +245,19 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         <form onSubmit={handleSave} className="p-6 space-y-6">
           <div className="bg-blue-50 rounded-lg p-6 space-y-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              معلومات المرشد الطلابي
+              معلومات الموجه الطلابي
             </h3>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                اسم المرشد الطلابي
+                اسم الموجه الطلابي
               </label>
               <input
                 type="text"
                 value={teacherName}
                 onChange={(e) => setTeacherName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="أدخل اسم المرشد الطلابي"
+                placeholder="أدخل اسم الموجه الطلابي"
               />
             </div>
 
@@ -276,14 +276,14 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                اسم المدرسة / المؤسسة التعليمية
+                وصف النظام
               </label>
               <input
                 type="text"
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="مثال: مدرسة الملك فهد الثانوية"
+                placeholder="مثال: نظام إدارة شاملة لبيانات الطلاب"
               />
             </div>
           </div>

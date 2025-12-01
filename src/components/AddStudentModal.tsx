@@ -198,6 +198,27 @@ export function AddStudentModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                  الصف
+                </label>
+                <select
+                  required
+                  value={formData.grade}
+                  onChange={(e) => {
+                    setFormData({ ...formData, grade: e.target.value, group_id: '' })
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
+                >
+                  <option value="">-- اختر الصف --</option>
+                  {stages.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {stage}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
                   المجموعة
                 </label>
                 <select
@@ -217,27 +238,6 @@ export function AddStudentModal({
                         {group.name}
                       </option>
                     ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
-                  الصف
-                </label>
-                <select
-                  required
-                  value={formData.grade}
-                  onChange={(e) => {
-                    setFormData({ ...formData, grade: e.target.value, group_id: '' })
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
-                >
-                  <option value="">-- اختر الصف --</option>
-                  {stages.map((stage) => (
-                    <option key={stage} value={stage}>
-                      {stage}
-                    </option>
-                  ))}
                 </select>
               </div>
             </div>

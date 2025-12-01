@@ -263,20 +263,20 @@ export function GroupsManagementPage() {
 
   const getStageColor = (stage: string) => {
     const colors = {
-      'الصف الأول الابتدائي': { bg: 'from-blue-500 to-blue-600', light: 'from-blue-50 to-blue-100', border: 'border-blue-200' },
-      'الصف الثاني الابتدائي': { bg: 'from-cyan-500 to-cyan-600', light: 'from-cyan-50 to-cyan-100', border: 'border-cyan-200' },
-      'الصف الثالث الابتدائي': { bg: 'from-teal-500 to-teal-600', light: 'from-teal-50 to-teal-100', border: 'border-teal-200' },
-      'الصف الرابع الابتدائي': { bg: 'from-emerald-500 to-emerald-600', light: 'from-emerald-50 to-emerald-100', border: 'border-emerald-200' },
-      'الصف الخامس الابتدائي': { bg: 'from-green-500 to-green-600', light: 'from-green-50 to-green-100', border: 'border-green-200' },
-      'الصف السادس الابتدائي': { bg: 'from-lime-500 to-lime-600', light: 'from-lime-50 to-lime-100', border: 'border-lime-200' },
-      'الصف الأول المتوسط': { bg: 'from-yellow-500 to-yellow-600', light: 'from-yellow-50 to-yellow-100', border: 'border-yellow-200' },
-      'الصف الثاني المتوسط': { bg: 'from-orange-500 to-orange-600', light: 'from-orange-50 to-orange-100', border: 'border-orange-200' },
-      'الصف الثالث المتوسط': { bg: 'from-amber-500 to-amber-600', light: 'from-amber-50 to-amber-100', border: 'border-amber-200' },
-      'الصف الأول الثانوي': { bg: 'from-red-500 to-red-600', light: 'from-red-50 to-red-100', border: 'border-red-200' },
-      'الصف الثاني الثانوي': { bg: 'from-pink-500 to-pink-600', light: 'from-pink-50 to-pink-100', border: 'border-pink-200' },
-      'الصف الثالث الثانوي': { bg: 'from-rose-500 to-rose-600', light: 'from-rose-50 to-rose-100', border: 'border-rose-200' },
+      'الصف الأول الابتدائي': { bg: 'from-slate-600 to-slate-700', light: 'from-slate-50 to-slate-100', border: 'border-slate-300' },
+      'الصف الثاني الابتدائي': { bg: 'from-gray-600 to-gray-700', light: 'from-gray-50 to-gray-100', border: 'border-gray-300' },
+      'الصف الثالث الابتدائي': { bg: 'from-zinc-600 to-zinc-700', light: 'from-zinc-50 to-zinc-100', border: 'border-zinc-300' },
+      'الصف الرابع الابتدائي': { bg: 'from-stone-600 to-stone-700', light: 'from-stone-50 to-stone-100', border: 'border-stone-300' },
+      'الصف الخامس الابتدائي': { bg: 'from-neutral-600 to-neutral-700', light: 'from-neutral-50 to-neutral-100', border: 'border-neutral-300' },
+      'الصف السادس الابتدائي': { bg: 'from-slate-700 to-slate-800', light: 'from-slate-50 to-slate-100', border: 'border-slate-300' },
+      'الصف الأول المتوسط': { bg: 'from-gray-700 to-gray-800', light: 'from-gray-50 to-gray-100', border: 'border-gray-300' },
+      'الصف الثاني المتوسط': { bg: 'from-zinc-700 to-zinc-800', light: 'from-zinc-50 to-zinc-100', border: 'border-zinc-300' },
+      'الصف الثالث المتوسط': { bg: 'from-stone-700 to-stone-800', light: 'from-stone-50 to-stone-100', border: 'border-stone-300' },
+      'الصف الأول الثانوي': { bg: 'from-neutral-700 to-neutral-800', light: 'from-neutral-50 to-neutral-100', border: 'border-neutral-300' },
+      'الصف الثاني الثانوي': { bg: 'from-slate-800 to-slate-900', light: 'from-slate-50 to-slate-100', border: 'border-slate-300' },
+      'الصف الثالث الثانوي': { bg: 'from-gray-800 to-gray-900', light: 'from-gray-50 to-gray-100', border: 'border-gray-300' },
     }
-    return colors[stage as keyof typeof colors] || { bg: 'from-gray-500 to-gray-600', light: 'from-gray-50 to-gray-100', border: 'border-gray-200' }
+    return colors[stage as keyof typeof colors] || { bg: 'from-gray-600 to-gray-700', light: 'from-gray-50 to-gray-100', border: 'border-gray-300' }
   }
 
   return (

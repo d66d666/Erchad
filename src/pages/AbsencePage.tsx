@@ -41,12 +41,12 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [teacherName, setTeacherName] = useState('')
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
+  const [systemDescription, setSystemDescription] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchViolations()
     fetchTeacherProfile()
-    fetchSchoolName()
   }, [])
 
   useEffect(() => {
@@ -65,16 +65,11 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     if (profile?.phone) {
       setTeacherPhone(profile.phone)
     }
-  }
-
-  async function fetchSchoolName() {
-    const { data: schoolInfo } = await supabase
-      .from('school_info')
-      .select('school_name')
-      .maybeSingle()
-
-    if (schoolInfo?.school_name) {
-      setSchoolName(schoolInfo.school_name)
+    if (profile?.school_name) {
+      setSchoolName(profile.school_name)
+    }
+    if (profile?.system_description) {
+      setSystemDescription(profile.system_description)
     }
   }
 
@@ -391,7 +386,7 @@ ${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
         <body>
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
-            <div class="header-line">نظام المشرف الصحي المدرسي</div>
+            <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
             <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">إشعار مخالفة سلوكية</div>
           </div>

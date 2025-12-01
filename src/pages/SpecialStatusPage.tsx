@@ -66,6 +66,8 @@ export function SpecialStatusPage({
       .maybeSingle()
 
     const teacherName = teacherProfile?.name || ''
+    const schoolName = teacherProfile?.school_name || ''
+    const systemDescription = teacherProfile?.system_description || ''
     const now = new Date()
     const date = now.toLocaleDateString('ar-SA')
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
@@ -76,6 +78,8 @@ export function SpecialStatusPage({
           <title>جميع الحالات الخاصة</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header-line { font-size: 14px; color: #374151; margin: 3px 0; }
             h1 { text-align: center; color: #f43f5e; margin-bottom: 10px; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 30px; }
             .group-section { margin-bottom: 40px; page-break-after: always; }
@@ -89,8 +93,13 @@ export function SpecialStatusPage({
           </style>
         </head>
         <body>
+          <div class="header">
+            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
+            <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
+            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+          </div>
           <h1>جميع الحالات الخاصة</h1>
-          <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}${teacherName ? ' - بواسطة: ' + teacherName : ''}</div>
+          <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
             <strong>إجمالي الطلاب ذوي الحالات الخاصة: ${studentsWithSpecialStatus.length}</strong>
           </p>
@@ -156,6 +165,8 @@ export function SpecialStatusPage({
       .maybeSingle()
 
     const teacherName = teacherProfile?.name || ''
+    const schoolName = teacherProfile?.school_name || ''
+    const systemDescription = teacherProfile?.system_description || ''
     const now = new Date()
     const date = now.toLocaleDateString('ar-SA')
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
@@ -166,6 +177,8 @@ export function SpecialStatusPage({
           <title>الحالات الخاصة - ${group.name}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header-line { font-size: 14px; color: #374151; margin: 3px 0; }
             h1 { text-align: center; color: #1e293b; font-size: 22px; font-weight: 700; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -176,8 +189,13 @@ export function SpecialStatusPage({
           </style>
         </head>
         <body>
+          <div class="header">
+            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
+            <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
+            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+          </div>
           <h1>الحالات الخاصة - ${group.name}</h1>
-          <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}${teacherName ? ' - بواسطة: ' + teacherName : ''}</div>
+          <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
           <table>
             <thead>

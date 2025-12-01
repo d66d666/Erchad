@@ -106,6 +106,7 @@ export function StudentsList({
 
     const teacherName = teacherProfile?.name || ''
     const schoolName = teacherProfile?.school_name || schoolInfo?.school_name || 'اسم المدرسة'
+    const systemDescription = teacherProfile?.system_description || 'برنامج إدارة الطلاب'
 
 
     const printWindow = window.open('', '', 'width=800,height=600')
@@ -159,9 +160,16 @@ export function StudentsList({
 
             .header .school-name {
               font-size: 16px;
-              margin-bottom: 8px;
+              margin-bottom: 4px;
               opacity: 0.95;
               font-weight: 500;
+            }
+
+            .header .system-description {
+              font-size: 13px;
+              margin-bottom: 8px;
+              opacity: 0.9;
+              font-weight: 400;
             }
 
             .header .meta {
@@ -278,6 +286,7 @@ export function StudentsList({
           <div class="page-container">
             <div class="header">
               <div class="school-name">${schoolName}</div>
+              <div class="system-description">${systemDescription}</div>
               <h1>بطاقة بيانات الطالب</h1>
               <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}${teacherName ? ' - بواسطة: ' + teacherName : ''}</div>
             </div>

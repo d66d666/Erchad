@@ -14,6 +14,7 @@ export function GroupsPage() {
   const [loading, setLoading] = useState(true)
   const [schoolName, setSchoolName] = useState('')
   const [teacherName, setTeacherName] = useState('')
+  const [systemDescription, setSystemDescription] = useState('')
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
@@ -47,6 +48,8 @@ export function GroupsPage() {
       const profileRes = await supabase.from('teacher_profile').select('*').maybeSingle()
       if (profileRes.data) {
         setTeacherName(profileRes.data.name || '')
+        setSchoolName(profileRes.data.school_name || '')
+        setSystemDescription(profileRes.data.system_description || '')
       }
 
       const { data: schoolInfoData } = await supabase
@@ -57,7 +60,6 @@ export function GroupsPage() {
 
       if (schoolInfoData) {
         setSchoolInfo(schoolInfoData)
-        setSchoolName(schoolInfoData.school_name || '')
       }
 
       // Sort groups by stage and display_order
@@ -147,6 +149,7 @@ export function GroupsPage() {
         <body>
           <div class="header">
             <h1>${schoolName || 'اسم المدرسة'}</h1>
+            <p class="header-info">${systemDescription || 'برنامج إدارة الطلاب'}</p>
             <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
             <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
           </div>
@@ -240,6 +243,7 @@ export function GroupsPage() {
         <body>
           <div class="header">
             <h1>${schoolName || 'اسم المدرسة'}</h1>
+            <p class="header-info">${systemDescription || 'برنامج إدارة الطلاب'}</p>
             <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
             <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
           </div>

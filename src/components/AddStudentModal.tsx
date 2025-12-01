@@ -204,19 +204,19 @@ export function AddStudentModal({
                   required
                   value={formData.group_id}
                   onChange={(e) => {
-                    const selectedGroup = groups.find(g => g.id === e.target.value)
-                    if (selectedGroup) {
-                      setFormData({ ...formData, group_id: e.target.value, grade: selectedGroup.stage })
-                    }
+                    setFormData({ ...formData, group_id: e.target.value })
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
+                  disabled={!formData.grade}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">-- اختر المجموعة --</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.stage} - {group.name}
-                    </option>
-                  ))}
+                  {groups
+                    .filter(g => g.stage === formData.grade)
+                    .map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -224,13 +224,21 @@ export function AddStudentModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
                   الصف
                 </label>
-                <input
-                  type="text"
+                <select
+                  required
                   value={formData.grade}
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-right text-gray-600"
-                  placeholder="-- اختر الصف --"
-                />
+                  onChange={(e) => {
+                    setFormData({ ...formData, grade: e.target.value, group_id: '' })
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
+                >
+                  <option value="">-- اختر الصف --</option>
+                  {stages.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {stage}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

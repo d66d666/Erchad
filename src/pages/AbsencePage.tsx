@@ -254,21 +254,36 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       return
     }
 
-    const message = `السلام عليكم ورحمة الله وبركاته
+    const violationDate = new Date(violation.violation_date)
+    const message = `━━━━━━━━━━━━━━━━━━
+⚠️ *إشعار مخالفة سلوكية*
+━━━━━━━━━━━━━━━━━━
 
-عزيزي ولي أمر الطالب: ${violation.student.name}
+السلام عليكم ورحمة الله وبركاته
 
-نود إعلامكم بتسجيل مخالفة سلوكية على الطالب بتاريخ: ${new Date(violation.violation_date).toLocaleDateString('ar-SA')}
+عزيزي ولي أمر الطالب: *${violation.student.name}*
 
-⚠️ نوع المخالفة: ${violation.violation_type}
-📝 الوصف: ${violation.description}
-✅ الإجراء المتخذ: ${violation.action_taken}
+نود إعلامكم بتسجيل مخالفة سلوكية على الطالب
 
-للاستفسار يرجى التواصل مع:
-${teacherName ? teacherName : 'مسؤول النظام'}
-${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
+📅 *التاريخ:* ${violationDate.toLocaleDateString('ar-SA')}
+⏰ *الوقت:* ${violationDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 
-مع تحيات إدارة المدرسة`
+─────────────────
+📋 *تفاصيل المخالفة*
+─────────────────
+
+• *نوع المخالفة:* ${violation.violation_type}
+
+• *الوصف:* ${violation.description}
+
+• *الإجراء المتخذ:* ${violation.action_taken}
+
+━━━━━━━━━━━━━━━━━━
+📞 *للاستفسار يرجى التواصل مع:*
+الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
+
+مع تحيات إدارة المدرسة
+━━━━━━━━━━━━━━━━━━`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

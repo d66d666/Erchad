@@ -3,6 +3,7 @@ import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown, Printer, UserPl
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Group, Student } from '../types'
+import { AddStudentModal } from '../components/AddStudentModal'
 
 export function GroupsManagementPage() {
   const [groups, setGroups] = useState<Group[]>([])
@@ -16,6 +17,7 @@ export function GroupsManagementPage() {
   const [editStage, setEditStage] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showManageModal, setShowManageModal] = useState(false)
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>(() => {
     const allStages = {} as Record<string, boolean>
     return allStages
@@ -323,6 +325,7 @@ export function GroupsManagementPage() {
           </label>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowAddStudentModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
             >
               <UserPlus size={16} />
@@ -336,6 +339,7 @@ export function GroupsManagementPage() {
               <span>إدارة المجموعات</span>
             </button>
             <button
+              onClick={() => window.print()}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
             >
               <Printer size={16} />
@@ -564,6 +568,16 @@ export function GroupsManagementPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showAddStudentModal && (
+        <AddStudentModal
+          onClose={() => {
+            setShowAddStudentModal(false)
+            fetchStudents()
+            fetchStudentCounts()
+          }}
+        />
       )}
     </div>
   )

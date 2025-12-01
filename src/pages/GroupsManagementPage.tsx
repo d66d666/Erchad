@@ -468,7 +468,9 @@ export function GroupsManagementPage() {
                                           <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">السجل المدني</th>
                                           <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال الطالب</th>
                                           <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال ولي الأمر</th>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الحالة الخاصة</th>
+                                          {showStatusDetails && (
+                                            <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الحالة الخاصة</th>
+                                          )}
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-200">
@@ -478,15 +480,17 @@ export function GroupsManagementPage() {
                                             <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.civil_id || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.phone || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.guardian_phone || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                                              {student.special_status ? (
-                                                <span className="inline-block px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                                                  {student.special_status}
-                                                </span>
-                                              ) : (
-                                                <span className="text-gray-400">-</span>
-                                              )}
-                                            </td>
+                                            {showStatusDetails && (
+                                              <td className="px-6 py-4 text-sm text-gray-900 text-right">
+                                                {student.special_status ? (
+                                                  <span className="inline-block px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
+                                                    {student.special_status}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-gray-400">-</span>
+                                                )}
+                                              </td>
+                                            )}
                                           </tr>
                                         ))}
                                       </tbody>
@@ -499,6 +503,17 @@ export function GroupsManagementPage() {
                                 )}
 
                                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={showStatusDetails}
+                                        onChange={(e) => setShowStatusDetails(e.target.checked)}
+                                        className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
+                                      />
+                                      <span>إظهار تفاصيل الحالة</span>
+                                    </label>
+                                  </div>
                                   <div className="flex items-center gap-1">
                                     <button
                                       onClick={() => handleMoveUp(group, stageGroups)}

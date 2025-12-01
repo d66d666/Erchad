@@ -463,106 +463,162 @@ function App() {
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         {currentPage === 'home' && (
-          <div className="space-y-6">
-            {/* Search Box */}
-            <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
-                <Search className="text-white" size={28} />
+          <div className="flex gap-6">
+            {/* Sidebar */}
+            <aside className="w-80">
+              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-800">التصفية</h3>
+                  <Settings className="text-gray-600" size={22} />
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">الحالات الخاصة</label>
+                    <select
+                      value={specialStatusFilter}
+                      onChange={(e) => setSpecialStatusFilter(e.target.value)}
+                      className="w-full px-4 py-3 bg-orange-50 border-2 border-orange-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    >
+                      <option value="all">الكل</option>
+                      {specialStatuses.map(status => (
+                        <option key={status.id} value={status.id}>{status.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">حالة الطالب</label>
+                    <select
+                      value={activityFilter}
+                      onChange={(e) => setActivityFilter(e.target.value)}
+                      className="w-full px-4 py-3 bg-teal-50 border-2 border-teal-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    >
+                      <option value="all">الكل</option>
+                    </select>
+                  </div>
+
+                  <div className="border-t pt-4 mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-bold text-gray-800">المجموعات</h4>
+                      <Users className="text-blue-600" size={20} />
+                    </div>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setGroupFilter('all')}
+                        className={`w-full px-4 py-3 rounded-xl font-bold ${groupFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                      >
+                        جميع المجموعات
+                      </button>
+                      {groups.sort((a, b) => a.display_order - b.display_order).map(group => (
+                        <button
+                          key={group.id}
+                          onClick={() => setGroupFilter(group.id)}
+                          className={`w-full px-4 py-3 rounded-xl font-bold flex items-center justify-between ${
+                            groupFilter === group.id ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white' : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          <span>{group.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
-                className="w-full px-6 py-4 rounded-xl text-lg border-none focus:outline-none focus:ring-2 focus:ring-teal-300"
-              />
-            </div>
+            </aside>
 
-            {/* Groups and Students */}
-            {students.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
-                <Users size={64} className="mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-bold text-gray-700 mb-2">لا يوجد طلاب</h3>
-                <p className="text-gray-500">قم بإضافة طلاب من خلال استيراد Excel أو إضافة يدوية</p>
+            {/* Main */}
+            <div className="flex-1">
+              <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
+                  <Search className="text-white" size={28} />
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
+                    className="w-full px-6 py-4 pr-12 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-white"
+                  />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
+                </div>
               </div>
-            ) : (
-              <div className="space-y-6">
-                {groups
-                  .sort((a, b) => a.display_order - b.display_order)
-                  .map(group => {
-                    const groupStudents = students
-                      .filter(s => s.group_id === group.id)
-                      .filter(s =>
-                        searchTerm === '' ||
-                        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        s.national_id.includes(searchTerm) ||
-                        s.phone.includes(searchTerm) ||
-                        s.guardian_phone.includes(searchTerm)
-                      )
 
-                    if (groupStudents.length === 0 && searchTerm !== '') return null
+              {students.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
+                  <Users size={64} className="mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-bold text-gray-700 mb-2">لا يوجد طلاب</h3>
+                  <p className="text-gray-500">قم بإضافة طلاب من خلال استيراد Excel</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {groups
+                    .filter(g => groupFilter === 'all' || g.id === groupFilter)
+                    .sort((a, b) => a.display_order - b.display_order)
+                    .map(group => {
+                      const groupStudents = students
+                        .filter(s => s.group_id === group.id)
+                        .filter(s =>
+                          searchTerm === '' ||
+                          s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          s.national_id.includes(searchTerm) ||
+                          s.phone.includes(searchTerm) ||
+                          s.guardian_phone.includes(searchTerm)
+                        )
+                        .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
 
-                    return (
-                      <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                        <div className="bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-4 flex items-center justify-between">
-                          <h3 className="text-xl font-bold text-white">{group.name}</h3>
-                          <div className="bg-white bg-opacity-30 px-4 py-1 rounded-full">
-                            <span className="text-white font-bold">{groupStudents.length} طالب</span>
+                      if (groupStudents.length === 0 && searchTerm !== '') return null
+
+                      return (
+                        <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                          <div className="bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-white">{group.name}</h3>
+                            <div className="bg-white bg-opacity-30 px-4 py-2 rounded-full">
+                              <span className="text-white font-bold text-sm">{groupStudents.length} طالب</span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="p-6">
-                          {groupStudents.length === 0 ? (
-                            <p className="text-center text-gray-500 py-8">لا يوجد طلاب في هذه المجموعة</p>
-                          ) : (
-                            <div className="space-y-3">
-                              {groupStudents.map((student, idx) => (
-                                <div
-                                  key={student.id}
-                                  className="border border-gray-200 rounded-xl p-4 hover:border-teal-300 hover:shadow-md transition-all"
-                                >
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="text-lg font-bold text-gray-900">{student.name}</h4>
-                                        {student.special_status_id && (
-                                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded">
-                                            حالة خاصة
-                                          </span>
-                                        )}
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-                                        <p className="text-gray-600">
-                                          <span className="font-semibold">السجل:</span> {student.national_id}
-                                        </p>
-                                        <p className="text-gray-600">
-                                          <span className="font-semibold">الصف:</span> {student.grade}
-                                        </p>
-                                        <p className="text-gray-600">
-                                          <span className="font-semibold">جوال:</span> {student.phone}
-                                        </p>
-                                        <p className="text-gray-600">
-                                          <span className="font-semibold">ولي أمر:</span> {student.guardian_phone}
-                                        </p>
+                          <div className="p-6">
+                            {groupStudents.length === 0 ? (
+                              <p className="text-center text-gray-500 py-8">لا يوجد طلاب</p>
+                            ) : (
+                              <div className="space-y-3">
+                                {groupStudents.map(student => {
+                                  const specialStatus = specialStatuses.find(ss => ss.id === student.special_status_id)
+                                  return (
+                                    <div
+                                      key={student.id}
+                                      className={`border-2 rounded-xl p-4 transition-all ${
+                                        specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
+                                      }`}
+                                    >
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                          <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>
+                                          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right">
+                                            <p className="text-gray-700">السجل: {student.national_id}</p>
+                                            <p className="text-gray-700">الصف: {student.grade}</p>
+                                            <p className="text-gray-700">جوال: {student.phone}</p>
+                                            <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
+                                          </div>
+                                        </div>
+                                        <button className="p-2 hover:bg-white rounded-lg">
+                                          <span className="text-2xl text-gray-600">⋮</span>
+                                        </button>
                                       </div>
                                     </div>
-                                    <button
-                                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                      title="المزيد"
-                                    >
-                                      <span className="text-2xl text-gray-600">⋮</span>
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  })}
-              </div>
-            )}
+                      )
+                    })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

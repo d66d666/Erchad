@@ -24,6 +24,15 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [passwordError, setPasswordError] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [autoLogoutMinutes, setAutoLogoutMinutes] = useState('disabled')
+  const [deleteOptions, setDeleteOptions] = useState({
+    students: false,
+    teachers: false,
+    specialStatuses: false,
+    visits: false,
+    permissions: false,
+    violations: false,
+    all: false,
+  })
 
   useEffect(() => {
     fetchProfile()
@@ -196,29 +205,80 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     }
   }
 
+  const handleDeleteOptionChange = (option: keyof typeof deleteOptions) => {
+    if (option === 'all') {
+      const newValue = !deleteOptions.all
+      setDeleteOptions({
+        students: newValue,
+        teachers: newValue,
+        specialStatuses: newValue,
+        visits: newValue,
+        permissions: newValue,
+        violations: newValue,
+        all: newValue,
+      })
+    } else {
+      setDeleteOptions(prev => ({
+        ...prev,
+        [option]: !prev[option],
+        all: false,
+      }))
+    }
+  }
+
   const handleResetDatabase = async () => {
+    if (!deleteOptions.students && !deleteOptions.teachers && !deleteOptions.specialStatuses &&
+        !deleteOptions.visits && !deleteOptions.permissions && !deleteOptions.violations && !deleteOptions.all) {
+      alert('الرجاء اختيار البيانات المراد حذفها')
+      return
+    }
+
     setResetLoading(true)
     try {
-      // حذف جميع البيانات من Supabase
-      // نستخدم gt('created_at', '1900-01-01') عشان نتجاوز RLS ونحذف كل شي
-      const { error: violationsError } = await supabase.from('student_violations').delete().gt('created_at', '1900-01-01')
-      const { error: permissionsError } = await supabase.from('student_permissions').delete().gt('created_at', '1900-01-01')
-      const { error: visitsError } = await supabase.from('student_visits').delete().gt('created_at', '1900-01-01')
-      const { error: studentsError } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      const { error: teachersError } = await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      const { error: statusesError } = await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      const { error: groupsError } = await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      const errors = []
 
-      // حذف جميع البيانات من IndexedDB (المحلي)
-      await db.students.clear()
-      await db.groups.clear()
-      await db.special_statuses.clear()
-      await db.student_visits.clear()
-      await db.student_permissions.clear()
-      await db.student_violations.clear()
+      if (deleteOptions.violations || deleteOptions.all) {
+        const { error: violationsError } = await supabase.from('student_violations').delete().gt('created_at', '1900-01-01')
+        if (violationsError) errors.push(violationsError)
+        await db.student_violations.clear()
+      }
 
-      // لو في أخطاء، نعرضها
-      const errors = [violationsError, permissionsError, visitsError, studentsError, teachersError, statusesError, groupsError].filter(e => e)
+      if (deleteOptions.permissions || deleteOptions.all) {
+        const { error: permissionsError } = await supabase.from('student_permissions').delete().gt('created_at', '1900-01-01')
+        if (permissionsError) errors.push(permissionsError)
+        await db.student_permissions.clear()
+      }
+
+      if (deleteOptions.visits || deleteOptions.all) {
+        const { error: visitsError } = await supabase.from('student_visits').delete().gt('created_at', '1900-01-01')
+        if (visitsError) errors.push(visitsError)
+        await db.student_visits.clear()
+      }
+
+      if (deleteOptions.students || deleteOptions.all) {
+        const { error: studentsError } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        if (studentsError) errors.push(studentsError)
+        await db.students.clear()
+      }
+
+      if (deleteOptions.teachers || deleteOptions.all) {
+        const { error: teachersError } = await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        if (teachersError) errors.push(teachersError)
+        await db.teachers.clear()
+      }
+
+      if (deleteOptions.specialStatuses || deleteOptions.all) {
+        const { error: statusesError } = await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        if (statusesError) errors.push(statusesError)
+        await db.special_statuses.clear()
+      }
+
+      if (deleteOptions.all) {
+        const { error: groupsError } = await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        if (groupsError) errors.push(groupsError)
+        await db.groups.clear()
+      }
+
       if (errors.length > 0) {
         console.error('Errors during reset:', errors)
         alert('تم حذف بعض البيانات ولكن حدثت بعض الأخطاء. جرب مرة أخرى.')
@@ -227,8 +287,17 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         return
       }
 
-      alert('تم حذف جميع البيانات بنجاح! يمكنك الآن رفع ملف إكسل جديد.')
+      alert('تم حذف البيانات المحددة بنجاح!')
       setShowResetConfirm(false)
+      setDeleteOptions({
+        students: false,
+        teachers: false,
+        specialStatuses: false,
+        visits: false,
+        permissions: false,
+        violations: false,
+        all: false,
+      })
       onClose()
       window.location.reload()
     } catch (error) {
@@ -476,38 +545,73 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
               <div className="bg-white rounded-lg p-4 space-y-2">
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">الطلاب</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.students}
+                    onChange={() => handleDeleteOptionChange('students')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">المعلمين</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.teachers}
+                    onChange={() => handleDeleteOptionChange('teachers')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">الحالات الخاصة</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.specialStatuses}
+                    onChange={() => handleDeleteOptionChange('specialStatuses')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">استقبال الطلاب</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.visits}
+                    onChange={() => handleDeleteOptionChange('visits')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">الاستئذانات</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.permissions}
+                    onChange={() => handleDeleteOptionChange('permissions')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
                   <span className="text-sm text-gray-700">المخالفات</span>
-                  <input type="checkbox" className="w-5 h-5 text-red-600 rounded focus:ring-red-500" />
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.violations}
+                    onChange={() => handleDeleteOptionChange('violations')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
                 </label>
 
                 <div className="border-t pt-2 mt-2">
                   <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-purple-50 p-2 rounded">
                     <span className="text-sm font-bold text-purple-700">جميع البيانات</span>
-                    <input type="checkbox" className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" />
+                    <input
+                      type="checkbox"
+                      checked={deleteOptions.all}
+                      onChange={() => handleDeleteOptionChange('all')}
+                      className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                    />
                   </label>
                 </div>
               </div>

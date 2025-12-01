@@ -43,6 +43,10 @@ export function AbsencePage() {
     fetchTeacherProfile()
   }, [])
 
+  useEffect(() => {
+    fetchViolations(dateFilter, violationSearchTerm)
+  }, [violationSearchTerm])
+
   async function fetchTeacherProfile() {
     const profile = await db.teacher_profile.toCollection().first()
     if (profile?.name) {
@@ -86,14 +90,18 @@ export function AbsencePage() {
     }
   }
 
-  async function fetchViolations(filterDate?: string) {
+  async function fetchViolations(filterDate?: string, searchQuery?: string) {
     try {
       let query = supabase
         .from('student_violations')
         .select('*')
         .order('violation_date', { ascending: false })
 
-      if (filterDate) {
+      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      if (searchQuery && searchQuery.trim() !== '') {
+        // لا تحديد بالتاريخ، جلب كل المخالفات للبحث
+        query = query.limit(200)
+      } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
@@ -630,13 +638,18 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             <input
               type="text"
               value={violationSearchTerm}
-              onChange={(e) => setViolationSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setViolationSearchTerm(e.target.value)
+              }}
               placeholder="ابحث في السجل بالاسم أو السجل المدني..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
             {violationSearchTerm && (
               <button
-                onClick={() => setViolationSearchTerm('')}
+                onClick={() => {
+                  setViolationSearchTerm('')
+                  fetchViolations(dateFilter, '')
+                }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
                 إعادة تعيين

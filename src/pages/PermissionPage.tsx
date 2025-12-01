@@ -37,6 +37,10 @@ export function PermissionPage() {
     fetchTeacherProfile()
   }, [])
 
+  useEffect(() => {
+    fetchPermissions(dateFilter, permissionSearchTerm)
+  }, [permissionSearchTerm])
+
   async function fetchTeacherProfile() {
     const profile = await db.teacher_profile.toCollection().first()
     if (profile?.name) {
@@ -98,7 +102,7 @@ export function PermissionPage() {
     }
   }
 
-  async function fetchPermissions(filterDate?: string) {
+  async function fetchPermissions(filterDate?: string, searchQuery?: string) {
     try {
       // إعداد الفلتر الزمني
       let query = supabase
@@ -106,7 +110,11 @@ export function PermissionPage() {
         .select('*')
         .order('permission_date', { ascending: false })
 
-      if (filterDate) {
+      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      if (searchQuery && searchQuery.trim() !== '') {
+        // لا تحديد بالتاريخ، جلب كل الاستئذانات للبحث
+        query = query.limit(200)
+      } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
@@ -661,7 +669,10 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             />
             {permissionSearchTerm && (
               <button
-                onClick={() => setPermissionSearchTerm('')}
+                onClick={() => {
+                  setPermissionSearchTerm('')
+                  fetchPermissions(dateFilter, '')
+                }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
                 إعادة تعيين

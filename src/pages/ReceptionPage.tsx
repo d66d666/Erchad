@@ -38,6 +38,10 @@ export function ReceptionPage() {
     fetchTeacherProfile()
   }, [])
 
+  useEffect(() => {
+    fetchVisits(dateFilter, visitSearchTerm)
+  }, [visitSearchTerm])
+
   async function fetchTeacherProfile() {
     const profile = await db.teacher_profile.toCollection().first()
     if (profile?.name) {
@@ -98,14 +102,18 @@ export function ReceptionPage() {
     setStudents(studentsWithRelations as Student[])
   }
 
-  async function fetchVisits(filterDate?: string) {
+  async function fetchVisits(filterDate?: string, searchQuery?: string) {
     try {
       let query = supabase
         .from('student_visits')
         .select('*')
         .order('visit_date', { ascending: false })
 
-      if (filterDate) {
+      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      if (searchQuery && searchQuery.trim() !== '') {
+        // لا تحديد بالتاريخ، جلب كل الزيارات للبحث
+        query = query.limit(200)
+      } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
@@ -640,7 +648,10 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             />
             {visitSearchTerm && (
               <button
-                onClick={() => setVisitSearchTerm('')}
+                onClick={() => {
+                  setVisitSearchTerm('')
+                  fetchVisits(dateFilter, '')
+                }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
                 إعادة تعيين

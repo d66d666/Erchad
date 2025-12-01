@@ -16,13 +16,24 @@ export function GroupsManagementPage() {
   const [editStage, setEditStage] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showManageModal, setShowManageModal] = useState(false)
-  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({})
+  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>(() => {
+    const allStages = {} as Record<string, boolean>
+    return allStages
+  })
 
   useEffect(() => {
     fetchGroups()
     fetchStudentCounts()
     fetchStudents()
   }, [])
+
+  useEffect(() => {
+    const allStages = {} as Record<string, boolean>
+    groups.forEach(group => {
+      allStages[group.stage] = true
+    })
+    setExpandedStages(allStages)
+  }, [groups])
 
   const fetchGroups = async () => {
     // Fetch from Supabase first

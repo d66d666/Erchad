@@ -926,9 +926,9 @@ function App() {
 
       {showManageSpecialStatusModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">إدارة الحالات الخاصة</h2>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[70vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-3.5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">إدارة الحالات الخاصة</h2>
               <button
                 onClick={() => {
                   setShowManageSpecialStatusModal(false)
@@ -936,12 +936,12 @@ function App() {
                 }}
                 className="text-white hover:bg-white/20 rounded-lg p-1.5 transition-colors"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-2.5">
                 {specialStatuses.map((status) => {
                   const studentCount = students.filter(
                     (s) => s.special_status_id === status.id
@@ -950,37 +950,37 @@ function App() {
                   return (
                     <div
                       key={status.id}
-                      className="flex items-center justify-between bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-pink-300 transition-colors"
+                      className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-cyan-300 transition-colors"
                     >
                       <div className="flex-1">
-                        <span className="text-gray-800 font-medium">{status.name}</span>
+                        <span className="text-gray-800 font-medium text-sm">{status.name}</span>
                         {studentCount > 0 && (
-                          <span className="text-sm text-gray-500 mr-2">
+                          <span className="text-xs text-gray-500 mr-2">
                             ({studentCount} طالب)
                           </span>
                         )}
                       </div>
                       <button
                         onClick={() => handleDeleteSpecialStatus(status.id)}
-                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                         title="حذف"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   )
                 })}
 
                 {specialStatuses.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-6 text-gray-500 text-sm">
                     لا توجد حالات خاصة بعد
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-              <div className="mb-3 text-sm font-medium text-gray-700">
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="mb-2 text-xs font-medium text-gray-700">
                 اسم الحالة الخاصة
               </div>
               <div className="flex gap-2">
@@ -994,14 +994,14 @@ function App() {
                     }
                   }}
                   placeholder="مثال: ربو، سكري، يتيم..."
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                 />
                 <button
                   onClick={handleAddSpecialStatus}
                   disabled={!newStatusName.trim()}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-medium hover:from-pink-600 hover:to-pink-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg text-sm font-medium hover:from-cyan-600 hover:to-blue-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Plus size={18} />
+                  <Plus size={16} />
                   <span>إضافة</span>
                 </button>
               </div>

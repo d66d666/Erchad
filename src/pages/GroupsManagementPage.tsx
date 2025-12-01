@@ -57,16 +57,26 @@ export function GroupsManagementPage() {
   }
 
   const fetchStudents = async () => {
-    // Fetch from Supabase first
+    // Fetch from Supabase first with special_status joined
     const { data: supabaseStudents } = await supabase
       .from('students')
-      .select('*')
+      .select(`
+        *,
+        special_status:special_statuses(name)
+      `)
 
     if (supabaseStudents) {
+      // Map the data to match Student interface
+      const mappedStudents = supabaseStudents.map((s: any) => ({
+        ...s,
+        civil_id: s.national_id,
+        special_status: s.special_status?.name || null
+      }))
+
       // Sync to IndexedDB
       await db.students.clear()
-      await db.students.bulkAdd(supabaseStudents)
-      setStudents(supabaseStudents as Student[])
+      await db.students.bulkAdd(mappedStudents)
+      setStudents(mappedStudents as Student[])
     } else {
       // Fallback to IndexedDB
       const allStudents = await db.students.toArray()

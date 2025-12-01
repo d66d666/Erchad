@@ -90,8 +90,6 @@ export function SpecialStatusPage({
                 <thead>
                   <tr>
                     <th>الاسم</th>
-                    <th>المرحلة</th>
-                    <th>المجموعة</th>
                     <th>السجل المدني</th>
                     <th>جوال الطالب</th>
                     <th>جوال ولي الأمر</th>
@@ -109,8 +107,6 @@ export function SpecialStatusPage({
                         return `
                     <tr>
                       <td>${student.name}</td>
-                      <td>${group.stage}</td>
-                      <td>${group.name}</td>
                       <td>${student.national_id}</td>
                       <td>${student.phone}</td>
                       <td>${student.guardian_phone}</td>
@@ -170,8 +166,6 @@ export function SpecialStatusPage({
             <thead>
               <tr>
                 <th>الاسم</th>
-                <th>المرحلة</th>
-                <th>المجموعة</th>
                 <th>السجل المدني</th>
                 <th>جوال الطالب</th>
                 <th>جوال ولي الأمر</th>
@@ -188,8 +182,6 @@ export function SpecialStatusPage({
                     return `
                 <tr>
                   <td>${student.name}</td>
-                  <td>${group.stage}</td>
-                  <td>${group.name}</td>
                   <td>${student.national_id}</td>
                   <td>${student.phone}</td>
                   <td>${student.guardian_phone}</td>
@@ -291,12 +283,6 @@ export function SpecialStatusPage({
                       الاسم
                     </th>
                     <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      المرحلة
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      المجموعة
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       السجل المدني
                     </th>
                     <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
@@ -319,12 +305,6 @@ export function SpecialStatusPage({
                       <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
                           {student.name}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
-                          {group.stage}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
-                          {group.name}
                         </td>
                         <td className="px-5 py-3.5 text-sm text-gray-600">
                           {student.national_id}

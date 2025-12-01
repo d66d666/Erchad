@@ -433,7 +433,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     }
 
     const visitDate = new Date(visit.visit_date)
-    const message = `*إشعار من الإرشاد الطلابي*
+    const message = `*إشعار*
 
 السلام عليكم ورحمة الله وبركاته
 

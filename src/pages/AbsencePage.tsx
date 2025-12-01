@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db, StudentViolation } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student } from '../types'
-import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send } from 'lucide-react'
+import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send, Trash2 } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface ViolationWithStudent extends StudentViolation {
@@ -236,6 +236,40 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
+  }
+
+  async function handleDeleteViolation(violationId: string, studentId: string) {
+    if (!confirm('هل أنت متأكد من حذف هذه المخالفة؟')) return
+
+    try {
+      const { error } = await supabase
+        .from('student_violations')
+        .delete()
+        .eq('id', violationId)
+
+      if (error) throw error
+
+      const student = students.find(s => s.id === studentId)
+      if (student && student.violation_count > 0) {
+        await supabase
+          .from('students')
+          .update({ violation_count: student.violation_count - 1 })
+          .eq('id', studentId)
+
+        await db.students.update(studentId, {
+          violation_count: student.violation_count - 1
+        })
+      }
+
+      await db.student_violations.delete(violationId)
+
+      alert('تم حذف المخالفة بنجاح')
+      fetchStudents()
+      fetchViolations(dateFilter)
+    } catch (error) {
+      console.error('Error deleting violation:', error)
+      alert('حدث خطأ أثناء الحذف')
+    }
   }
 
   async function printViolation(violation: ViolationWithStudent) {
@@ -581,7 +615,14 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                       {violation.violation_type}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => handleDeleteViolation(violation.id, violation.student_id)}
+                      className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={16} />
+                      حذف
+                    </button>
                     <button
                       onClick={() => printViolation(violation)}
                       className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"

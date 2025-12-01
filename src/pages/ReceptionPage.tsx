@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
-import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter } from 'lucide-react'
+import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2 } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface VisitWithStudent extends StudentVisit {
@@ -211,6 +211,40 @@ export function ReceptionPage() {
       alert('حدث خطأ أثناء الحفظ')
     }
     setLoading(false)
+  }
+
+  async function handleDeleteVisit(visitId: string, studentId: string) {
+    if (!confirm('هل أنت متأكد من حذف هذه الزيارة؟')) return
+
+    try {
+      const { error } = await supabase
+        .from('student_visits')
+        .delete()
+        .eq('id', visitId)
+
+      if (error) throw error
+
+      const student = students.find(s => s.id === studentId)
+      if (student && student.visit_count > 0) {
+        await supabase
+          .from('students')
+          .update({ visit_count: student.visit_count - 1 })
+          .eq('id', studentId)
+
+        await db.students.update(studentId, {
+          visit_count: student.visit_count - 1
+        })
+      }
+
+      await db.student_visits.delete(visitId)
+
+      alert('تم حذف الزيارة بنجاح')
+      fetchStudents()
+      fetchVisits(dateFilter)
+    } catch (error) {
+      console.error('Error deleting visit:', error)
+      alert('حدث خطأ أثناء الحذف')
+    }
   }
 
   async function printVisit(visit: VisitWithStudent) {
@@ -581,6 +615,13 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => handleDeleteVisit(visit.id, visit.student_id)}
+                    className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 size={16} />
+                    حذف
+                  </button>
                   <button
                     onClick={() => printVisit(visit)}
                     className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"

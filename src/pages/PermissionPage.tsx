@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db, StudentPermission } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student } from '../types'
-import { LogOut, Search, Send, Clock, Printer, Calendar, Filter } from 'lucide-react'
+import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2, Home } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface PermissionWithStudent extends StudentPermission {
@@ -306,6 +306,70 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
     window.open(whatsappUrl, '_blank')
   }
 
+  async function handleDeletePermission(permissionId: string, studentId: string) {
+    if (!confirm('هل أنت متأكد من حذف هذا الاستئذان؟')) return
+
+    try {
+      const { error } = await supabase
+        .from('student_permissions')
+        .delete()
+        .eq('id', permissionId)
+
+      if (error) throw error
+
+      const student = students.find(s => s.id === studentId)
+      if (student && student.permission_count > 0) {
+        await supabase
+          .from('students')
+          .update({ permission_count: student.permission_count - 1 })
+          .eq('id', studentId)
+
+        await db.students.update(studentId, {
+          permission_count: student.permission_count - 1
+        })
+      }
+
+      await db.student_permissions.delete(permissionId)
+
+      alert('تم حذف الاستئذان بنجاح')
+      fetchStudents()
+      fetchPermissions(dateFilter)
+    } catch (error) {
+      console.error('Error deleting permission:', error)
+      alert('حدث خطأ أثناء الحذف')
+    }
+  }
+
+  async function handleReturnStudent(permissionId: string, studentId: string) {
+    if (!confirm('هل عاد الطالب إلى المدرسة؟')) return
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('student_permissions')
+        .delete()
+        .eq('id', permissionId)
+
+      if (deleteError) throw deleteError
+
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({ status: 'نشط' })
+        .eq('id', studentId)
+
+      if (updateError) throw updateError
+
+      await db.student_permissions.delete(permissionId)
+      await db.students.update(studentId, { status: 'نشط' })
+
+      alert('تم تسجيل عودة الطالب بنجاح')
+      fetchStudents()
+      fetchPermissions(dateFilter)
+    } catch (error) {
+      console.error('Error returning student:', error)
+      alert('حدث خطأ أثناء تسجيل العودة')
+    }
+  }
+
   async function printPermission(permission: PermissionWithStudent) {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
@@ -431,35 +495,6 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
     `)
   }
 
-  async function returnStudent(permission: PermissionWithStudent) {
-    if (!permission.student) return
-
-    const confirmReturn = confirm(`هل تريد تأكيد عودة الطالب: ${permission.student.name}؟`)
-    if (!confirmReturn) return
-
-    try {
-      // تحديث في Supabase
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({ status: 'نشط' })
-        .eq('id', permission.student_id)
-
-      if (updateError) {
-        console.error('Error updating student:', updateError)
-        throw updateError
-      }
-
-      // تحديث في IndexedDB
-      await db.students.update(permission.student_id, { status: 'نشط' })
-
-      alert('تم تأكيد عودة الطالب')
-      fetchStudents()
-      fetchPermissions(dateFilter)
-    } catch (error) {
-      console.error('Error updating student status:', error)
-      alert('حدث خطأ أثناء تحديث الحالة')
-    }
-  }
 
   const filteredStudents = students.filter(s =>
     s.name.includes(searchTerm) || s.national_id.includes(searchTerm)
@@ -636,7 +671,21 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                       {new Date(permission.permission_date).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => handleDeletePermission(permission.id, permission.student_id)}
+                      className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={16} />
+                      حذف
+                    </button>
+                    <button
+                      onClick={() => handleReturnStudent(permission.id, permission.student_id)}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                    >
+                      <Home size={16} />
+                      عودة
+                    </button>
                     <button
                       onClick={() => printPermission(permission)}
                       className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
@@ -650,12 +699,6 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                     >
                       <Send size={16} />
                       واتساب
-                    </button>
-                    <button
-                      onClick={() => returnStudent(permission)}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
-                      عودة الطالب
                     </button>
                   </div>
                 </div>

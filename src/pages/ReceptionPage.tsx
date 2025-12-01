@@ -448,7 +448,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 *السبب:* ${visit.reason}
 *الإجراء المتخذ:* ${visit.action_taken}${visit.referred_to !== 'لا يوجد' ? `\n*تم التحويل إلى:* ${visit.referred_to}` : ''}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
+الأستاذ ${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 

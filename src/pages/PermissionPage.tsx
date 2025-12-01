@@ -304,7 +304,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 *الوقت:* ${now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *السبب:* ${reason}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
+الأستاذ ${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 
@@ -339,7 +339,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 *الوقت:* ${permissionDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *السبب:* ${permission.reason}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
+الأستاذ ${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 

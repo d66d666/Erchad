@@ -271,7 +271,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 *الوصف:* ${violation.description}
 *الإجراء المتخذ:* ${violation.action_taken}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
+الأستاذ ${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 

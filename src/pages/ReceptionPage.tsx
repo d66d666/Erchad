@@ -433,9 +433,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     }
 
     const visitDate = new Date(visit.visit_date)
-    const message = `━━━━━━━━━━━━━━━━━━
-*إشعار من الإرشاد الطلابي*
-━━━━━━━━━━━━━━━━━━
+    const message = `*إشعار من الإرشاد الطلابي*
 
 السلام عليكم ورحمة الله وبركاته
 
@@ -443,24 +441,16 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
 نود إعلامكم بأن الطالب قد حضر إلى الإرشاد الطلابي
 
+*تفاصيل الزيارة*
+
 *التاريخ:* ${visitDate.toLocaleDateString('ar-SA')}
 *الوقت:* ${visitDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+*السبب:* ${visit.reason}
+*الإجراء المتخذ:* ${visit.action_taken}${visit.referred_to !== 'لا يوجد' ? `\n*تم التحويل إلى:* ${visit.referred_to}` : ''}
 
-─────────────────
-*تفاصيل الزيارة*
-─────────────────
-
-• *سبب الزيارة:* ${visit.reason}
-
-• *الإجراء المتخذ:* ${visit.action_taken}
-${visit.referred_to !== 'لا يوجد' ? `\n• *تم التحويل إلى:* ${visit.referred_to}` : ''}
-
-━━━━━━━━━━━━━━━━━━
-*للاستفسار يرجى التواصل مع:*
 الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
 
-مع تحيات إدارة المدرسة
-━━━━━━━━━━━━━━━━━━`
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

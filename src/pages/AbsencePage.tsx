@@ -255,9 +255,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     }
 
     const violationDate = new Date(violation.violation_date)
-    const message = `━━━━━━━━━━━━━━━━━━
-⚠️ *إشعار مخالفة سلوكية*
-━━━━━━━━━━━━━━━━━━
+    const message = `*إشعار مخالفة سلوكية*
 
 السلام عليكم ورحمة الله وبركاته
 
@@ -265,25 +263,17 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 
 نود إعلامكم بتسجيل مخالفة سلوكية على الطالب
 
-📅 *التاريخ:* ${violationDate.toLocaleDateString('ar-SA')}
-⏰ *الوقت:* ${violationDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+*تفاصيل المخالفة*
 
-─────────────────
-📋 *تفاصيل المخالفة*
-─────────────────
+*التاريخ:* ${violationDate.toLocaleDateString('ar-SA')}
+*الوقت:* ${violationDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+*نوع المخالفة:* ${violation.violation_type}
+*الوصف:* ${violation.description}
+*الإجراء المتخذ:* ${violation.action_taken}
 
-• *نوع المخالفة:* ${violation.violation_type}
-
-• *الوصف:* ${violation.description}
-
-• *الإجراء المتخذ:* ${violation.action_taken}
-
-━━━━━━━━━━━━━━━━━━
-📞 *للاستفسار يرجى التواصل مع:*
 الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
 
-مع تحيات إدارة المدرسة
-━━━━━━━━━━━━━━━━━━`
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

@@ -36,6 +36,9 @@ import {
   Plus,
   Trash2,
   Layers,
+  LayoutGrid,
+  ListChecks,
+  Check,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -64,6 +67,24 @@ function App() {
   const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
   const [newStage, setNewStage] = useState('')
   const [newGroupName, setNewGroupName] = useState('')
+  const [showManageHeaderModal, setShowManageHeaderModal] = useState(false)
+
+  const [headerCards, setHeaderCards] = useState({
+    totalStudents: true,
+    reception: true,
+    teachers: true,
+    permission: true,
+    violations: true,
+  })
+
+  const [mainMenuItems, setMainMenuItems] = useState({
+    teachers: true,
+    groups: true,
+    specialNeeds: true,
+    reception: true,
+    permission: true,
+    violations: true,
+  })
 
   // فلاتر
   const [specialStatusFilter, setSpecialStatusFilter] = useState<string>('all')
@@ -560,12 +581,13 @@ function App() {
 
                     <button
                       onClick={() => {
+                        setShowManageHeaderModal(true)
                         setShowSettingsMenu(false)
                       }}
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
                     >
                       <List size={18} className="text-cyan-600" />
-                      <span className="text-sm font-medium text-gray-700">إدارة التهديد والقوائم</span>
+                      <span className="text-sm font-medium text-gray-700">إدارة الهيدر والقوائم</span>
                     </button>
 
                     <div className="border-t border-gray-200 my-1"></div>
@@ -1192,6 +1214,198 @@ function App() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showManageHeaderModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden">
+            <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <LayoutGrid size={24} className="text-white" />
+                <h2 className="text-xl font-bold text-white">إدارة الهيدر والقوائم</h2>
+              </div>
+              <button
+                onClick={() => setShowManageHeaderModal(false)}
+                className="text-white hover:bg-white/20 rounded-lg p-1 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <LayoutGrid size={20} className="text-cyan-600" />
+                    <h3 className="text-base font-bold text-gray-800">بطاقات الهيدر</h3>
+                  </div>
+                  <div className="space-y-3 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 border border-cyan-200">
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-cyan-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Users size={18} className="text-blue-600" />
+                        <span className="text-sm font-medium text-gray-800">إجمالي الطلاب</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={headerCards.totalStudents}
+                        onChange={(e) => setHeaderCards({...headerCards, totalStudents: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-cyan-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <UserIcon size={18} className="text-green-600" />
+                        <span className="text-sm font-medium text-gray-800">المعلمين</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={headerCards.teachers}
+                        onChange={(e) => setHeaderCards({...headerCards, teachers: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-cyan-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Heart size={18} className="text-pink-600" />
+                        <span className="text-sm font-medium text-gray-800">حالات خاصة</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={headerCards.reception}
+                        onChange={(e) => setHeaderCards({...headerCards, reception: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-cyan-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <UserCheck size={18} className="text-orange-600" />
+                        <span className="text-sm font-medium text-gray-800">استئذانات</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={headerCards.permission}
+                        onChange={(e) => setHeaderCards({...headerCards, permission: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-cyan-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <AlertCircle size={18} className="text-red-600" />
+                        <span className="text-sm font-medium text-gray-800">المخالفات</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={headerCards.violations}
+                        onChange={(e) => setHeaderCards({...headerCards, violations: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <ListChecks size={20} className="text-purple-600" />
+                    <h3 className="text-base font-bold text-gray-800">قوائم الصفحة الرئيسية</h3>
+                  </div>
+                  <div className="space-y-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <GraduationCap size={18} className="text-blue-600" />
+                        <span className="text-sm font-medium text-gray-800">المعلمين</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.teachers}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, teachers: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Users size={18} className="text-blue-600" />
+                        <span className="text-sm font-medium text-gray-800">المجموعات</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.groups}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, groups: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Heart size={18} className="text-pink-600" />
+                        <span className="text-sm font-medium text-gray-800">الطلاب الخاصة</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.specialNeeds}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, specialNeeds: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <UserCheck size={18} className="text-green-600" />
+                        <span className="text-sm font-medium text-gray-800">استقبال الطلاب</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.reception}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, reception: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <Shield size={18} className="text-orange-600" />
+                        <span className="text-sm font-medium text-gray-800">الاستئذان</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.permission}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, permission: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-300 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <AlertCircle size={18} className="text-red-600" />
+                        <span className="text-sm font-medium text-gray-800">المخالفات</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={mainMenuItems.violations}
+                        onChange={(e) => setMainMenuItems({...mainMenuItems, violations: e.target.checked})}
+                        className="w-5 h-5 rounded border-2 border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowManageHeaderModal(false)
+                }}
+                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-700 hover:via-blue-700 hover:to-purple-700 text-white rounded-xl text-base font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Check size={20} />
+                <span>حفظ وإغلاق</span>
+              </button>
             </div>
           </div>
         </div>

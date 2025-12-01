@@ -110,22 +110,32 @@ export function SendToTeacherModal({
       let message = ''
       const selectedGroups = allGroups.filter(g => selectedGroupIds.includes(g.id))
 
-      message += `*الحالات الخاصة - ${selectedStage}*\n\n`
+      message += `━━━━━━━━━━━━━━━━━━\n`
+      message += `*📋 الحالات الخاصة*\n`
+      message += `*${selectedStage}*\n`
+      message += `━━━━━━━━━━━━━━━━━━\n\n`
 
       // تجميع الطلاب حسب المجموعة
-      selectedGroups.forEach((group) => {
+      selectedGroups.forEach((group, groupIndex) => {
         const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
         if (groupStudents.length > 0) {
           message += `📚 *${group.name}*\n`
+          message += `عدد الطلاب: ${groupStudents.length}\n`
+          message += `─────────────────\n`
           groupStudents.forEach((student, index) => {
             message += `${index + 1}. *${student.name}*\n`
-            message += `   الحالة: ${student.special_status?.name || '-'}\n`
-            message += `   جوال الطالب: ${student.phone || '-'}\n`
-            message += `   جوال ولي الأمر: ${student.guardian_phone || '-'}\n\n`
+            message += `   • الحالة: ${student.special_status?.name || '-'}\n`
+            message += `   • جوال الطالب: ${student.phone || '-'}\n`
+            message += `   • جوال ولي الأمر: ${student.guardian_phone || '-'}\n`
+            if (index < groupStudents.length - 1) message += `\n`
           })
-          message += '\n'
+          if (groupIndex < selectedGroups.filter(g => filteredStudents.filter(s => s.group_id === g.id).length > 0).length - 1) {
+            message += `\n\n`
+          }
         }
       })
+
+      message += `\n\n━━━━━━━━━━━━━━━━━━`
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)

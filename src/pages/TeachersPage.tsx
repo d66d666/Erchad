@@ -160,14 +160,6 @@ export function TeachersPage() {
 
               <div className="p-6 space-y-4">
                 <div className="flex items-start gap-3">
-                  <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">المرحلة</p>
-                    <p className="text-sm font-semibold text-gray-800">{teacher.specialization || 'غير محدد'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
                   <div className="w-5 h-5 flex items-center justify-center text-blue-600 flex-shrink-0">
                     <span className="text-lg">📱</span>
                   </div>
@@ -176,6 +168,16 @@ export function TeachersPage() {
                     <p className="text-sm font-semibold text-gray-800">{teacher.phone}</p>
                   </div>
                 </div>
+
+                {teacher.specialization && (
+                  <div className="flex items-start gap-3">
+                    <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
+                    <div>
+                      <p className="text-xs text-gray-500 mb-0.5">المرحلة</p>
+                      <p className="text-sm font-semibold text-gray-800">{teacher.specialization}</p>
+                    </div>
+                  </div>
+                )}
 
                 {teacher.groups && teacher.groups.length > 0 && (
                   <div className="pt-3 border-t border-gray-100">

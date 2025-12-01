@@ -277,21 +277,21 @@ export function SpecialStatusPage({
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-purple-50 to-violet-50">
+                <thead>
                   <tr>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider bg-purple-50">
                       الاسم
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-blue-700 uppercase tracking-wider bg-blue-50">
                       السجل المدني
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-emerald-700 uppercase tracking-wider bg-emerald-50">
                       جوال الطالب
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-amber-700 uppercase tracking-wider bg-amber-50">
                       جوال ولي الأمر
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-rose-700 uppercase tracking-wider bg-rose-50">
                       الحالة الخاصة
                     </th>
                   </tr>
@@ -302,21 +302,21 @@ export function SpecialStatusPage({
                       (s) => s.id === student.special_status_id
                     )
                     return (
-                      <tr key={student.id} className="hover:bg-purple-50/50 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
+                      <tr key={student.id} className="transition-colors">
+                        <td className="px-5 py-3.5 text-sm font-medium text-gray-800 bg-purple-50/30 hover:bg-purple-100/50">
                           {student.name}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600 bg-blue-50/30 hover:bg-blue-100/50">
                           {student.national_id}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600 bg-emerald-50/30 hover:bg-emerald-100/50">
                           {student.phone}
                         </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600 bg-amber-50/30 hover:bg-amber-100/50">
                           {student.guardian_phone}
                         </td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-700">
+                        <td className="px-5 py-3.5 bg-rose-50/30 hover:bg-rose-100/50">
+                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-rose-100 text-rose-700">
                             {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
                           </span>
                         </td>

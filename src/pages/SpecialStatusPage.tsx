@@ -208,15 +208,15 @@ export function SpecialStatusPage({
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-purple-100 via-violet-100 to-fuchsia-100 rounded-xl shadow-md border border-purple-200 p-5">
+      <div className="bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100 rounded-xl shadow-md border border-slate-300 p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-200">
-              <Heart size={20} className="text-purple-600" />
+            <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-300">
+              <Heart size={20} className="text-slate-700" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">الحالات الخاصة</h1>
-              <p className="text-sm text-purple-700 mt-0.5 font-medium">
+              <p className="text-sm text-slate-700 mt-0.5 font-medium">
                 إجمالي الطلاب: {studentsWithSpecialStatus.length}
               </p>
             </div>
@@ -233,17 +233,17 @@ export function SpecialStatusPage({
             <button
               onClick={handlePrintAll}
               disabled={studentsWithSpecialStatus.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer size={16} />
               <span>طباعة الكل</span>
             </button>
-            <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm">
+            <label className="flex items-center gap-2 bg-white border border-slate-300 px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-all shadow-sm">
               <input
                 type="checkbox"
                 checked={showStatusDetails}
                 onChange={(e) => setShowStatusDetails(e.target.checked)}
-                className="w-4 h-4 rounded cursor-pointer text-purple-500 focus:ring-purple-500"
+                className="w-4 h-4 rounded cursor-pointer text-slate-600 focus:ring-slate-500"
               />
               <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
             </label>
@@ -257,17 +257,17 @@ export function SpecialStatusPage({
         return (
           <div
             key={group.id}
-            className="bg-white rounded-xl shadow-md overflow-hidden border border-purple-100"
+            className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-300"
           >
-            <div className="bg-gradient-to-r from-purple-50 to-violet-50 px-5 py-3.5 border-b border-purple-100">
+            <div className="bg-gradient-to-r from-slate-100 to-slate-200 px-5 py-3.5 border-b border-slate-300">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-gray-800">{group.name}</h2>
-                  <p className="text-sm text-purple-600 font-medium">عدد الطلاب: {count}</p>
+                  <p className="text-sm text-slate-700 font-medium">عدد الطلاب: {count}</p>
                 </div>
                 <button
                   onClick={() => handlePrint(group, groupStudents)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all shadow-sm"
                 >
                   <Printer size={16} />
                   <span>طباعة</span>
@@ -296,7 +296,7 @@ export function SpecialStatusPage({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-purple-100">
+                <tbody className="divide-y divide-slate-200">
                   {groupStudents.map((student) => {
                     const status = specialStatuses.find(
                       (s) => s.id === student.special_status_id
@@ -316,7 +316,7 @@ export function SpecialStatusPage({
                           {student.guardian_phone}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-700">
+                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-slate-200 text-slate-800">
                             {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
                           </span>
                         </td>

@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react'
+import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown, Printer, UserPlus } from 'lucide-react'
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
-import { Group } from '../types'
+import { Group, Student } from '../types'
 
-interface GroupsManagementPageProps {
-  onClose: () => void
-}
-
-export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
+export function GroupsManagementPage() {
   const [groups, setGroups] = useState<Group[]>([])
+  const [students, setStudents] = useState<Student[]>([])
   const [newStage, setNewStage] = useState('')
   const [newGroupName, setNewGroupName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,10 +14,12 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   const [editName, setEditName] = useState('')
   const [editStage, setEditStage] = useState('')
+  const [showStatusDetails, setShowStatusDetails] = useState(false)
 
   useEffect(() => {
     fetchGroups()
     fetchStudentCounts()
+    fetchStudents()
   }, [])
 
   const fetchGroups = async () => {
@@ -40,6 +39,11 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
       const allGroups = await db.groups.toArray()
       setGroups(allGroups)
     }
+  }
+
+  const fetchStudents = async () => {
+    const allStudents = await db.students.toArray()
+    setStudents(allStudents as Student[])
   }
 
   const fetchStudentCounts = async () => {
@@ -236,20 +240,42 @@ export function GroupsManagementPage({ onClose }: GroupsManagementPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-bold">إدارة المراحل والمجموعات</h1>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <X size={24} />
-          </button>
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all hover:shadow-lg"
+            >
+              <Printer size={20} />
+              <span>طباعة الكل</span>
+            </button>
+            <button
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all hover:shadow-lg"
+            >
+              <Layers size={20} />
+              <span>إدارة المجموعات</span>
+            </button>
+            <button
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all hover:shadow-lg"
+            >
+              <UserPlus size={20} />
+              <span>إضافة طالب</span>
+            </button>
+          </div>
+          <label className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 rounded-xl cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-purple-200">
+            <input
+              type="checkbox"
+              checked={showStatusDetails}
+              onChange={(e) => setShowStatusDetails(e.target.checked)}
+              className="w-5 h-5 rounded cursor-pointer"
+            />
+            <span className="text-purple-700 font-semibold">إظهار تفاصيل الحالة</span>
+          </label>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="space-y-6">
         <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-emerald-800 mb-6">إضافة مجموعة جديدة</h2>
 

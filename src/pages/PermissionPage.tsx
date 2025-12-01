@@ -3,6 +3,7 @@ import { db, StudentPermission } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter } from 'lucide-react'
+import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface PermissionWithStudent extends StudentPermission {
   student?: {
@@ -245,6 +246,12 @@ export function PermissionPage() {
       return
     }
 
+    const phone = formatPhoneForWhatsApp(student.guardian_phone)
+    if (!phone) {
+      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      return
+    }
+
     const now = new Date()
     const message = `السلام عليكم ورحمة الله وبركاته
 
@@ -259,16 +266,22 @@ export function PermissionPage() {
 
 يرجى استلام الطالب من المدرسة.
 
-مع تحيات إدارة المدرسة`
+مع تحيات إدارة المدرسة
+${teacherName ? teacherName : 'مسؤول النظام'}`
 
-    const phone = student.guardian_phone.replace(/\D/g, '')
-    const whatsappUrl = `https://wa.me/966${phone}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
   function sendWhatsAppForPermission(permission: PermissionWithStudent) {
     if (!permission.student?.guardian_phone) {
       alert('رقم جوال ولي الأمر غير مسجل')
+      return
+    }
+
+    const phone = formatPhoneForWhatsApp(permission.student.guardian_phone)
+    if (!phone) {
+      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
       return
     }
 
@@ -286,10 +299,10 @@ export function PermissionPage() {
 
 يرجى استلام الطالب من المدرسة.
 
-مع تحيات إدارة المدرسة`
+مع تحيات إدارة المدرسة
+${teacherName ? teacherName : 'مسؤول النظام'}`
 
-    const phone = permission.student.guardian_phone.replace(/\D/g, '')
-    const whatsappUrl = `https://wa.me/966${phone}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
@@ -298,66 +311,120 @@ export function PermissionPage() {
     if (!printWindow) return
 
     const permissionDate = new Date(permission.permission_date)
+    const hijriDate = permissionDate.toLocaleDateString('ar-SA-u-ca-islamic', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).replace(/\u200f/g, '')
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
         <head>
           <title>إذن مغادرة طالب</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
-            .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { margin: 0; color: #ea580c; }
-            .header .meta { color: #666; font-size: 12px; margin-top: 10px; }
-            .section { margin-bottom: 20px; }
-            .section label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-            .section div { padding: 10px; background: #fef3c7; border-radius: 5px; border: 1px solid #fcd34d; }
-            .time-box { background: #dbeafe; border: 1px solid #60a5fa; font-size: 18px; text-align: center; padding: 15px; }
-            @media print { body { padding: 20px; } }
+            @page { margin: 2cm; }
+            body { 
+              font-family: 'Arial', sans-serif; 
+              padding: 40px; 
+              margin: 0;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 10px;
+            }
+            .header-line {
+              font-size: 14px;
+              color: #374151;
+              margin: 3px 0;
+            }
+            .title {
+              font-size: 16px;
+              font-weight: bold;
+              text-align: center;
+              margin: 15px 0;
+            }
+            .divider {
+              border-bottom: 2px solid #000;
+              margin: 15px 0 25px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            td {
+              padding: 12px;
+              border-bottom: 1px solid #e5e7eb;
+              font-size: 14px;
+            }
+            .label-cell {
+              text-align: right;
+              font-weight: bold;
+              color: #1f2937;
+              width: 30%;
+            }
+            .value-cell {
+              text-align: right;
+              color: #374151;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              font-size: 12px;
+              color: #6b7280;
+            }
+            @media print { 
+              body { padding: 20px; } 
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>⚠️ إذن مغادرة طالب</h1>
-            ${teacherName ? `<div class="meta">بواسطة: ${teacherName}</div>` : ''}
+            <div class="header-line">نظام المشرف الصحي المدرسي</div>
+            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line" style="font-weight: bold;">إذن مغادرة طالب</div>
           </div>
-          <div class="section">
-            <label>اسم الطالب:</label>
-            <div>${permission.student?.name}</div>
+          
+          <div class="divider"></div>
+          
+          <table>
+            <tr>
+              <td class="label-cell">نوع الحضور</td>
+              <td class="value-cell">استئذان</td>
+            </tr>
+            <tr>
+              <td class="label-cell">التاريخ</td>
+              <td class="value-cell">${hijriDate}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">اسم الطالب</td>
+              <td class="value-cell">${permission.student?.name || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">الفصل</td>
+              <td class="value-cell">${permission.student?.group?.name || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">سبب الاستئذان</td>
+              <td class="value-cell">${permission.reason}</td>
+            </tr>
+            ${permission.notes ? `
+            <tr>
+              <td class="label-cell">ملاحظات</td>
+              <td class="value-cell">${permission.notes}</td>
+            </tr>
+            ` : ''}
+          </table>
+          
+          <div class="footer">
+            تم الإنشاء بتاريخ: ${new Date().toLocaleDateString('ar-SA-u-ca-islamic')}<br>
+            تم إشعار ولي الأمر - يرجى التأكد من استلام الطالب
           </div>
-          <div class="section">
-            <label>الفصل:</label>
-            <div>${permission.student?.group?.name || '-'}</div>
-          </div>
-          <div class="section">
-            <label>⏰ وقت الاستئذان:</label>
-            <div class="time-box">
-              ${permissionDate.toLocaleString('ar-SA', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </div>
-          </div>
-          <div class="section">
-            <label>سبب الاستئذان:</label>
-            <div>${permission.reason}</div>
-          </div>
-          ${permission.notes ? `
-          <div class="section">
-            <label>ملاحظات:</label>
-            <div>${permission.notes}</div>
-          </div>
-          ` : ''}
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ccc;">
-            <p style="text-align: center; color: #666; font-size: 14px;">
-              تم إشعار ولي الأمر عبر واتساب<br>
-              الرجاء التأكد من استلام الطالب من قبل ولي الأمر
-            </p>
-          </div>
+          
           <script>window.print(); window.onafterprint = () => window.close();</script>
         </body>
       </html>

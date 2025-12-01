@@ -3,6 +3,7 @@ import { db, StudentViolation } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student } from '../types'
 import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send } from 'lucide-react'
+import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface ViolationWithStudent extends StudentViolation {
   student?: {
@@ -10,6 +11,10 @@ interface ViolationWithStudent extends StudentViolation {
     national_id: string
     guardian_phone: string
     violation_count: number
+    grade: string
+    group?: {
+      name: string
+    }
   }
 }
 
@@ -28,6 +33,7 @@ export function AbsencePage() {
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [teacherName, setTeacherName] = useState('')
+  const [schoolName, setSchoolName] = useState('')
 
   useEffect(() => {
     fetchStudents()
@@ -39,6 +45,9 @@ export function AbsencePage() {
     const profile = await db.teacher_profile.toCollection().first()
     if (profile?.name) {
       setTeacherName(profile.name)
+    }
+    if (profile?.schoolName) {
+      setSchoolName(profile.schoolName)
     }
   }
 
@@ -100,15 +109,21 @@ export function AbsencePage() {
 
       const allStudents = studentsData || []
 
+      const { data: groupsData } = await supabase.from('groups').select('*')
+      const groups = groupsData || []
+
       const violationsWithStudents = (violationsData || []).map((violation) => {
         const student = allStudents.find(s => s.id === violation.student_id)
+        const group = student ? groups.find(g => g.id === student.group_id) : undefined
         return {
           ...violation,
           student: student ? {
             name: student.name,
             national_id: student.national_id,
             guardian_phone: student.guardian_phone,
-            violation_count: student.violation_count || 0
+            violation_count: student.violation_count || 0,
+            grade: student.grade || '',
+            group: group ? { name: group.name } : undefined
           } : undefined
         }
       })
@@ -198,6 +213,12 @@ export function AbsencePage() {
       return
     }
 
+    const phone = formatPhoneForWhatsApp(violation.student.guardian_phone)
+    if (!phone) {
+      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      return
+    }
+
     const message = `السلام عليكم ورحمة الله وبركاته
 
 عزيزي ولي أمر الطالب: ${violation.student.name}
@@ -210,10 +231,10 @@ export function AbsencePage() {
 
 يرجى التواصل مع الموجه الطلابي للاستفسار.
 
-مع تحيات إدارة المدرسة`
+مع تحيات إدارة المدرسة
+${teacherName ? teacherName : 'مسؤول النظام'}`
 
-    const phone = violation.student.guardian_phone.replace(/\D/g, '')
-    const whatsappUrl = `https://wa.me/966${phone}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 
@@ -221,60 +242,127 @@ export function AbsencePage() {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
 
+    const violationDate = new Date(violation.violation_date)
+    const hijriDate = violationDate.toLocaleDateString('ar-SA-u-ca-islamic', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).replace(/\u200f/g, '')
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
         <head>
-          <title>تقرير مخالفة طالب</title>
+          <title>إشعار مخالفة</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
-            .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { margin: 0; color: #dc2626; }
-            .header .meta { color: #666; font-size: 12px; margin-top: 10px; }
-            .section { margin-bottom: 20px; }
-            .section label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-            .section div { padding: 10px; background: #fef2f2; border-radius: 5px; border: 1px solid #fca5a5; }
-            .violation-type { background: #fee2e2; border: 2px solid #dc2626; font-size: 18px; text-align: center; padding: 15px; font-weight: bold; }
-            @media print { body { padding: 20px; } }
+            @page { margin: 2cm; }
+            body { 
+              font-family: 'Arial', sans-serif; 
+              padding: 40px; 
+              margin: 0;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 10px;
+            }
+            .header-line {
+              font-size: 14px;
+              color: #374151;
+              margin: 3px 0;
+            }
+            .title {
+              font-size: 16px;
+              font-weight: bold;
+              text-align: center;
+              margin: 15px 0;
+            }
+            .divider {
+              border-bottom: 2px solid #000;
+              margin: 15px 0 25px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            td {
+              padding: 12px;
+              border-bottom: 1px solid #e5e7eb;
+              font-size: 14px;
+            }
+            .label-cell {
+              text-align: right;
+              font-weight: bold;
+              color: #1f2937;
+              width: 30%;
+            }
+            .value-cell {
+              text-align: right;
+              color: #374151;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              font-size: 12px;
+              color: #6b7280;
+            }
+            @media print { 
+              body { padding: 20px; } 
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>⚠️ تقرير مخالفة سلوكية</h1>
-            <p>التاريخ: ${new Date(violation.violation_date).toLocaleString('ar-SA')}</p>
-            ${teacherName ? `<div class="meta">بواسطة: ${teacherName}</div>` : ''}
+            <div class="header-line">نظام المشرف الصحي المدرسي</div>
+            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line" style="font-weight: bold;">إشعار مخالفة سلوكية</div>
           </div>
-          <div class="section">
-            <label>اسم الطالب:</label>
-            <div>${violation.student?.name}</div>
+          
+          <div class="divider"></div>
+          
+          <table>
+            <tr>
+              <td class="label-cell">نوع الحضور</td>
+              <td class="value-cell">مخالفة</td>
+            </tr>
+            <tr>
+              <td class="label-cell">التاريخ</td>
+              <td class="value-cell">${hijriDate}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">اسم الطالب</td>
+              <td class="value-cell">${violation.student?.name || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">السجل المدني</td>
+              <td class="value-cell">${violation.student?.national_id || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">نوع المخالفة</td>
+              <td class="value-cell">${violation.violation_type}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">وصف المخالفة</td>
+              <td class="value-cell">${violation.description}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">الإجراء المتخذ</td>
+              <td class="value-cell">${violation.action_taken}</td>
+            </tr>
+            ${violation.notes ? `
+            <tr>
+              <td class="label-cell">ملاحظات</td>
+              <td class="value-cell">${violation.notes}</td>
+            </tr>
+            ` : ''}
+          </table>
+          
+          <div class="footer">
+            تم الإنشاء بتاريخ: ${new Date().toLocaleDateString('ar-SA-u-ca-islamic')}<br>
+            عدد المخالفات المسجلة: ${violation.student?.violation_count || 1}
           </div>
-          <div class="section">
-            <label>السجل المدني:</label>
-            <div>${violation.student?.national_id}</div>
-          </div>
-          <div class="section">
-            <label>نوع المخالفة:</label>
-            <div class="violation-type">${violation.violation_type}</div>
-          </div>
-          <div class="section">
-            <label>وصف المخالفة:</label>
-            <div>${violation.description}</div>
-          </div>
-          <div class="section">
-            <label>الإجراء المتخذ:</label>
-            <div>${violation.action_taken}</div>
-          </div>
-          ${violation.notes ? `
-          <div class="section">
-            <label>ملاحظات:</label>
-            <div>${violation.notes}</div>
-          </div>
-          ` : ''}
-          <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed #ccc;">
-            <p style="text-align: center; color: #666; font-size: 14px;">
-              عدد المخالفات المسجلة للطالب: ${violation.student?.violation_count || 1}
-            </p>
-          </div>
+          
           <script>window.print(); window.onafterprint = () => window.close();</script>
         </body>
       </html>

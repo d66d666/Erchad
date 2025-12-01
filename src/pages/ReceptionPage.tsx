@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter } from 'lucide-react'
+import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface VisitWithStudent extends StudentVisit {
   student?: {
@@ -216,54 +217,128 @@ export function ReceptionPage() {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
 
+    const visitDate = new Date(visit.visit_date)
+    const hijriDate = visitDate.toLocaleDateString('ar-SA-u-ca-islamic', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).replace(/\u200f/g, '')
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html dir="rtl">
         <head>
           <title>تقرير زيارة طالب</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
-            .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
-            .header h1 { margin: 0; color: #2563eb; }
-            .header .meta { color: #666; font-size: 12px; margin-top: 10px; }
-            .section { margin-bottom: 20px; }
-            .section label { font-weight: bold; display: block; margin-bottom: 5px; color: #555; }
-            .section div { padding: 10px; background: #f9fafb; border-radius: 5px; }
-            @media print { body { padding: 20px; } }
+            @page { margin: 2cm; }
+            body { 
+              font-family: 'Arial', sans-serif; 
+              padding: 40px; 
+              margin: 0;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 10px;
+            }
+            .header-line {
+              font-size: 14px;
+              color: #374151;
+              margin: 3px 0;
+            }
+            .title {
+              font-size: 16px;
+              font-weight: bold;
+              text-align: center;
+              margin: 15px 0;
+            }
+            .divider {
+              border-bottom: 2px solid #000;
+              margin: 15px 0 25px 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            td {
+              padding: 12px;
+              border-bottom: 1px solid #e5e7eb;
+              font-size: 14px;
+            }
+            .label-cell {
+              text-align: right;
+              font-weight: bold;
+              color: #1f2937;
+              width: 30%;
+            }
+            .value-cell {
+              text-align: right;
+              color: #374151;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              font-size: 12px;
+              color: #6b7280;
+            }
+            @media print { 
+              body { padding: 20px; } 
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>تقرير زيارة طالب</h1>
-            <p>التاريخ: ${new Date(visit.visit_date).toLocaleString('ar-SA')}</p>
-            ${teacherName ? `<div class="meta">بواسطة: ${teacherName}</div>` : ''}
+            <div class="header-line">نظام المشرف الصحي المدرسي</div>
+            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line" style="font-weight: bold;">تقرير زيارة طالب</div>
           </div>
-          <div class="section">
-            <label>اسم الطالب:</label>
-            <div>${visit.student?.name}</div>
+          
+          <div class="divider"></div>
+          
+          <table>
+            <tr>
+              <td class="label-cell">نوع الحضور</td>
+              <td class="value-cell">حضر</td>
+            </tr>
+            <tr>
+              <td class="label-cell">التاريخ</td>
+              <td class="value-cell">${hijriDate}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">اسم الطالب</td>
+              <td class="value-cell">${visit.student?.name || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">السجل المدني</td>
+              <td class="value-cell">${visit.student?.national_id || ''}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">سبب الزيارة</td>
+              <td class="value-cell">${visit.reason}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">الإجراء المتخذ</td>
+              <td class="value-cell">${visit.action_taken}</td>
+            </tr>
+            <tr>
+              <td class="label-cell">التحويل إلى</td>
+              <td class="value-cell">${visit.referred_to}</td>
+            </tr>
+            ${visit.notes ? `
+            <tr>
+              <td class="label-cell">ملاحظات</td>
+              <td class="value-cell">${visit.notes}</td>
+            </tr>
+            ` : ''}
+          </table>
+          
+          <div class="footer">
+            تم الإنشاء بتاريخ: ${new Date().toLocaleDateString('ar-SA-u-ca-islamic')}
           </div>
-          <div class="section">
-            <label>السجل المدني:</label>
-            <div>${visit.student?.national_id}</div>
-          </div>
-          <div class="section">
-            <label>سبب الزيارة:</label>
-            <div>${visit.reason}</div>
-          </div>
-          <div class="section">
-            <label>الإجراء المتخذ:</label>
-            <div>${visit.action_taken}</div>
-          </div>
-          <div class="section">
-            <label>التحويل إلى:</label>
-            <div>${visit.referred_to}</div>
-          </div>
-          ${visit.notes ? `
-          <div class="section">
-            <label>ملاحظات:</label>
-            <div>${visit.notes}</div>
-          </div>
-          ` : ''}
+          
           <script>window.print(); window.onafterprint = () => window.close();</script>
         </body>
       </html>
@@ -273,6 +348,12 @@ export function ReceptionPage() {
   function sendWhatsApp(visit: VisitWithStudent) {
     if (!visit.student?.guardian_phone) {
       alert('رقم جوال ولي الأمر غير مسجل')
+      return
+    }
+
+    const phone = formatPhoneForWhatsApp(visit.student.guardian_phone)
+    if (!phone) {
+      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
       return
     }
 
@@ -288,10 +369,10 @@ ${visit.referred_to !== 'لا يوجد' ? `تم التحويل إلى: ${visit.r
 
 للاستفسار يرجى التواصل مع الموجه الطلابي.
 
-مع تحيات إدارة المدرسة`
+مع تحيات إدارة المدرسة
+${teacherName ? teacherName : 'مسؤول النظام'}`
 
-    const phone = visit.student.guardian_phone.replace(/\D/g, '')
-    const whatsappUrl = `https://wa.me/966${phone}?text=${encodeURIComponent(message)}`
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
 

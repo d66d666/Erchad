@@ -3,6 +3,12 @@ import { supabase } from './lib/supabase'
 import { db } from './lib/db'
 import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
+import { TeachersPage } from './pages/TeachersPage'
+import { GroupsManagementPage } from './pages/GroupsManagementPage'
+import { SpecialStatusPage } from './pages/SpecialStatusPage'
+import { ReceptionPage } from './pages/ReceptionPage'
+import { PermissionPage } from './pages/PermissionPage'
+import { AbsencePage } from './pages/AbsencePage'
 import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImport } from './components/ExcelImport'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
@@ -587,47 +593,17 @@ function App() {
           </div>
         )}
 
-        {currentPage === 'teachers' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المعلمين</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'teachers' && <TeachersPage />}
 
-        {currentPage === 'groups' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المجموعات</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'groups' && <GroupsManagementPage />}
 
-        {currentPage === 'special-status' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة الحالات الخاصة</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'special-status' && <SpecialStatusPage />}
 
-        {currentPage === 'reception' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة استقبال الطلاب</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'reception' && <ReceptionPage />}
 
-        {currentPage === 'permission' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة الاستئذان</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'permission' && <PermissionPage />}
 
-        {currentPage === 'absence' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المخالفات</h2>
-            <p className="text-gray-600">قريباً...</p>
-          </div>
-        )}
+        {currentPage === 'absence' && <AbsencePage />}
       </div>
 
       {/* Modals */}

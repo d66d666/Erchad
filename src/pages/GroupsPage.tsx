@@ -763,10 +763,9 @@ export function GroupsPage() {
                                             e.stopPropagation()
                                             setExpandedStudentId(expandedStudentId === student.id ? null : student.id)
                                           }}
-                                          className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0 relative z-10"
-                                          aria-label="المزيد"
+                                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm transition-colors flex-shrink-0 relative z-10"
                                         >
-                                          <MoreVertical size={20} className="text-gray-700" />
+                                          خيارات
                                         </button>
 
                                         <div className="flex items-center gap-6 flex-1">

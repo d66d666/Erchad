@@ -22,6 +22,7 @@ export function ReceptionPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [visitSearchTerm, setVisitSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     reason: '',
     action_taken: '',
@@ -593,6 +594,26 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
           </div>
         </div>
 
+        <div className="mb-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={visitSearchTerm}
+              onChange={(e) => setVisitSearchTerm(e.target.value)}
+              placeholder="ابحث في السجل بالاسم أو السجل المدني..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            {visitSearchTerm && (
+              <button
+                onClick={() => setVisitSearchTerm('')}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
+              >
+                إعادة تعيين
+              </button>
+            )}
+          </div>
+        </div>
+
         {showFilters && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowFilters(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
@@ -653,11 +674,21 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
           </div>
         )}
 
-        {visits.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">لا توجد زيارات {dateFilter ? 'في هذا التاريخ' : ''}</p>
+        {visits.filter(visit =>
+          visitSearchTerm === '' ||
+          visit.student?.name.toLowerCase().includes(visitSearchTerm.toLowerCase()) ||
+          visit.student?.national_id.includes(visitSearchTerm)
+        ).length === 0 ? (
+          <p className="text-center text-gray-500 py-8">
+            {visitSearchTerm ? 'لا توجد نتائج للبحث' : `لا توجد زيارات ${dateFilter ? 'في هذا التاريخ' : ''}`}
+          </p>
         ) : (
           <div className="space-y-3">
-            {visits.map(visit => (
+            {visits.filter(visit =>
+              visitSearchTerm === '' ||
+              visit.student?.name.toLowerCase().includes(visitSearchTerm.toLowerCase()) ||
+              visit.student?.national_id.includes(visitSearchTerm)
+            ).map(visit => (
             <div key={visit.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start mb-3">
                 <div>

@@ -23,6 +23,7 @@ export function PermissionPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [permissionSearchTerm, setPermissionSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     reason: '',
     notes: ''
@@ -618,6 +619,26 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
           </div>
         </div>
 
+        <div className="mb-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={permissionSearchTerm}
+              onChange={(e) => setPermissionSearchTerm(e.target.value)}
+              placeholder="ابحث في السجل بالاسم أو السجل المدني..."
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            {permissionSearchTerm && (
+              <button
+                onClick={() => setPermissionSearchTerm('')}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
+              >
+                إعادة تعيين
+              </button>
+            )}
+          </div>
+        </div>
+
         {showFilters && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowFilters(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
@@ -678,11 +699,21 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
           </div>
         )}
 
-        {permissions.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">لا توجد استئذانات {dateFilter ? 'في هذا التاريخ' : 'اليوم'}</p>
+        {permissions.filter(permission =>
+          permissionSearchTerm === '' ||
+          permission.student?.name.toLowerCase().includes(permissionSearchTerm.toLowerCase()) ||
+          permission.student?.national_id.includes(permissionSearchTerm)
+        ).length === 0 ? (
+          <p className="text-center text-gray-500 py-8">
+            {permissionSearchTerm ? 'لا توجد نتائج للبحث' : `لا توجد استئذانات ${dateFilter ? 'في هذا التاريخ' : 'اليوم'}`}
+          </p>
         ) : (
           <div className="space-y-3">
-            {permissions.map(permission => (
+            {permissions.filter(permission =>
+              permissionSearchTerm === '' ||
+              permission.student?.name.toLowerCase().includes(permissionSearchTerm.toLowerCase()) ||
+              permission.student?.national_id.includes(permissionSearchTerm)
+            ).map(permission => (
               <div key={permission.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
                 <div className="flex justify-between items-start mb-3">
                   <div>

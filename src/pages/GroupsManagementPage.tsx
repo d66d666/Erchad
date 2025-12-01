@@ -108,6 +108,13 @@ export function GroupsManagementPage() {
   }
 
   const handleDeleteGroup = async (id: string) => {
+    const studentCount = studentCounts[id] || 0
+
+    if (studentCount > 0) {
+      alert(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentCount} طالب/طالبة`)
+      return
+    }
+
     if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
 
     try {
@@ -123,6 +130,7 @@ export function GroupsManagementPage() {
       await db.groups.delete(id)
       await fetchGroups()
       await fetchStudentCounts()
+      alert('تم حذف المجموعة بنجاح')
     } catch (error) {
       console.error('Error deleting group:', error)
       alert('حدث خطأ أثناء حذف المجموعة')

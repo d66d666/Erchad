@@ -1,25 +1,21 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
-import { Heart, Printer, FileText, Send, Settings } from 'lucide-react'
+import { Heart, Printer, FileText, Send } from 'lucide-react'
 import { SendToTeacherModal } from '../components/SendToTeacherModal'
-import { ManageSpecialStatusModal } from '../components/ManageSpecialStatusModal'
 
 export function SpecialStatusPage({
   students,
   groups,
   specialStatuses,
-  onUpdate,
 }: {
   students: Student[]
   groups: Group[]
   specialStatuses: SpecialStatus[]
-  onUpdate: () => void
 }) {
   const [labPhone, setLabPhone] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showSendToTeacherModal, setShowSendToTeacherModal] = useState(false)
-  const [showManageModal, setShowManageModal] = useState(false)
 
   useEffect(() => {
     fetchLabContact()
@@ -227,13 +223,6 @@ export function SpecialStatusPage({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowManageModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-sm"
-            >
-              <Settings size={16} />
-              <span>إدارة الحالات</span>
-            </button>
-            <button
               onClick={() => setShowSendToTeacherModal(true)}
               disabled={studentsWithSpecialStatus.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -352,12 +341,6 @@ export function SpecialStatusPage({
         isOpen={showSendToTeacherModal}
         onClose={() => setShowSendToTeacherModal(false)}
         specialStatusStudents={studentsWithSpecialStatus}
-      />
-
-      <ManageSpecialStatusModal
-        isOpen={showManageModal}
-        onClose={() => setShowManageModal(false)}
-        onUpdate={onUpdate}
       />
     </div>
   )

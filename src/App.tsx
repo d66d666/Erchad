@@ -847,7 +847,6 @@ function App() {
             students={students}
             groups={groups}
             specialStatuses={specialStatuses}
-            onUpdate={fetchData}
           />
         )}
 

@@ -4,6 +4,7 @@ import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { formatBothDates } from '../lib/hijriDate'
 
 interface VisitWithStudent extends StudentVisit {
   student?: {
@@ -428,17 +429,33 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
               <Search size={16} className="inline ml-1" />
               البحث عن طالب
             </label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ابحث بالاسم أو السجل المدني..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ابحث بالاسم أو السجل المدني..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
+                >
+                  إعادة تعيين
+                </button>
+              )}
+            </div>
 
             {searchTerm && (
               <div className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
-                {filteredStudents.map(student => (
+                {filteredStudents.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    لا توجد نتائج للبحث
+                  </div>
+                ) : (
+                  filteredStudents.map(student => (
                   <button
                     key={student.id}
                     type="button"
@@ -456,7 +473,8 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                       عدد الزيارات: {student.visit_count || 0}
                     </div>
                   </button>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -630,10 +648,12 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             <div key={visit.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h4 className="font-bold text-gray-800">{visit.student?.name}</h4>
-                  <p className="text-sm text-gray-600">
-                    {new Date(visit.visit_date).toLocaleString('ar-SA')}
-                  </p>
+                  <div>
+                    <h4 className="font-bold text-gray-800">{visit.student?.name}</h4>
+                    <p className="text-xs text-gray-500">
+                      {formatBothDates(visit.visit_date)}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

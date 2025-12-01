@@ -55,15 +55,33 @@ export function GroupsManagementPage() {
   }
 
   const fetchStudents = async () => {
-    const allStudents = await db.students.toArray()
-    setStudents(allStudents as Student[])
+    // Fetch from Supabase first
+    const { data: supabaseStudents } = await supabase
+      .from('students')
+      .select('*')
+
+    if (supabaseStudents) {
+      // Sync to IndexedDB
+      await db.students.clear()
+      await db.students.bulkAdd(supabaseStudents)
+      setStudents(supabaseStudents as Student[])
+    } else {
+      // Fallback to IndexedDB
+      const allStudents = await db.students.toArray()
+      setStudents(allStudents as Student[])
+    }
   }
 
   const fetchStudentCounts = async () => {
-    const allStudents = await db.students.toArray()
+    // Fetch from Supabase first
+    const { data: supabaseStudents } = await supabase
+      .from('students')
+      .select('*')
+
+    const studentsToCount = supabaseStudents || await db.students.toArray()
     const counts: Record<string, number> = {}
 
-    allStudents.forEach(student => {
+    studentsToCount.forEach(student => {
       if (student.group_id) {
         counts[student.group_id] = (counts[student.group_id] || 0) + 1
       }

@@ -307,20 +307,7 @@ export function GroupsManagementPage() {
                 <form onSubmit={handleAddGroup} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        الصف (المرحلة)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="مثال: الصف الأول الثانوي"
-                        value={newStage}
-                        onChange={(e) => setNewStage(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
                         اسم المجموعة
                       </label>
                       <input
@@ -328,17 +315,42 @@ export function GroupsManagementPage() {
                         placeholder="مثال: مجموعة 1"
                         value={newGroupName}
                         onChange={(e) => setNewGroupName(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
                         required
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                        الصف (المرحلة)
+                      </label>
+                      <select
+                        value={newStage}
+                        onChange={(e) => setNewStage(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white"
+                        required
+                      >
+                        <option value="">مثال: الصف الأول الثانوي</option>
+                        <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                        <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+                        <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+                        <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+                        <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+                        <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+                        <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+                        <option value="الصف الأول المتوسط">الصف الأول المتوسط</option>
+                        <option value="الصف الثاني المتوسط">الصف الثاني المتوسط</option>
+                        <option value="الصف الثالث المتوسط">الصف الثالث المتوسط</option>
+                        <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                        <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+                        <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+                      </select>
                     </div>
                   </div>
                   <button
                     type="submit"
                     disabled={loading || !newStage.trim() || !newGroupName.trim()}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white py-3 rounded-lg font-bold transition-colors"
                   >
-                    <Plus size={20} />
                     إضافة المجموعة
                   </button>
                 </form>

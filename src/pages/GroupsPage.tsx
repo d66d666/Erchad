@@ -759,8 +759,11 @@ export function GroupsPage() {
                                     <div className="px-5 py-4">
                                       <div className="flex items-center justify-between gap-4">
                                         <button
-                                          onClick={() => setExpandedStudentId(expandedStudentId === student.id ? null : student.id)}
-                                          className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setExpandedStudentId(expandedStudentId === student.id ? null : student.id)
+                                          }}
+                                          className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0 relative z-10"
                                           aria-label="المزيد"
                                         >
                                           <MoreVertical size={20} className="text-gray-700" />

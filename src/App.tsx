@@ -266,62 +266,6 @@ function App() {
     fetchTeachersCount()
   }
 
-  const handleImportData = async () => {
-    try {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = '.json'
-      input.onchange = async (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0]
-        if (!file) return
-
-        const reader = new FileReader()
-        reader.onload = async (e) => {
-          try {
-            const data = JSON.parse(e.target?.result as string)
-
-            if (data.students) {
-              await db.students.clear()
-              await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-              for (const student of data.students) {
-                await db.students.add(student)
-                await supabase.from('students').insert(student)
-              }
-            }
-
-            if (data.groups) {
-              await db.groups.clear()
-              await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-              for (const group of data.groups) {
-                await db.groups.add(group)
-                await supabase.from('groups').insert(group)
-              }
-            }
-
-            if (data.specialStatuses) {
-              await db.special_statuses.clear()
-              await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-              for (const status of data.specialStatuses) {
-                await db.special_statuses.add(status)
-                await supabase.from('special_statuses').insert(status)
-              }
-            }
-
-            alert('تم استيراد البيانات بنجاح!')
-            window.location.reload()
-          } catch (error) {
-            console.error('Error importing data:', error)
-            alert('حدث خطأ في استيراد البيانات')
-          }
-        }
-        reader.readAsText(file)
-      }
-      input.click()
-    } catch (error) {
-      console.error('Error:', error)
-      alert('حدث خطأ')
-    }
-  }
 
   const handleAddSpecialStatus = async () => {
     if (!newStatusName.trim()) return
@@ -544,17 +488,6 @@ function App() {
                     >
                       <Download size={18} className="text-pink-600" />
                       <span className="text-sm font-medium text-gray-700">تصدير البيانات الكاملة</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        handleImportData()
-                        setShowSettingsMenu(false)
-                      }}
-                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                    >
-                      <Upload size={18} className="text-blue-600" />
-                      <span className="text-sm font-medium text-gray-700">استيراد البيانات الكاملة</span>
                     </button>
 
                     <button

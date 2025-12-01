@@ -480,13 +480,12 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="هروب من الحصة">هروب من الحصة</option>
-                  <option value="تأخر صباحي">تأخر صباحي</option>
                   <option value="غياب بدون عذر">غياب بدون عذر</option>
+                  <option value="تأخر صباحي">تأخر صباحي</option>
                   <option value="عدم إحضار الكتب">عدم إحضار الكتب</option>
-                  <option value="عدم حل الواجبات">عدم حل الواجبات</option>
                   <option value="سلوك غير لائق">سلوك غير لائق</option>
-                  <option value="شجار">شجار</option>
-                  <option value="إزعاج">إزعاج</option>
+                  <option value="استخدام الجوال">استخدام الجوال</option>
+                  <option value="عدم ارتداء الزي المدرسي">عدم ارتداء الزي المدرسي</option>
                   <option value="أخرى">أخرى</option>
                 </select>
               </div>

@@ -405,19 +405,19 @@ export function GroupsManagementPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-emerald-800 mb-6">إضافة مجموعة جديدة</h3>
+              <div className="bg-white/50 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-700 mb-4">إضافة مجموعة جديدة</h3>
 
-                <form onSubmit={handleAddGroup} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleAddGroup} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                      <label className="block text-xs font-medium text-gray-600 mb-1 text-right">
                         الصف (المرحلة)
                       </label>
                       <select
                         value={newStage}
                         onChange={(e) => setNewStage(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white/70"
                         required
                       >
                         <option value="">اختر المرحلة</option>
@@ -436,7 +436,7 @@ export function GroupsManagementPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                      <label className="block text-xs font-medium text-gray-600 mb-1 text-right">
                         اسم المجموعة
                       </label>
                       <input
@@ -444,7 +444,7 @@ export function GroupsManagementPage() {
                         placeholder="مثال: مجموعة 1"
                         value={newGroupName}
                         onChange={(e) => setNewGroupName(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white/70"
                         required
                       />
                     </div>
@@ -452,7 +452,7 @@ export function GroupsManagementPage() {
                   <button
                     type="submit"
                     disabled={loading || !newStage.trim() || !newGroupName.trim()}
-                    className="w-full bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white py-3 rounded-lg font-bold transition-colors"
+                    className="w-full bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white py-2 text-sm rounded-lg font-semibold transition-colors"
                   >
                     إضافة المجموعة
                   </button>

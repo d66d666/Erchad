@@ -528,7 +528,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             </div>
 
             {searchTerm && (
-              <div className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+              <div className="mt-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg">
                 {filteredStudents.length === 0 ? (
                   <div className="text-center py-4 text-gray-500">
                     لا توجد نتائج للبحث
@@ -545,11 +545,19 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                     className="w-full text-right px-4 py-3 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 border-b border-orange-100 last:border-0 transition-all duration-200"
                   >
                     <div className="font-semibold text-gray-800">{student.name}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 mb-2">
                       {student.national_id} - {student.group?.name}
                     </div>
-                    <div className="text-xs text-orange-600 font-semibold mt-1">
-                      عدد الاستئذانات: {student.permission_count || 0}
+                    <div className="flex gap-3 text-xs font-semibold">
+                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        الاستقبال: {student.visit_count || 0}
+                      </span>
+                      <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                        الاستئذانات: {student.permission_count || 0}
+                      </span>
+                      <span className="bg-red-100 text-red-700 px-2 py-1 rounded">
+                        المخالفات: {student.violation_count || 0}
+                      </span>
                     </div>
                   </button>
                   ))

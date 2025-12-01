@@ -461,12 +461,12 @@ export function GroupsPage() {
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                  {groupStudents.map((student) => {
+                                  {groupStudents.map((student, index) => {
                                     const status = specialStatuses.find(
                                       (s) => s.id === student.special_status_id
                                     )
                                     return (
-                                      <tr key={student.id} className="hover:bg-blue-50 transition-colors">
+                                      <tr key={student.id} className={`hover:bg-blue-100 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'}`}>
                                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                           {student.name}
                                         </td>
@@ -474,12 +474,12 @@ export function GroupsPage() {
                                           {student.national_id}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-600">
-                                          {student.phone}
+                                          {student.phone || '-'}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-600">
                                           {student.guardian_phone}
                                         </td>
-                                        <td className="px-4 py-3">
+                                        <td className="px-4 py-3 text-center">
                                           {student.special_status_id ? (
                                             <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
                                               {showStatusDetails ? (status?.name || 'لديه حالة خاصة') : 'لديه حالة خاصة'}

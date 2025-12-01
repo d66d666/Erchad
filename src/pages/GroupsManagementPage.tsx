@@ -418,10 +418,10 @@ export function GroupsManagementPage() {
                         value={newStage}
                         onChange={(e) => setNewStage(e.target.value)}
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white"
+                        size={12}
                         required
                       >
-                        <option value="">مثال: الصف الأول الثانوي</option>
-                        <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                        <option value="">اختر المرحلة</option>
                         <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
                         <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
                         <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>

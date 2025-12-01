@@ -451,24 +451,24 @@ export function GroupsManagementPage() {
 
                                 {groupStudents.length > 0 ? (
                                   <div className="overflow-x-auto">
-                                    <table className="w-full">
+                                    <table className="w-full" dir="rtl">
                                       <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">الاسم</th>
-                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">السجل المدني</th>
-                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">جوال الطالب</th>
-                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">جوال ولي الأمر</th>
-                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">الحالة الخاصة</th>
+                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الاسم</th>
+                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">السجل المدني</th>
+                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال الطالب</th>
+                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال ولي الأمر</th>
+                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الحالة الخاصة</th>
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-200">
                                         {groupStudents.map((student, idx) => (
                                           <tr key={student.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{student.name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.civil_id || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.phone || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.guardian_phone || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{student.name}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.civil_id || '-'}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.phone || '-'}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.guardian_phone || '-'}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 text-right">
                                               {student.special_status ? (
                                                 <span className="inline-block px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
                                                   {student.special_status}

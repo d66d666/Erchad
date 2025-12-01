@@ -126,8 +126,8 @@ export function TeachersPage() {
                 <div className="flex items-start gap-3">
                   <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
                   <div>
-                    <p className="text-xs text-gray-500 mb-0.5">المقرر الدراسي</p>
-                    <p className="text-sm font-semibold text-gray-800">{teacher.specialization}</p>
+                    <p className="text-xs text-gray-500 mb-0.5">المرحلة</p>
+                    <p className="text-sm font-semibold text-gray-800">{teacher.specialization || 'غير محدد'}</p>
                   </div>
                 </div>
 
@@ -206,6 +206,9 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
   const [loading, setLoading] = useState(false)
   const [loadingGroups, setLoadingGroups] = useState(true)
 
+  const stages = Array.from(new Set(groups.map(g => g.stage))).sort()
+  const filteredGroups = specialization ? groups.filter(g => g.stage === specialization) : []
+
   useEffect(() => {
     if (teacher) {
       fetchTeacherGroups()
@@ -239,7 +242,7 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!name.trim() || !phone.trim() || !specialization.trim()) {
+    if (!name.trim() || !phone.trim()) {
       alert('الرجاء تعبئة جميع الحقول المطلوبة')
       return
     }
@@ -253,7 +256,7 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
           .update({
             name: name.trim(),
             phone: phone.trim(),
-            specialization: specialization.trim()
+            specialization: specialization.trim() || null
           })
           .eq('id', teacher.id)
 
@@ -292,7 +295,7 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
           .insert({
             name: name.trim(),
             phone: phone.trim(),
-            specialization: specialization.trim()
+            specialization: specialization.trim() || null
           })
           .select()
           .single()
@@ -376,46 +379,59 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              المقرر الدراسي <span className="text-red-500">*</span>
+              المرحلة (اختياري)
             </label>
-            <input
-              type="text"
+            <select
               value={specialization}
-              onChange={(e) => setSpecialization(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="مثال: رياضيات، لغة عربية، علوم"
-              required
-            />
+              onChange={(e) => {
+                setSpecialization(e.target.value)
+                setSelectedGroupIds([])
+              }}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            >
+              <option value="">-- اختر المرحلة --</option>
+              {stages.map((stage) => (
+                <option key={stage} value={stage}>
+                  {stage}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {loadingGroups ? (
-            <div className="text-center py-4 text-gray-500">جاري تحميل المجموعات...</div>
-          ) : groups.length > 0 ? (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                المجموعات التي يدرسها (اختياري)
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                {groups.map((group) => {
-                  const isSelected = selectedGroupIds.includes(group.id)
-                  return (
-                    <button
-                      key={group.id}
-                      type="button"
-                      onClick={() => toggleGroup(group.id)}
-                      className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                        isSelected
-                          ? 'bg-blue-50 border-blue-500 text-blue-900'
-                          : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      {group.name}
-                    </button>
-                  )
-                })}
+          {specialization && (
+            loadingGroups ? (
+              <div className="text-center py-4 text-gray-500">جاري تحميل المجموعات...</div>
+            ) : filteredGroups.length > 0 ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  المجموعات التي يدرسها (اختياري)
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4">
+                  {filteredGroups.map((group) => {
+                    const isSelected = selectedGroupIds.includes(group.id)
+                    return (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => toggleGroup(group.id)}
+                        className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                          isSelected
+                            ? 'bg-blue-50 border-blue-500 text-blue-900'
+                            : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'
+                        }`}
+                      >
+                        {group.name}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                لا توجد مجموعات في هذه المرحلة
+              </div>
+            )
+          )}
 
           <div className="flex gap-3 pt-4">
             <button

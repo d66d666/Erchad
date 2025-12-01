@@ -35,6 +35,7 @@ import {
   List,
   Plus,
   Trash2,
+  Layers,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -60,6 +61,9 @@ function App() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [showManageSpecialStatusModal, setShowManageSpecialStatusModal] = useState(false)
   const [newStatusName, setNewStatusName] = useState('')
+  const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
+  const [newStage, setNewStage] = useState('')
+  const [newGroupName, setNewGroupName] = useState('')
 
   // فلاتر
   const [specialStatusFilter, setSpecialStatusFilter] = useState<string>('all')
@@ -333,6 +337,71 @@ function App() {
     }
   }
 
+  const handleAddGroup = async () => {
+    if (!newStage.trim() || !newGroupName.trim()) return
+
+    try {
+      const { data: stageGroups } = await supabase
+        .from('groups')
+        .select('*')
+        .eq('stage', newStage.trim())
+
+      const maxOrder = stageGroups && stageGroups.length > 0
+        ? Math.max(...stageGroups.map(g => g.display_order || 0))
+        : 0
+
+      const newGroup = {
+        id: crypto.randomUUID(),
+        stage: newStage.trim(),
+        name: newGroupName.trim(),
+        display_order: maxOrder + 1,
+        created_at: new Date().toISOString(),
+      }
+
+      const { error } = await supabase
+        .from('groups')
+        .insert(newGroup)
+
+      if (error) throw error
+
+      await db.groups.add(newGroup)
+      setNewStage('')
+      setNewGroupName('')
+      fetchData()
+      alert('تمت إضافة المجموعة بنجاح')
+    } catch (error) {
+      console.error('Error adding group:', error)
+      alert('حدث خطأ أثناء إضافة المجموعة')
+    }
+  }
+
+  const handleDeleteGroup = async (groupId: string) => {
+    const studentsInGroup = students.filter((s) => s.group_id === groupId)
+
+    if (studentsInGroup.length > 0) {
+      alert(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentsInGroup.length} طالب/طالبة`)
+      return
+    }
+
+    if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
+
+    try {
+      const { error } = await supabase
+        .from('groups')
+        .delete()
+        .eq('id', groupId)
+
+      if (error) throw error
+
+      await db.groups.delete(groupId)
+      fetchData()
+      alert('تم حذف المجموعة بنجاح')
+    } catch (error) {
+      console.error('Error deleting group:', error)
+      alert('حدث خطأ أثناء حذف المجموعة')
+    }
+  }
+
   const handleExportData = async () => {
     try {
       const dataToExport = {
@@ -469,7 +538,7 @@ function App() {
 
                     <button
                       onClick={() => {
-                        setCurrentPage('groups')
+                        setShowManageGroupsModal(true)
                         setShowSettingsMenu(false)
                       }}
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
@@ -1003,6 +1072,115 @@ function App() {
                 >
                   <Plus size={16} />
                   <span>إضافة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showManageGroupsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[70vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Layers size={22} />
+                <h2 className="text-lg font-bold text-white">إدارة المراحل والمجموعات</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowManageGroupsModal(false)
+                  setNewStage('')
+                  setNewGroupName('')
+                }}
+                className="text-white hover:bg-white/20 rounded-lg p-1.5 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-2.5">
+                {groups.length === 0 ? (
+                  <div className="text-center py-6 text-gray-500 text-sm">
+                    لا توجد مجموعات بعد
+                  </div>
+                ) : (
+                  groups
+                    .sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
+                    .map((group) => {
+                      const studentCount = students.filter(s => s.group_id === group.id).length
+
+                      return (
+                        <div
+                          key={group.id}
+                          className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-emerald-300 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <span className="text-gray-800 font-medium text-sm">{group.stage} - {group.name}</span>
+                            {studentCount > 0 && (
+                              <span className="text-xs text-gray-500 mr-2">
+                                ({studentCount} طالب)
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDeleteGroup(group.id)}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="حذف"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )
+                    })
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="mb-2 text-xs font-medium text-gray-700">
+                إضافة مجموعة جديدة
+              </div>
+              <div className="space-y-2">
+                <select
+                  value={newStage}
+                  onChange={(e) => setNewStage(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white"
+                >
+                  <option value="">اختر المرحلة</option>
+                  <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
+                  <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
+                  <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
+                  <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+                  <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
+                  <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
+                  <option value="الصف الأول المتوسط">الصف الأول المتوسط</option>
+                  <option value="الصف الثاني المتوسط">الصف الثاني المتوسط</option>
+                  <option value="الصف الثالث المتوسط">الصف الثالث المتوسط</option>
+                  <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                  <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+                  <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+                </select>
+                <input
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddGroup()
+                    }
+                  }}
+                  placeholder="مثال: مجموعة 1"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                />
+                <button
+                  onClick={handleAddGroup}
+                  disabled={!newStage.trim() || !newGroupName.trim()}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm font-medium hover:from-emerald-600 hover:to-teal-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Plus size={16} />
+                  <span>إضافة المجموعة</span>
                 </button>
               </div>
             </div>

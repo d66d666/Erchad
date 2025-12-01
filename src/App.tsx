@@ -58,6 +58,7 @@ function App() {
   const [systemDescription, setSystemDescription] = useState('')
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showExcelImport, setShowExcelImport] = useState(false)
+  const [showDataImport, setShowDataImport] = useState(false)
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [printStudent, setPrintStudent] = useState<Student | null>(null)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
@@ -369,15 +370,29 @@ function App() {
 
   const handleExportData = async () => {
     try {
+      const { data: visits } = await supabase.from('student_visits').select('*')
+      const { data: permissions } = await supabase.from('student_permissions').select('*')
+      const { data: violations } = await supabase.from('student_violations').select('*')
+      const { data: teachers } = await supabase.from('teachers').select('*')
+      const { data: teacherGroups } = await supabase.from('teacher_groups').select('*')
+      const { data: teacherProfile } = await supabase.from('teacher_profile').select('*').maybeSingle()
+      const { data: labContact } = await supabase.from('lab_contact').select('*').maybeSingle()
+      const { data: schoolInfo } = await supabase.from('school_info').select('*').maybeSingle()
+
       const dataToExport = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
         students,
         groups,
         specialStatuses,
-        teacherProfile: {
-          name: teacherName,
-          schoolName: schoolName
-        },
-        exportDate: new Date().toISOString()
+        studentVisits: visits || [],
+        studentPermissions: permissions || [],
+        studentViolations: violations || [],
+        teachers: teachers || [],
+        teacherGroups: teacherGroups || [],
+        teacherProfile: teacherProfile || null,
+        labContact: labContact || null,
+        schoolInfo: schoolInfo || null,
       }
 
       const jsonString = JSON.stringify(dataToExport, null, 2)
@@ -391,10 +406,90 @@ function App() {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      alert('تم تصدير البيانات بنجاح!')
+      alert('تم تصدير البيانات بنجاح! ✓\n\nيحتوي الملف على:\n- الطلاب والمجموعات\n- الحالات الخاصة\n- الزيارات والاستئذانات والمخالفات\n- المعلمين والمجموعات المرتبطة\n- جميع الإعدادات')
     } catch (error) {
       console.error('Error exporting data:', error)
       alert('حدث خطأ أثناء تصدير البيانات')
+    }
+  }
+
+  const handleImportData = async (file: File) => {
+    try {
+      const text = await file.text()
+      const importedData = JSON.parse(text)
+
+      if (!importedData.version || !importedData.exportDate) {
+        alert('ملف غير صالح! الرجاء اختيار ملف صحيح تم تصديره من النظام')
+        return
+      }
+
+      const confirmImport = confirm(
+        `⚠️ تحذير هام:\n\nسيتم حذف جميع البيانات الحالية واستبدالها بالبيانات من الملف المستورد.\n\nالملف المستورد يحتوي على:\n- ${importedData.students?.length || 0} طالب\n- ${importedData.groups?.length || 0} مجموعة\n- ${importedData.specialStatuses?.length || 0} حالة خاصة\n- ${importedData.studentVisits?.length || 0} زيارة\n- ${importedData.studentPermissions?.length || 0} استئذان\n- ${importedData.studentViolations?.length || 0} مخالفة\n- ${importedData.teachers?.length || 0} معلم\n\nتاريخ التصدير: ${new Date(importedData.exportDate).toLocaleDateString('ar-SA')}\n\nهل أنت متأكد من المتابعة؟`
+      )
+
+      if (!confirmImport) return
+
+      await supabase.from('student_visits').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('student_permissions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('student_violations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('teacher_groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
+      if (importedData.specialStatuses?.length > 0) {
+        await supabase.from('special_statuses').insert(importedData.specialStatuses)
+      }
+
+      if (importedData.groups?.length > 0) {
+        await supabase.from('groups').insert(importedData.groups)
+      }
+
+      if (importedData.students?.length > 0) {
+        await supabase.from('students').insert(importedData.students)
+      }
+
+      if (importedData.teachers?.length > 0) {
+        await supabase.from('teachers').insert(importedData.teachers)
+      }
+
+      if (importedData.teacherGroups?.length > 0) {
+        await supabase.from('teacher_groups').insert(importedData.teacherGroups)
+      }
+
+      if (importedData.studentVisits?.length > 0) {
+        await supabase.from('student_visits').insert(importedData.studentVisits)
+      }
+
+      if (importedData.studentPermissions?.length > 0) {
+        await supabase.from('student_permissions').insert(importedData.studentPermissions)
+      }
+
+      if (importedData.studentViolations?.length > 0) {
+        await supabase.from('student_violations').insert(importedData.studentViolations)
+      }
+
+      if (importedData.teacherProfile) {
+        await supabase.from('teacher_profile').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        await supabase.from('teacher_profile').insert(importedData.teacherProfile)
+      }
+
+      if (importedData.labContact) {
+        await supabase.from('lab_contact').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        await supabase.from('lab_contact').insert(importedData.labContact)
+      }
+
+      if (importedData.schoolInfo) {
+        await supabase.from('school_info').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        await supabase.from('school_info').insert(importedData.schoolInfo)
+      }
+
+      alert('✓ تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة الآن...')
+      window.location.reload()
+    } catch (error) {
+      console.error('Error importing data:', error)
+      alert('حدث خطأ أثناء استيراد البيانات. تأكد من أن الملف صحيح.')
     }
   }
 
@@ -488,6 +583,17 @@ function App() {
                     >
                       <Download size={18} className="text-pink-600" />
                       <span className="text-sm font-medium text-gray-700">تصدير البيانات الكاملة</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowDataImport(true)
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Upload size={18} className="text-blue-600" />
+                      <span className="text-sm font-medium text-gray-700">استيراد البيانات الكاملة</span>
                     </button>
 
                     <button
@@ -959,6 +1065,113 @@ function App() {
           fetchTeachersCount()
         }}
       />
+
+      {showDataImport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-3 rounded-xl">
+                  <Upload size={24} className="text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">استيراد البيانات الكاملة</h2>
+                  <p className="text-sm text-gray-600 mt-1">استرجاع نسخة احتياطية من بياناتك</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDataImport(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-5 mb-6">
+              <div className="flex gap-3">
+                <AlertCircle size={24} className="text-orange-600 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-2">⚠️ تحذير هام</h3>
+                  <ul className="text-sm text-gray-700 space-y-1.5">
+                    <li>• سيتم حذف <strong>جميع البيانات الحالية</strong> بشكل نهائي</li>
+                    <li>• لا يمكن التراجع عن هذه العملية</li>
+                    <li>• تأكد من اختيار ملف النسخة الاحتياطية الصحيح</li>
+                    <li>• يُنصح بعمل نسخة احتياطية قبل الاستيراد</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-6">
+              <h3 className="font-bold text-gray-900 mb-3">📋 ما الذي سيتم استيراده؟</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>الطلاب والمجموعات</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>الحالات الخاصة</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>زيارات العيادة</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>الاستئذانات</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>المخالفات</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>المعلمين ومجموعاتهم</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>الملف الشخصي</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span>جميع الإعدادات</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all">
+              <input
+                type="file"
+                accept=".json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    handleImportData(file)
+                    setShowDataImport(false)
+                  }
+                }}
+                className="hidden"
+                id="data-import-input"
+              />
+              <label htmlFor="data-import-input" className="cursor-pointer">
+                <Upload size={48} className="mx-auto text-blue-600 mb-3" />
+                <p className="text-lg font-bold text-gray-900 mb-1">اضغط لاختيار ملف النسخة الاحتياطية</p>
+                <p className="text-sm text-gray-600">ملفات JSON فقط (.json)</p>
+              </label>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowDataImport(false)}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddStudentModal && (
         <AddStudentModal

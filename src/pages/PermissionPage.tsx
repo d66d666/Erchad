@@ -474,10 +474,12 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl shadow-lg p-6 border border-orange-100">
         <div className="flex items-center gap-3 mb-6">
-          <LogOut size={28} className="text-orange-600" />
-          <h2 className="text-2xl font-bold text-gray-800">الاستئذان</h2>
+          <div className="bg-orange-600 p-3 rounded-lg shadow-md">
+            <LogOut size={28} className="text-white" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">الاستئذان</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -520,7 +522,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                       setSelectedStudent(student)
                       setSearchTerm('')
                     }}
-                    className="w-full text-right px-4 py-3 hover:bg-orange-50 border-b border-gray-100 last:border-0 transition-colors"
+                    className="w-full text-right px-4 py-3 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 border-b border-orange-100 last:border-0 transition-all duration-200"
                   >
                     <div className="font-semibold text-gray-800">{student.name}</div>
                     <div className="text-sm text-gray-600">
@@ -538,16 +540,19 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
           {selectedStudent && (
             <>
-              <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                <h3 className="font-bold text-orange-900 mb-2">الطالب المحدد:</h3>
+              <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl p-5 border-2 border-orange-300 shadow-md">
+                <h3 className="font-bold text-orange-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-orange-600 rounded-full animate-pulse"></div>
+                  الطالب المحدد:
+                </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="font-semibold">الاسم:</span> {selectedStudent.name}</div>
-                  <div><span className="font-semibold">السجل المدني:</span> {selectedStudent.national_id}</div>
-                  <div><span className="font-semibold">الفصل:</span> {selectedStudent.group?.name}</div>
-                  <div><span className="font-semibold">الصف:</span> {selectedStudent.grade}</div>
-                  <div className="col-span-2">
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-orange-700">الاسم:</span> <span className="text-gray-800">{selectedStudent.name}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-orange-700">السجل المدني:</span> <span className="text-gray-800">{selectedStudent.national_id}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-orange-700">الفصل:</span> <span className="text-gray-800">{selectedStudent.group?.name}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-orange-700">الصف:</span> <span className="text-gray-800">{selectedStudent.grade}</span></div>
+                  <div className="col-span-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg p-3 shadow-md">
                     <span className="font-semibold">عدد الاستئذانات السابقة:</span>
-                    <span className="text-orange-600 font-bold mr-2">{selectedStudent.permission_count || 0}</span>
+                    <span className="font-bold mr-2 text-2xl">{selectedStudent.permission_count || 0}</span>
                   </div>
                 </div>
               </div>
@@ -596,7 +601,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'جاري الحفظ...' : 'تسجيل الاستئذان وإشعار ولي الأمر'}
                 </button>

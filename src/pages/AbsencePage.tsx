@@ -411,10 +411,12 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-xl shadow-lg p-6 border border-red-100">
         <div className="flex items-center gap-3 mb-6">
-          <AlertTriangle size={28} className="text-red-600" />
-          <h2 className="text-2xl font-bold text-gray-800">المخالفات</h2>
+          <div className="bg-red-600 p-3 rounded-lg shadow-md">
+            <AlertTriangle size={28} className="text-white" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">المخالفات</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -457,7 +459,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                       setSelectedStudent(student)
                       setSearchTerm('')
                     }}
-                    className="w-full text-right px-4 py-3 hover:bg-red-50 border-b border-gray-100 last:border-0 transition-colors"
+                    className="w-full text-right px-4 py-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 border-b border-red-100 last:border-0 transition-all duration-200"
                   >
                     <div className="font-semibold text-gray-800">{student.name}</div>
                     <div className="text-sm text-gray-600">
@@ -475,16 +477,19 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
           {selectedStudent && (
             <>
-              <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                <h3 className="font-bold text-red-900 mb-2">الطالب المحدد:</h3>
+              <div className="bg-gradient-to-br from-red-100 to-rose-100 rounded-xl p-5 border-2 border-red-300 shadow-md">
+                <h3 className="font-bold text-red-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></div>
+                  الطالب المحدد:
+                </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="font-semibold">الاسم:</span> {selectedStudent.name}</div>
-                  <div><span className="font-semibold">السجل المدني:</span> {selectedStudent.national_id}</div>
-                  <div><span className="font-semibold">الفصل:</span> {selectedStudent.group?.name}</div>
-                  <div><span className="font-semibold">الصف:</span> {selectedStudent.grade}</div>
-                  <div className="col-span-2">
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-red-700">الاسم:</span> <span className="text-gray-800">{selectedStudent.name}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-red-700">السجل المدني:</span> <span className="text-gray-800">{selectedStudent.national_id}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-red-700">الفصل:</span> <span className="text-gray-800">{selectedStudent.group?.name}</span></div>
+                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-red-700">الصف:</span> <span className="text-gray-800">{selectedStudent.grade}</span></div>
+                  <div className="col-span-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg p-3 shadow-md">
                     <span className="font-semibold">عدد المخالفات السابقة:</span>
-                    <span className="text-red-600 font-bold mr-2">{selectedStudent.violation_count || 0}</span>
+                    <span className="font-bold mr-2 text-2xl">{selectedStudent.violation_count || 0}</span>
                   </div>
                 </div>
               </div>
@@ -569,7 +574,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'جاري الحفظ...' : 'تسجيل المخالفة'}
                 </button>

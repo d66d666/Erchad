@@ -298,7 +298,7 @@ export function SpecialStatusPage({
         </div>
       </div>
 
-      {stages.map((stage) => (
+      {stages.filter(stage => groupedByStage[stage].length > 0).map((stage) => (
         <div key={stage} className="space-y-4">
           <div className="bg-gradient-to-r from-purple-600 to-violet-600 rounded-xl shadow-lg px-6 py-4">
             <h2 className="text-xl font-bold text-white">{stage}</h2>

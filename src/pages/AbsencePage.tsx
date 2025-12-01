@@ -550,13 +550,30 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loading ? 'جاري الحفظ...' : 'تسجيل المخالفة'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStudent(null)
+                    setFormData({
+                      violation_type: 'هروب من الحصة' as const,
+                      description: '',
+                      action_taken: '',
+                      notes: ''
+                    })
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-3 rounded-lg transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'جاري الحفظ...' : 'تسجيل المخالفة'}
+                </button>
+              </div>
             </>
           )}
         </form>

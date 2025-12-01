@@ -579,13 +579,28 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {loading ? 'جاري الحفظ...' : 'تسجيل الاستئذان وإشعار ولي الأمر'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStudent(null)
+                    setFormData({
+                      reason: '',
+                      notes: ''
+                    })
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-3 rounded-lg transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'جاري الحفظ...' : 'تسجيل الاستئذان وإشعار ولي الأمر'}
+                </button>
+              </div>
             </>
           )}
         </form>

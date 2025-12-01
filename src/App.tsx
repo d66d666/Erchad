@@ -5,6 +5,7 @@ import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
 import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImport } from './components/ExcelImport'
+import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import {
   Home,
   Users,
@@ -18,6 +19,9 @@ import {
   Search,
   User as UserIcon,
   ChevronDown,
+  Printer,
+  MessageCircle,
+  X,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -35,6 +39,8 @@ function App() {
   const [schoolName, setSchoolName] = useState('')
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showExcelImport, setShowExcelImport] = useState(false)
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [printStudent, setPrintStudent] = useState<Student | null>(null)
 
   // فلاتر
   const [specialStatusFilter, setSpecialStatusFilter] = useState<string>('all')
@@ -348,9 +354,38 @@ function App() {
                         className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                       >
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-bold text-gray-900">{student.name}</p>
                             <p className="text-sm text-gray-600">{student.national_id}</p>
+                            {student.guardian_phone && (
+                              <p className="text-sm text-gray-500">ولي الأمر: {student.guardian_phone}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {student.guardian_phone && (
+                              <button
+                                onClick={() => {
+                                  const phone = formatPhoneForWhatsApp(student.guardian_phone)
+                                  if (phone) {
+                                    window.open(`https://wa.me/${phone}`, '_blank')
+                                  }
+                                }}
+                                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                                title="إرسال رسالة واتساب لولي الأمر"
+                              >
+                                <MessageCircle size={18} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setPrintStudent(student)
+                                setShowPrintModal(true)
+                              }}
+                              className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                              title="طباعة بيانات الطالب"
+                            >
+                              <Printer size={18} />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -477,6 +512,114 @@ function App() {
             fetchData()
           }}
         />
+      )}
+
+      {showPrintModal && printStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Printer size={28} />
+                <h2 className="text-2xl font-bold">بيانات الطالب</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPrintModal(false)
+                  setPrintStudent(null)
+                }}
+                className="p-2 hover:bg-blue-800 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-8" id="student-print-content">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                  {schoolName || 'بيانات الطالب'}
+                </h1>
+                <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">الاسم الكامل</p>
+                    <p className="font-bold text-gray-900 text-lg">{printStudent.name}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">رقم الهوية / الإقامة</p>
+                    <p className="font-bold text-gray-900 text-lg">{printStudent.national_id}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">رقم جوال الطالب</p>
+                    <p className="font-bold text-gray-900 text-lg">{printStudent.phone || 'غير محدد'}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">رقم جوال ولي الأمر</p>
+                    <p className="font-bold text-gray-900 text-lg">{printStudent.guardian_phone || 'غير محدد'}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">الصف</p>
+                    <p className="font-bold text-gray-900 text-lg">{printStudent.grade}</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl">
+                    <p className="text-sm text-gray-600 mb-1">المجموعة</p>
+                    <p className="font-bold text-gray-900 text-lg">
+                      {groups.find(g => g.id === printStudent.group_id)?.name || 'غير محدد'}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-xl col-span-2">
+                    <p className="text-sm text-gray-600 mb-1">الحالة الخاصة</p>
+                    <p className="font-bold text-gray-900 text-lg">
+                      {printStudent.special_status_id
+                        ? specialStatuses.find(s => s.id === printStudent.special_status_id)?.name
+                        : 'لا توجد'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t-2 border-gray-200 pt-6 mt-6">
+                  <p className="text-sm text-gray-500 text-center">
+                    تاريخ الطباعة: {new Date().toLocaleDateString('ar-SA')}
+                  </p>
+                  {teacherName && (
+                    <p className="text-sm text-gray-500 text-center mt-1">
+                      المرشد: {teacherName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3">
+              <button
+                onClick={() => {
+                  window.print()
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+              >
+                <Printer size={20} />
+                طباعة
+              </button>
+              <button
+                onClick={() => {
+                  setShowPrintModal(false)
+                  setPrintStudent(null)
+                }}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-xl font-bold transition-colors"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

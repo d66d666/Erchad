@@ -758,14 +758,6 @@ export function GroupsPage() {
                                   >
                                     <div className="px-5 py-4">
                                       <div className="flex items-center justify-between gap-4">
-                                        <button
-                                          onClick={() => setExpandedStudentId(expandedStudentId === student.id ? null : student.id)}
-                                          className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0"
-                                          aria-label="المزيد"
-                                        >
-                                          <MoreVertical size={20} className="text-gray-700" />
-                                        </button>
-
                                         <div className="flex items-center gap-6 flex-1">
                                           <div className="text-right min-w-[80px]">
                                             <div className="text-xs text-gray-500 mb-0.5">الصف</div>
@@ -796,10 +788,20 @@ export function GroupsPage() {
                                           )}
                                         </div>
 
-                                        <div className="text-right">
-                                          <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
-                                          <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
-                                          <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
+                                        <div className="flex items-center gap-3">
+                                          <button
+                                            onClick={() => setExpandedStudentId(expandedStudentId === student.id ? null : student.id)}
+                                            className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0"
+                                            aria-label="المزيد"
+                                          >
+                                            <MoreVertical size={20} className="text-gray-700" />
+                                          </button>
+
+                                          <div className="text-right">
+                                            <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
+                                            <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
+                                            <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
+                                          </div>
                                         </div>
                                       </div>
 

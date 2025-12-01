@@ -275,12 +275,8 @@ export function GroupsPage() {
   }
 
   const handleAddStudent = (groupId: string) => {
-    console.log('handleAddStudent called with groupId:', groupId)
-    const group = groups.find(g => g.id === groupId)
-    console.log('Found group:', group)
     setSelectedGroupId(groupId)
     setShowAddStudentModal(true)
-    console.log('Modal state should be true now')
   }
 
   const handleCloseModal = () => {
@@ -358,6 +354,16 @@ export function GroupsPage() {
             >
               <Layers size={20} />
               <span>إدارة المجموعات</span>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedGroupId(null)
+                setShowAddStudentModal(true)
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all hover:shadow-lg"
+            >
+              <UserPlus size={20} />
+              <span>إضافة طالب</span>
             </button>
           </div>
           <label className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 rounded-xl cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-purple-200">
@@ -500,18 +506,15 @@ export function GroupsPage() {
         </div>
       )}
 
-      {(() => {
-        console.log('showAddStudentModal:', showAddStudentModal, 'selectedGroupId:', selectedGroupId)
-        return showAddStudentModal && selectedGroupId && (
-          <AddStudentModal
-            groups={groups}
-            specialStatuses={specialStatuses}
-            onClose={handleCloseModal}
-            onStudentAdded={fetchData}
-            preselectedGroupId={selectedGroupId}
-          />
-        )
-      })()}
+      {showAddStudentModal && (
+        <AddStudentModal
+          groups={groups}
+          specialStatuses={specialStatuses}
+          onClose={handleCloseModal}
+          onStudentAdded={fetchData}
+          preselectedGroupId={selectedGroupId || undefined}
+        />
+      )}
 
       {showManageGroupsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

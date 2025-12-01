@@ -758,31 +758,10 @@ export function GroupsPage() {
                                   >
                                     <div className="px-5 py-4">
                                       <div className="flex items-center justify-between gap-4">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            setExpandedStudentId(expandedStudentId === student.id ? null : student.id)
-                                          }}
-                                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm transition-colors flex-shrink-0 relative z-10"
-                                        >
-                                          خيارات
-                                        </button>
-
-                                        <div className="flex items-center gap-6 flex-1">
-                                          <div className="text-right min-w-[80px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">الصف</div>
-                                            <div className="text-sm font-semibold text-gray-800">{student.grade}</div>
-                                          </div>
-
-                                          <div className="text-right min-w-[120px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">ولي أمر</div>
-                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.guardian_phone}</div>
-                                          </div>
-
-                                          <div className="text-right min-w-[120px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">جوال</div>
-                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.phone}</div>
-                                          </div>
+                                        <div className="text-right">
+                                          <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
+                                          <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
+                                          <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
                                         </div>
 
                                         <div className="flex items-center gap-3 flex-shrink-0">
@@ -798,11 +777,33 @@ export function GroupsPage() {
                                           )}
                                         </div>
 
-                                        <div className="text-right">
-                                          <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
-                                          <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
-                                          <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
+                                        <div className="flex items-center gap-6 flex-1">
+                                          <div className="text-right min-w-[120px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">جوال</div>
+                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.phone}</div>
+                                          </div>
+
+                                          <div className="text-right min-w-[120px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">ولي أمر</div>
+                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.guardian_phone}</div>
+                                          </div>
+
+                                          <div className="text-right min-w-[80px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">الصف</div>
+                                            <div className="text-sm font-semibold text-gray-800">{student.grade}</div>
+                                          </div>
                                         </div>
+
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setExpandedStudentId(expandedStudentId === student.id ? null : student.id)
+                                          }}
+                                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm transition-colors flex-shrink-0 relative z-10 flex items-center gap-2"
+                                        >
+                                          خيارات
+                                          <ChevronDown size={16} className={`transition-transform ${expandedStudentId === student.id ? 'rotate-180' : ''}`} />
+                                        </button>
                                       </div>
 
                                       {expandedStudentId === student.id && (

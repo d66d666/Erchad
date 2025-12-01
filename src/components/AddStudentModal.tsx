@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { Group, SpecialStatus } from '../types'
 import { Plus, X } from 'lucide-react'
@@ -8,6 +8,7 @@ interface AddStudentModalProps {
   specialStatuses: SpecialStatus[]
   onClose: () => void
   onStudentAdded: () => void
+  preselectedGroupId?: string
 }
 
 export function AddStudentModal({
@@ -15,18 +16,32 @@ export function AddStudentModal({
   specialStatuses,
   onClose,
   onStudentAdded,
+  preselectedGroupId,
 }: AddStudentModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const preselectedGroup = preselectedGroupId ? groups.find(g => g.id === preselectedGroupId) : null
+
   const [formData, setFormData] = useState({
     name: '',
     national_id: '',
     phone: '',
     guardian_phone: '',
-    grade: '',
-    group_id: '',
+    grade: preselectedGroup?.stage || '',
+    group_id: preselectedGroupId || '',
     special_status_id: '',
   })
+
+  useEffect(() => {
+    if (preselectedGroupId && preselectedGroup) {
+      setFormData(prev => ({
+        ...prev,
+        grade: preselectedGroup.stage,
+        group_id: preselectedGroupId,
+      }))
+    }
+  }, [preselectedGroupId, preselectedGroup])
 
   const stages = Array.from(new Set(groups.map(g => g.stage)))
 

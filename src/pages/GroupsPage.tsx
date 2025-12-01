@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
+import { AddStudentModal } from '../components/AddStudentModal'
 import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers } from 'lucide-react'
 
 export function GroupsPage() {
@@ -15,20 +16,10 @@ export function GroupsPage() {
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [showManageGroupsModal, setShowManageGroupsModal] = useState(false)
   const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set())
-  const [formData, setFormData] = useState({
-    name: '',
-    national_id: '',
-    phone: '',
-    guardian_phone: '',
-    grade: '',
-    special_status_id: '',
-  })
   const [groupFormData, setGroupFormData] = useState({
     stage: '',
     name: '',
   })
-  const [formError, setFormError] = useState('')
-  const [formLoading, setFormLoading] = useState(false)
   const [showStatusDetails, setShowStatusDetails] = useState(false)
 
   useEffect(() => {
@@ -284,57 +275,14 @@ export function GroupsPage() {
   }
 
   const handleAddStudent = (groupId: string) => {
+    const group = groups.find(g => g.id === groupId)
     setSelectedGroupId(groupId)
     setShowAddStudentModal(true)
-    setFormData({
-      name: '',
-      national_id: '',
-      phone: '',
-      guardian_phone: '',
-      grade: '',
-      special_status_id: '',
-    })
-    setFormError('')
   }
 
   const handleCloseModal = () => {
     setShowAddStudentModal(false)
     setSelectedGroupId(null)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormError('')
-
-    if (!formData.name || !formData.national_id || !selectedGroupId) {
-      setFormError('يرجى ملء جميع الحقول المطلوبة')
-      return
-    }
-
-    try {
-      setFormLoading(true)
-
-      const newId = crypto.randomUUID()
-      await db.students.add({
-        id: newId,
-        ...formData,
-        group_id: selectedGroupId,
-        special_status_id: formData.special_status_id || null,
-        status: 'نشط',
-        visit_count: 0,
-        permission_count: 0,
-        violation_count: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as any)
-
-      handleCloseModal()
-      fetchData()
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'حدث خطأ')
-    } finally {
-      setFormLoading(false)
-    }
   }
 
   const handleAddGroup = async () => {
@@ -549,138 +497,14 @@ export function GroupsPage() {
         </div>
       )}
 
-      {showAddStudentModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-cyan-600 to-blue-600 p-6 flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-white">إضافة طالب جديد</h3>
-              <button
-                onClick={handleCloseModal}
-                className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {formError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {formError}
-                </div>
-              )}
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الاسم الكامل *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="أدخل اسم الطالب"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    السجل المدني *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.national_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, national_id: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="رقم السجل المدني"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الصف
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.grade}
-                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="مثال: الأول متوسط"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    جوال الطالب
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="05xxxxxxxx"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    جوال ولي الأمر
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.guardian_phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, guardian_phone: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="05xxxxxxxx"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الحالة الخاصة
-                  </label>
-                  <select
-                    value={formData.special_status_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, special_status_id: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  >
-                    <option value="">لا يوجد</option>
-                    {specialStatuses.map((status) => (
-                      <option key={status.id} value={status.id}>
-                        {status.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                >
-                  {formLoading ? 'جاري الحفظ...' : 'حفظ الطالب'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {showAddStudentModal && selectedGroupId && (
+        <AddStudentModal
+          groups={groups}
+          specialStatuses={specialStatuses}
+          onClose={handleCloseModal}
+          onStudentAdded={fetchData}
+          preselectedGroupId={selectedGroupId}
+        />
       )}
 
       {showManageGroupsModal && (

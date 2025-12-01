@@ -240,38 +240,38 @@ export function GroupsManagementPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <button
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-700 hover:to-blue-700 transition-all hover:shadow-lg"
-            >
-              <Printer size={20} />
-              <span>طباعة الكل</span>
-            </button>
-            <button
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all hover:shadow-lg"
-            >
-              <Layers size={20} />
-              <span>إدارة المجموعات</span>
-            </button>
-            <button
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all hover:shadow-lg"
-            >
-              <UserPlus size={20} />
-              <span>إضافة طالب</span>
-            </button>
-          </div>
-          <label className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 rounded-xl cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-purple-200">
+    <div className="space-y-4">
+      <div className="bg-gradient-to-br from-emerald-100 via-green-100 to-teal-100 rounded-xl shadow-md border border-emerald-200 p-5">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-3">
             <input
               type="checkbox"
               checked={showStatusDetails}
               onChange={(e) => setShowStatusDetails(e.target.checked)}
               className="w-5 h-5 rounded cursor-pointer"
             />
-            <span className="text-purple-700 font-semibold">إظهار تفاصيل الحالة</span>
+            <span className="text-emerald-800 font-semibold">إظهار تفاصيل الحالة</span>
           </label>
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+            >
+              <UserPlus size={16} />
+              <span>إضافة طالب</span>
+            </button>
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
+            >
+              <Layers size={16} />
+              <span>إدارة المجموعات</span>
+            </button>
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
+            >
+              <Printer size={16} />
+              <span>طباعة الكل</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -97,6 +97,18 @@ function App() {
     }
   }
 
+  const fetchTeachersCount = async () => {
+    try {
+      const { count } = await supabase
+        .from('teachers')
+        .select('*', { count: 'exact', head: true })
+
+      setTotalTeachers(count || 0)
+    } catch (error) {
+      console.error('Error fetching teachers count:', error)
+    }
+  }
+
   const fetchData = async () => {
     try {
       setLoading(true)
@@ -151,10 +163,17 @@ function App() {
     if (loggedIn) {
       fetchData()
       fetchTodayStats()
+      fetchTeachersCount()
     } else {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (currentPage === 'home') {
+      fetchTeachersCount()
+    }
+  }, [currentPage])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
@@ -166,6 +185,8 @@ function App() {
   const handleLogin = () => {
     setIsLoggedIn(true)
     fetchData()
+    fetchTodayStats()
+    fetchTeachersCount()
   }
 
   const handleExportData = async () => {
@@ -203,9 +224,9 @@ function App() {
   const [todayReceptionCount, setTodayReceptionCount] = useState(0)
   const [todayPermissionsCount, setTodayPermissionsCount] = useState(0)
   const [todayViolationsCount, setTodayViolationsCount] = useState(0)
+  const [totalTeachers, setTotalTeachers] = useState(0)
 
   const totalStudents = students.length
-  const totalTeachers = 0 // سيتم جلبه من قاعدة البيانات
   const specialStatusCount = students.filter(s => s.special_status_id !== null).length
 
   // أزرار التنقل
@@ -659,6 +680,7 @@ function App() {
           onImportComplete={() => {
             setShowExcelImport(false)
             fetchData()
+            fetchTeachersCount()
           }}
         />
       )}

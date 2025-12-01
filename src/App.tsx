@@ -39,6 +39,8 @@ import {
   LayoutGrid,
   ListChecks,
   Check,
+  Edit,
+  DoorOpen,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -72,6 +74,9 @@ function App() {
   const [studentMenuOpen, setStudentMenuOpen] = useState<string | null>(null)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
+  const [allowEntryStudent, setAllowEntryStudent] = useState<Student | null>(null)
+  const [entryReason, setEntryReason] = useState('')
 
   const [headerCards, setHeaderCards] = useState({
     totalStudents: true,
@@ -1024,15 +1029,38 @@ function App() {
                                                         <span className="text-2xl text-gray-600">⋮</span>
                                                       </button>
                                                       {studentMenuOpen === student.id && (
-                                                        <div className="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                                        <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                                          <button
+                                                            onClick={() => {
+                                                              setAllowEntryStudent(student)
+                                                              setShowAllowEntryModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm font-medium text-green-700"
+                                                          >
+                                                            <DoorOpen size={16} />
+                                                            <span>سماح بدخول الفصل</span>
+                                                          </button>
+                                                          <button
+                                                            onClick={() => {
+                                                              setPrintStudent(student)
+                                                              setShowPrintModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-blue-50 transition-colors flex items-center gap-3 text-sm font-medium text-blue-700"
+                                                          >
+                                                            <Printer size={16} />
+                                                            <span>طباعة بيانات الطالب</span>
+                                                          </button>
                                                           <button
                                                             onClick={() => {
                                                               setEditingStudent(student)
                                                               setShowEditModal(true)
                                                               setStudentMenuOpen(null)
                                                             }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-gray-700"
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm font-medium text-gray-700"
                                                           >
+                                                            <Edit size={16} />
                                                             <span>تعديل</span>
                                                           </button>
                                                           <button
@@ -1056,8 +1084,9 @@ function App() {
                                                                 }
                                                               }
                                                             }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-red-50 transition-colors flex items-center gap-3 text-sm font-medium text-red-600"
                                                           >
+                                                            <Trash2 size={16} />
                                                             <span>حذف</span>
                                                           </button>
                                                         </div>
@@ -1631,6 +1660,89 @@ function App() {
                 <Check size={18} />
                 <span>حفظ وإغلاق</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAllowEntryModal && allowEntryStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowAllowEntryModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <DoorOpen size={28} />
+                <h2 className="text-2xl font-bold">سماح بدخول الفصل</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAllowEntryModal(false)
+                  setAllowEntryStudent(null)
+                  setEntryReason('')
+                }}
+                className="p-2 hover:bg-green-700 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+                <h3 className="font-bold text-green-900 mb-2">بيانات الطالب:</h3>
+                <p className="text-sm text-green-800"><span className="font-semibold">الاسم:</span> {allowEntryStudent.name}</p>
+                <p className="text-sm text-green-800"><span className="font-semibold">الفصل:</span> {groups.find(g => g.id === allowEntryStudent.group_id)?.name}</p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">سبب السماح بالدخول</label>
+                <textarea
+                  value={entryReason}
+                  onChange={(e) => setEntryReason(e.target.value)}
+                  placeholder="اكتب سبب السماح بالدخول (اختياري)..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAllowEntryModal(false)
+                    setAllowEntryStudent(null)
+                    setEntryReason('')
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-xl font-bold transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const entryDate = new Date().toISOString()
+
+                      const { error } = await supabase
+                        .from('student_class_entries')
+                        .insert({
+                          student_id: allowEntryStudent.id,
+                          entry_date: entryDate,
+                          reason: entryReason || 'سماح بدخول الفصل',
+                          created_at: entryDate
+                        })
+
+                      if (error) throw error
+
+                      alert(`تم السماح للطالب ${allowEntryStudent.name} بدخول الفصل`)
+                      setShowAllowEntryModal(false)
+                      setAllowEntryStudent(null)
+                      setEntryReason('')
+                    } catch (error) {
+                      console.error('Error allowing entry:', error)
+                      alert('حدث خطأ أثناء الحفظ')
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md"
+                >
+                  سماح بالدخول
+                </button>
+              </div>
             </div>
           </div>
         </div>

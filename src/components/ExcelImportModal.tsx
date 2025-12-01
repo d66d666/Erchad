@@ -311,77 +311,77 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Upload size={28} />
-            <h2 className="text-2xl font-bold">استيراد من Excel</h2>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Upload size={22} />
+            <h2 className="text-lg font-bold">استيراد من Excel</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4">
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border-2 border-red-300 text-red-800 rounded-xl flex items-start gap-3">
-              <AlertCircle size={24} className="flex-shrink-0 mt-0.5" />
+            <div className="mb-3 p-3 bg-red-50 border border-red-300 text-red-800 rounded-lg flex items-start gap-2">
+              <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-lg mb-1">خطأ</p>
-                <p className="text-sm whitespace-pre-line">{error}</p>
+                <p className="font-bold text-sm mb-0.5">خطأ</p>
+                <p className="text-xs whitespace-pre-line">{error}</p>
               </div>
             </div>
           )}
 
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border-2 border-green-300 text-green-800 rounded-xl font-bold">
+            <div className="mb-3 p-3 bg-green-50 border border-green-300 text-green-800 rounded-lg text-sm font-bold">
               {success}
             </div>
           )}
 
           {/* قسم استيراد الطلاب */}
-          <div className="mb-6 p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-300 shadow-sm">
-            <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-              <GraduationCap size={24} />
+          <div className="mb-4 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-300">
+            <h3 className="text-base font-bold text-blue-900 mb-3 flex items-center gap-2">
+              <GraduationCap size={18} />
               استيراد بيانات الطلاب
             </h3>
 
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-blue-200">
-              <p className="text-sm font-bold text-blue-800 mb-3">الأعمدة المطلوبة:</p>
-              <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">1.</span>
+            <div className="bg-white rounded-lg p-3 mb-3">
+              <p className="text-xs font-bold text-blue-800 mb-2">الأعمدة المطلوبة:</p>
+              <div className="grid grid-cols-1 gap-1.5 text-xs text-gray-700">
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">1.</span>
                   <span><strong className="text-blue-900">اسم الطالب</strong> - اسم الطالب الكامل</span>
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">2.</span>
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">2.</span>
                   <span><strong className="text-blue-900">السجل المدني</strong> - رقم الهوية الوطنية</span>
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">3.</span>
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">3.</span>
                   <span><strong className="text-blue-900">الصف</strong> - مثل: الاول الثانوي</span>
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">4.</span>
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">4.</span>
                   <span><strong className="text-blue-900">المجموعة</strong> - اسم المجموعة مثل: مجموعة 1</span>
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">5.</span>
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">5.</span>
                   <span><strong className="text-blue-900">جوال الطالب</strong> - رقم جوال الطالب (اختياري)</span>
                 </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">6.</span>
+                <div className="flex items-start gap-1.5 bg-blue-50 p-1.5 rounded">
+                  <span className="font-bold text-blue-600 min-w-[20px]">6.</span>
                   <span><strong className="text-blue-900">جوال ولي الامر</strong> - رقم جوال ولي الأمر (اختياري)</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl mb-4">
-              <p className="text-sm font-bold text-yellow-900 mb-2">ملاحظات مهمة</p>
-              <ul className="text-sm text-yellow-800 mr-5 space-y-1">
+            <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg mb-3">
+              <p className="text-xs font-bold text-yellow-900 mb-1.5">ملاحظات مهمة</p>
+              <ul className="text-xs text-yellow-800 mr-4 space-y-0.5">
                 <li>• المجموعات يتم إنشاؤها تلقائياً إذا لم تكن موجودة</li>
                 <li>• إذا كان السجل المدني موجود، يتم تحديث بيانات الطالب</li>
                 <li>• عمود "جوال ولي الامر" يقبل أيضاً: "جوالي ولي الامر" أو "جوال ولي الأمر"</li>
@@ -400,37 +400,37 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
             <button
               onClick={() => studentsFileInputRef.current?.click()}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg text-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm"
             >
-              <GraduationCap size={24} />
+              <GraduationCap size={18} />
               {loading ? 'جاري الاستيراد...' : 'استيراد ملف الطلاب'}
             </button>
           </div>
 
           {/* قسم استيراد المعلمين */}
-          <div className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border-2 border-orange-300 shadow-sm">
-            <h3 className="text-xl font-bold text-orange-900 mb-4 flex items-center gap-2">
-              <Users size={24} />
+          <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border border-orange-300">
+            <h3 className="text-base font-bold text-orange-900 mb-3 flex items-center gap-2">
+              <Users size={18} />
               استيراد بيانات المعلمين
             </h3>
 
-            <div className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-orange-200">
-              <p className="text-sm font-bold text-orange-800 mb-3">الأعمدة المطلوبة:</p>
-              <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
-                <div className="flex items-start gap-2 bg-orange-50 p-2 rounded-lg">
-                  <span className="font-bold text-orange-600 min-w-[24px]">1.</span>
+            <div className="bg-white rounded-lg p-3 mb-3">
+              <p className="text-xs font-bold text-orange-800 mb-2">الأعمدة المطلوبة:</p>
+              <div className="grid grid-cols-1 gap-1.5 text-xs text-gray-700">
+                <div className="flex items-start gap-1.5 bg-orange-50 p-1.5 rounded">
+                  <span className="font-bold text-orange-600 min-w-[20px]">1.</span>
                   <span><strong className="text-orange-900">اسم المعلم</strong> - اسم المعلم الكامل</span>
                 </div>
-                <div className="flex items-start gap-2 bg-orange-50 p-2 rounded-lg">
-                  <span className="font-bold text-orange-600 min-w-[24px]">2.</span>
+                <div className="flex items-start gap-1.5 bg-orange-50 p-1.5 rounded">
+                  <span className="font-bold text-orange-600 min-w-[20px]">2.</span>
                   <span><strong className="text-orange-900">رقم جوال المعلم</strong> - رقم جوال المعلم</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl mb-4">
-              <p className="text-sm font-bold text-yellow-900 mb-2">ملاحظات مهمة</p>
-              <ul className="text-sm text-yellow-800 mr-5 space-y-1">
+            <div className="p-3 bg-yellow-50 border border-yellow-300 rounded-lg mb-3">
+              <p className="text-xs font-bold text-yellow-900 mb-1.5">ملاحظات مهمة</p>
+              <ul className="text-xs text-yellow-800 mr-4 space-y-0.5">
                 <li>• إذا كان رقم الجوال موجود، يتم تحديث بيانات المعلم</li>
                 <li>• يتم تخطي المعلمين المكررين في الملف</li>
               </ul>
@@ -448,9 +448,9 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
             <button
               onClick={() => teachersFileInputRef.current?.click()}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg text-lg"
+              className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm"
             >
-              <Users size={24} />
+              <Users size={18} />
               {loading ? 'جاري الاستيراد...' : 'استيراد ملف المعلمين'}
             </button>
           </div>

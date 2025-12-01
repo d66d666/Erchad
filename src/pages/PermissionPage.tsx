@@ -34,6 +34,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   })
   const [loading, setLoading] = useState(false)
   const [teacherName, setTeacherName] = useState('')
+  const [teacherPhone, setTeacherPhone] = useState('')
 
   useEffect(() => {
     fetchStudents()
@@ -46,9 +47,16 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   }, [permissionSearchTerm])
 
   async function fetchTeacherProfile() {
-    const profile = await db.teacher_profile.toCollection().first()
+    const { data: profile } = await supabase
+      .from('teacher_profile')
+      .select('*')
+      .maybeSingle()
+
     if (profile?.name) {
       setTeacherName(profile.name)
+    }
+    if (profile?.phone) {
+      setTeacherPhone(profile.phone)
     }
   }
 
@@ -287,8 +295,11 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
 يرجى استلام الطالب من المدرسة.
 
-مع تحيات إدارة المدرسة
-${teacherName ? teacherName : 'مسؤول النظام'}`
+للاستفسار يرجى التواصل مع:
+${teacherName ? teacherName : 'مسؤول النظام'}
+${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
+
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
@@ -320,8 +331,11 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
 يرجى استلام الطالب من المدرسة.
 
-مع تحيات إدارة المدرسة
-${teacherName ? teacherName : 'مسؤول النظام'}`
+للاستفسار يرجى التواصل مع:
+${teacherName ? teacherName : 'مسؤول النظام'}
+${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
+
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

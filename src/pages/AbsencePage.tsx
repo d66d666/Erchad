@@ -39,6 +39,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [showFilters, setShowFilters] = useState(false)
   const [violationSearchTerm, setViolationSearchTerm] = useState('')
   const [teacherName, setTeacherName] = useState('')
+  const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
 
   useEffect(() => {
@@ -52,12 +53,19 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   }, [violationSearchTerm])
 
   async function fetchTeacherProfile() {
-    const profile = await db.teacher_profile.toCollection().first()
+    const { data: profile } = await supabase
+      .from('teacher_profile')
+      .select('*')
+      .maybeSingle()
+
     if (profile?.name) {
       setTeacherName(profile.name)
     }
-    if (profile?.schoolName) {
-      setSchoolName(profile.schoolName)
+    if (profile?.phone) {
+      setTeacherPhone(profile.phone)
+    }
+    if (profile?.school_name) {
+      setSchoolName(profile.school_name)
     }
   }
 
@@ -252,10 +260,11 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 📝 الوصف: ${violation.description}
 ✅ الإجراء المتخذ: ${violation.action_taken}
 
-يرجى التواصل مع الموجه الطلابي للاستفسار.
+للاستفسار يرجى التواصل مع:
+${teacherName ? teacherName : 'مسؤول النظام'}
+${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
 
-مع تحيات إدارة المدرسة
-${teacherName ? teacherName : 'مسؤول النظام'}`
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

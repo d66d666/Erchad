@@ -382,7 +382,16 @@ function App() {
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
               >
                 <UserIcon size={20} />
-                <span>الملف الشخصي</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-sm font-medium">
+                    {teacherName || 'الملف الشخصي'}
+                  </span>
+                  {teacherPhone && (
+                    <span className="text-xs opacity-90">
+                      {teacherPhone}
+                    </span>
+                  )}
+                </div>
               </button>
             </div>
           </div>

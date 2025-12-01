@@ -35,6 +35,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   })
   const [loading, setLoading] = useState(false)
   const [teacherName, setTeacherName] = useState('')
+  const [teacherPhone, setTeacherPhone] = useState('')
 
   useEffect(() => {
     fetchStudents()
@@ -47,9 +48,16 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   }, [visitSearchTerm])
 
   async function fetchTeacherProfile() {
-    const profile = await db.teacher_profile.toCollection().first()
+    const { data: profile } = await supabase
+      .from('teacher_profile')
+      .select('*')
+      .maybeSingle()
+
     if (profile?.name) {
       setTeacherName(profile.name)
+    }
+    if (profile?.phone) {
+      setTeacherPhone(profile.phone)
     }
   }
 
@@ -425,10 +433,11 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 الإجراء المتخذ: ${visit.action_taken}
 ${visit.referred_to !== 'لا يوجد' ? `تم التحويل إلى: ${visit.referred_to}` : ''}
 
-للاستفسار يرجى التواصل مع الموجه الطلابي.
+للاستفسار يرجى التواصل مع:
+${teacherName ? teacherName : 'مسؤول النظام'}
+${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
 
-مع تحيات إدارة المدرسة
-${teacherName ? teacherName : 'مسؤول النظام'}`
+مع تحيات إدارة المدرسة`
 
     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

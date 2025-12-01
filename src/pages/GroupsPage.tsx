@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
-import { Student, Group, SpecialStatus } from '../types'
+import { Student, Group, SpecialStatus, SchoolInfo } from '../types'
 import { AddStudentModal } from '../components/AddStudentModal'
-import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers } from 'lucide-react'
+import { EditStudentModal } from '../components/EditStudentModal'
+import { AllowClassEntryModal } from '../components/AllowClassEntryModal'
+import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers, MoreVertical, Edit2, Trash2, DoorOpen } from 'lucide-react'
 
 export function GroupsPage() {
   const [students, setStudents] = useState<Student[]>([])
@@ -21,6 +23,12 @@ export function GroupsPage() {
     name: '',
   })
   const [showStatusDetails, setShowStatusDetails] = useState(false)
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [loadingDelete, setLoadingDelete] = useState<string | null>(null)
+  const [schoolInfo, setSchoolInfo] = useState<SchoolInfo | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -41,6 +49,14 @@ export function GroupsPage() {
         setSchoolName(profileRes.data.school_name || '')
         setTeacherName(profileRes.data.name || '')
       }
+
+      const { data: schoolInfoData } = await supabase
+        .from('school_info')
+        .select('*')
+        .limit(1)
+        .maybeSingle()
+
+      if (schoolInfoData) setSchoolInfo(schoolInfoData)
 
       // Sort groups by stage and display_order
       const sortedGroups = groupsData.sort((a, b) => {
@@ -328,6 +344,285 @@ export function GroupsPage() {
     }
   }
 
+  const handleDeleteStudent = async (studentId: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الطالب؟')) return
+
+    setLoadingDelete(studentId)
+    try {
+      const { error } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', studentId)
+
+      if (error) throw error
+      fetchData()
+    } finally {
+      setLoadingDelete(null)
+    }
+  }
+
+  const getSpecialStatusName = (statusId: string | null) => {
+    if (!statusId) return '-'
+    return specialStatuses.find((s) => s.id === statusId)?.name || '-'
+  }
+
+  const printStudent = async (student: Student) => {
+    const specialStatusName = student.special_status_id
+      ? getSpecialStatusName(student.special_status_id)
+      : 'لا يوجد'
+    const groupName = student.group?.name || '-'
+    const now = new Date()
+    const date = now.toLocaleDateString('ar-SA')
+    const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+
+    const printWindow = window.open('', '', 'width=800,height=600')
+    if (!printWindow) return
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+        <head>
+          <title>بيانات الطالب - ${student.name}</title>
+          <meta charset="UTF-8">
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+
+            @page {
+              size: A4;
+              margin: 15mm;
+            }
+
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: white;
+              color: #1a1a1a;
+              line-height: 1.4;
+              font-size: 13px;
+            }
+
+            .page-container {
+              max-width: 210mm;
+              margin: 0 auto;
+              background: white;
+            }
+
+            .header {
+              background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+              color: white;
+              padding: 15px 20px;
+              text-align: center;
+              border-radius: 8px 8px 0 0;
+            }
+
+            .header h1 {
+              font-size: 22px;
+              margin-bottom: 4px;
+              font-weight: 700;
+            }
+
+            .header .school-name {
+              font-size: 16px;
+              margin-bottom: 8px;
+              opacity: 0.95;
+              font-weight: 500;
+            }
+
+            .header .meta {
+              font-size: 11px;
+              opacity: 0.9;
+              margin-top: 6px;
+            }
+
+            .content {
+              padding: 20px;
+            }
+
+            .student-name-section {
+              background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              border: 2px solid #3b82f6;
+              border-radius: 8px;
+              padding: 12px;
+              margin-bottom: 15px;
+              text-align: center;
+            }
+
+            .student-name-section h2 {
+              color: #1e40af;
+              font-size: 20px;
+              font-weight: 700;
+            }
+
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 10px;
+              margin-bottom: 15px;
+            }
+
+            .info-item {
+              background: #f9fafb;
+              border: 1px solid #e5e7eb;
+              border-radius: 6px;
+              padding: 10px;
+            }
+
+            .info-label {
+              font-size: 11px;
+              color: #6b7280;
+              font-weight: 600;
+              margin-bottom: 4px;
+            }
+
+            .info-value {
+              font-size: 14px;
+              color: #111827;
+              font-weight: 600;
+            }
+
+            .footer {
+              background: #f9fafb;
+              padding: 15px 20px;
+              border-top: 2px solid #e5e7eb;
+              margin-top: 15px;
+            }
+
+            .footer-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 20px;
+            }
+
+            .signature-box {
+              text-align: center;
+            }
+
+            .signature-label {
+              font-size: 12px;
+              color: #6b7280;
+              font-weight: 600;
+              margin-bottom: 6px;
+            }
+
+            .signature-line {
+              border-top: 2px solid #374151;
+              width: 150px;
+              margin: 30px auto 8px;
+            }
+
+            .signature-name {
+              font-size: 14px;
+              color: #111827;
+              font-weight: 600;
+            }
+
+            .print-info {
+              text-align: center;
+              color: #9ca3af;
+              font-size: 10px;
+              margin-top: 15px;
+              padding-top: 15px;
+              border-top: 1px solid #e5e7eb;
+            }
+
+            @media print {
+              body {
+                background: white;
+              }
+
+              .page-container {
+                border: none;
+                border-radius: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page-container">
+            <div class="header">
+              <div class="school-name">${schoolInfo?.school_name || schoolName || 'اسم المدرسة'}</div>
+              <h1>بطاقة بيانات الطالب</h1>
+              <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}${teacherName ? ' - بواسطة: ' + teacherName : ''}</div>
+            </div>
+
+            <div class="content">
+              <div class="student-name-section">
+                <h2>${student.name}</h2>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">السجل المدني</div>
+                  <div class="info-value">${student.national_id}</div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">الصف الدراسي</div>
+                  <div class="info-value">${student.grade}</div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">الفصل</div>
+                  <div class="info-value">${groupName}</div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">جوال الطالب</div>
+                  <div class="info-value">${student.phone}</div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">جوال ولي الأمر</div>
+                  <div class="info-value">${student.guardian_phone}</div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-label">الظروف الخاصة</div>
+                  <div class="info-value">${specialStatusName}</div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="footer">
+              <div class="footer-grid">
+                <div class="signature-box">
+                  <div class="signature-label">المرشد الطلابي</div>
+                  <div class="signature-name">${teacherName || 'اسم المرشد الطلابي'}</div>
+                  <div class="signature-line"></div>
+                  <div style="font-size: 11px; color: #6b7280;">التوقيع</div>
+                </div>
+
+                <div class="signature-box">
+                  <div class="signature-label">الإدارة</div>
+                  <div class="signature-line"></div>
+                  <div style="font-size: 11px; color: #6b7280;">التوقيع والختم</div>
+                </div>
+              </div>
+
+              <div class="print-info">
+                هذه الوثيقة صادرة من الإرشاد الطلابي
+              </div>
+            </div>
+          </div>
+
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.onafterprint = () => window.close();
+              }, 250);
+            };
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -449,50 +744,116 @@ export function GroupsPage() {
                               <p>لا يوجد طلاب في هذه المجموعة</p>
                             </div>
                           ) : (
-                            <div className="overflow-x-auto">
-                              <table className="w-full">
-                                <thead className="bg-gray-50 border-b-2 border-gray-200">
-                                  <tr>
-                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">الاسم</th>
-                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">السجل المدني</th>
-                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">جوال الطالب</th>
-                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">جوال ولي الأمر</th>
-                                    <th className="px-4 py-3 text-right text-sm font-bold text-gray-700">الحالة الخاصة</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                  {groupStudents.map((student, index) => {
-                                    const status = specialStatuses.find(
-                                      (s) => s.id === student.special_status_id
-                                    )
-                                    return (
-                                      <tr key={student.id} className={`hover:bg-blue-100 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'}`}>
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                                          {student.name}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
-                                          {student.national_id}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
-                                          {student.phone || '-'}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">
-                                          {student.guardian_phone}
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                          {student.special_status_id ? (
-                                            <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                              {showStatusDetails ? (status?.name || 'لديه حالة خاصة') : 'لديه حالة خاصة'}
+                            <div className="p-4 space-y-2">
+                              {groupStudents.map((student) => {
+                                const hasSpecialStatus = student.special_status_id !== null
+                                const bgColorClass = hasSpecialStatus
+                                  ? 'bg-amber-50 border-amber-200'
+                                  : 'bg-gradient-to-l from-[#fef5e7] to-[#fef9f0] border-[#f0d9b5]'
+
+                                return (
+                                  <div
+                                    key={student.id}
+                                    className={`${bgColorClass} rounded-xl shadow-sm border hover:shadow-md transition-all relative`}
+                                  >
+                                    <div className="px-5 py-4">
+                                      <div className="flex items-center justify-between gap-4">
+                                        <button
+                                          onClick={() => setExpandedStudentId(expandedStudentId === student.id ? null : student.id)}
+                                          className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0"
+                                          aria-label="المزيد"
+                                        >
+                                          <MoreVertical size={20} className="text-gray-700" />
+                                        </button>
+
+                                        <div className="flex items-center gap-6 flex-1">
+                                          <div className="text-right min-w-[80px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">الصف</div>
+                                            <div className="text-sm font-semibold text-gray-800">{student.grade}</div>
+                                          </div>
+
+                                          <div className="text-right min-w-[120px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">ولي أمر</div>
+                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.guardian_phone}</div>
+                                          </div>
+
+                                          <div className="text-right min-w-[120px]">
+                                            <div className="text-xs text-gray-500 mb-0.5">جوال</div>
+                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.phone}</div>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 flex-shrink-0">
+                                          {student.special_status_id && (
+                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                              {showStatusDetails ? getSpecialStatusName(student.special_status_id) : 'لديه حالة خاصة'}
                                             </span>
-                                          ) : (
-                                            <span className="text-gray-400">-</span>
                                           )}
-                                        </td>
-                                      </tr>
-                                    )
-                                  })}
-                                </tbody>
-                              </table>
+                                          {student.status === 'استئذان' && (
+                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                              استئذان
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        <div className="text-right">
+                                          <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
+                                          <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
+                                          <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
+                                        </div>
+                                      </div>
+
+                                      {expandedStudentId === student.id && (
+                                        <div className="mt-4 pt-4 border-t border-gray-300/50 space-y-2">
+                                          <button
+                                            onClick={() => {
+                                              setSelectedStudent(student)
+                                              setShowAllowEntryModal(true)
+                                              setExpandedStudentId(null)
+                                            }}
+                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded font-medium text-sm shadow-sm"
+                                          >
+                                            <DoorOpen size={16} />
+                                            السماح بدخول الفصل
+                                          </button>
+
+                                          <button
+                                            onClick={() => {
+                                              printStudent(student)
+                                              setExpandedStudentId(null)
+                                            }}
+                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-800 rounded font-medium text-sm border border-slate-300 shadow-sm"
+                                          >
+                                            <Printer size={16} />
+                                            طباعة بيانات الطالب
+                                          </button>
+
+                                          <button
+                                            onClick={() => {
+                                              setExpandedStudentId(null)
+                                              setSelectedStudent(student)
+                                              setShowEditModal(true)
+                                            }}
+                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 text-amber-900 rounded font-medium text-sm border border-amber-300 shadow-sm"
+                                          >
+                                            <Edit2 size={16} />
+                                            تعديل
+                                          </button>
+
+                                          <button
+                                            onClick={() => handleDeleteStudent(student.id)}
+                                            disabled={loadingDelete === student.id}
+                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-red-100 to-rose-100 hover:from-red-200 hover:to-rose-200 text-red-700 rounded font-medium text-sm border border-red-300 shadow-sm disabled:opacity-50"
+                                          >
+                                            <Trash2 size={16} />
+                                            {loadingDelete === student.id ? 'جاري...' : 'حذف'}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )
+                              })}
                             </div>
                           )}
                         </div>
@@ -515,6 +876,28 @@ export function GroupsPage() {
           preselectedGroupId={selectedGroupId || undefined}
         />
       )}
+
+      {showEditModal && selectedStudent && (
+        <EditStudentModal
+          student={selectedStudent}
+          groups={groups}
+          specialStatuses={specialStatuses}
+          onClose={() => {
+            setShowEditModal(false)
+            setSelectedStudent(null)
+          }}
+          onStudentUpdated={fetchData}
+        />
+      )}
+
+      <AllowClassEntryModal
+        isOpen={showAllowEntryModal}
+        onClose={() => {
+          setShowAllowEntryModal(false)
+          setSelectedStudent(null)
+        }}
+        student={selectedStudent}
+      />
 
       {showManageGroupsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

@@ -96,7 +96,7 @@ export function SpecialStatusPage({
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
           <h1>جميع الحالات الخاصة</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
@@ -192,7 +192,7 @@ export function SpecialStatusPage({
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
           <h1>الحالات الخاصة - ${group.name}</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>

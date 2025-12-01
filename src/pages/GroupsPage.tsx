@@ -150,7 +150,7 @@ export function GroupsPage() {
           <div class="header">
             <h1>${schoolName || 'اسم المدرسة'}</h1>
             <p class="header-info">${systemDescription || 'برنامج إدارة الطلاب'}</p>
-            <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
+            <p class="header-info"><strong>الأستاذ:</strong> ${teacherName || 'اسم المعلم'}</p>
             <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
           </div>
           <h2 style="text-align: center; color: #16a34a; margin-bottom: 30px;">جميع المجموعات</h2>
@@ -244,7 +244,7 @@ export function GroupsPage() {
           <div class="header">
             <h1>${schoolName || 'اسم المدرسة'}</h1>
             <p class="header-info">${systemDescription || 'برنامج إدارة الطلاب'}</p>
-            <p class="header-info"><strong>المرشد الطلابي:</strong> ${teacherName || 'اسم المعلم'}</p>
+            <p class="header-info"><strong>الأستاذ:</strong> ${teacherName || 'اسم المعلم'}</p>
             <p class="header-info"><strong>التاريخ:</strong> ${currentDate}</p>
           </div>
           <p class="stage">${group.stage}</p>
@@ -596,8 +596,8 @@ export function GroupsPage() {
             <div class="footer">
               <div class="footer-grid">
                 <div class="signature-box">
-                  <div class="signature-label">المرشد الطلابي</div>
-                  <div class="signature-name">${teacherName || 'اسم المرشد الطلابي'}</div>
+                  <div class="signature-label">الأستاذ</div>
+                  <div class="signature-name">${teacherName || 'اسم الأستاذ'}</div>
                   <div class="signature-line"></div>
                   <div style="font-size: 11px; color: #6b7280;">التوقيع</div>
                 </div>

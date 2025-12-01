@@ -333,8 +333,8 @@ export function StudentsList({
             <div class="footer">
               <div class="footer-grid">
                 <div class="signature-box">
-                  <div class="signature-label">المرشد الطلابي</div>
-                  <div class="signature-name">${teacherName || 'اسم المرشد الطلابي'}</div>
+                  <div class="signature-label">الأستاذ</div>
+                  <div class="signature-name">${teacherName || 'اسم الأستاذ'}</div>
                   <div class="signature-line"></div>
                   <div style="font-size: 11px; color: #6b7280;">التوقيع</div>
                 </div>

@@ -75,7 +75,7 @@ export function AllowClassEntryModal({
       // إنشاء رسالة السماح بالدخول
       let message = `✅ *السماح بدخول الطالب للفصل*\n\n`
       message += `اسم الطالب: *${student.name}*\n\n`
-      message += `المرسل: ${counselorName || 'المرشد الطلابي'}`
+      message += `المرسل: ${counselorName || 'الأستاذ'}`
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
@@ -151,7 +151,7 @@ export function AllowClassEntryModal({
             <div className="text-sm text-gray-700 whitespace-pre-line space-y-2">
               <p className="text-blue-600 font-bold">✅ السماح بدخول الطالب للفصل</p>
               <p>اسم الطالب: <strong>{student.name}</strong></p>
-              <p>المرسل: {counselorName || 'المرشد الطلابي'}</p>
+              <p>المرسل: {counselorName || 'الأستاذ'}</p>
             </div>
           </div>
 

@@ -268,8 +268,6 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 *التاريخ:* ${violationDate.toLocaleDateString('ar-SA')}
 *الوقت:* ${violationDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *نوع المخالفة:* ${violation.violation_type}
-*الوصف:* ${violation.description}
-*الإجراء المتخذ:* ${violation.action_taken}
 
 الأستاذ ${teacherName || 'مسؤول النظام'}
 

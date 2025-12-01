@@ -279,19 +279,19 @@ export function SpecialStatusPage({
               <table className="w-full">
                 <thead>
                   <tr>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider bg-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       الاسم
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider bg-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       السجل المدني
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider bg-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       جوال الطالب
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider bg-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       جوال ولي الأمر
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider bg-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
                       الحالة الخاصة
                     </th>
                   </tr>

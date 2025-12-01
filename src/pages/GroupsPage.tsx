@@ -750,119 +750,40 @@ export function GroupsPage() {
                               <p>لا يوجد طلاب في هذه المجموعة</p>
                             </div>
                           ) : (
-                            <div className="p-4 space-y-2">
-                              {groupStudents.map((student) => {
-                                const hasSpecialStatus = student.special_status_id !== null
-                                const bgColorClass = hasSpecialStatus
-                                  ? 'bg-amber-50 border-amber-200'
-                                  : 'bg-gradient-to-l from-[#fef5e7] to-[#fef9f0] border-[#f0d9b5]'
+                            <div className="overflow-hidden">
+                              <table className="w-full">
+                                <thead className="bg-white">
+                                  <tr className="text-sm text-gray-700 border-b-2 border-gray-200">
+                                    <th className="px-4 py-3 text-center font-semibold">الاسم</th>
+                                    <th className="px-4 py-3 text-center font-semibold">السجل المدني</th>
+                                    <th className="px-4 py-3 text-center font-semibold">جوال الطالب</th>
+                                    <th className="px-4 py-3 text-center font-semibold">جوال ولي الأمر</th>
+                                    <th className="px-4 py-3 text-center font-semibold">الحالة الخاصة</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {groupStudents.map((student) => {
+                                    const hasSpecialStatus = student.special_status_id !== null
+                                    const statusName = hasSpecialStatus ? getSpecialStatusName(student.special_status_id) : '-'
 
-                                return (
-                                  <div
-                                    key={student.id}
-                                    className={`${bgColorClass} rounded-xl shadow-sm border hover:shadow-md transition-all relative`}
-                                  >
-                                    <div className="px-5 py-4">
-                                      <div className="flex items-center justify-between gap-4">
-                                        <div className="text-right">
-                                          <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
-                                          <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
-                                          <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
-                                        </div>
-
-                                        <div className="flex items-center gap-3 flex-shrink-0">
-                                          {student.special_status_id && (
-                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                                              {showStatusDetails ? getSpecialStatusName(student.special_status_id) : 'لديه حالة خاصة'}
+                                    return (
+                                      <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-3 text-center text-gray-900 font-medium">{student.name}</td>
+                                        <td className="px-4 py-3 text-center text-gray-700">{student.national_id}</td>
+                                        <td className="px-4 py-3 text-center text-gray-700">{student.phone}</td>
+                                        <td className="px-4 py-3 text-center text-gray-700">{student.guardian_phone}</td>
+                                        <td className="px-4 py-3 text-center">
+                                          {hasSpecialStatus ? (
+                                            <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                              {showStatusDetails ? statusName : 'لديه حالة خاصة'}
                                             </span>
+                                          ) : (
+                                            <span className="text-gray-400">-</span>
                                           )}
-                                          {student.status === 'استئذان' && (
-                                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                              استئذان
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        <div className="flex items-center gap-6 flex-1">
-                                          <div className="text-right min-w-[120px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">جوال</div>
-                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.phone}</div>
-                                          </div>
-
-                                          <div className="text-right min-w-[120px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">ولي أمر</div>
-                                            <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.guardian_phone}</div>
-                                          </div>
-
-                                          <div className="text-right min-w-[80px]">
-                                            <div className="text-xs text-gray-500 mb-0.5">الصف</div>
-                                            <div className="text-sm font-semibold text-gray-800">{student.grade}</div>
-                                          </div>
-                                        </div>
-
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            setExpandedStudentId(expandedStudentId === student.id ? null : student.id)
-                                          }}
-                                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm shadow-sm transition-colors flex-shrink-0 relative z-10 flex items-center gap-2"
-                                        >
-                                          خيارات
-                                          <ChevronDown size={16} className={`transition-transform ${expandedStudentId === student.id ? 'rotate-180' : ''}`} />
-                                        </button>
-                                      </div>
-
-                                      {expandedStudentId === student.id && (
-                                        <div className="mt-4 pt-4 border-t border-gray-300/50 space-y-2">
-                                          <button
-                                            onClick={() => {
-                                              setSelectedStudent(student)
-                                              setShowAllowEntryModal(true)
-                                              setExpandedStudentId(null)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded font-medium text-sm shadow-sm"
-                                          >
-                                            <DoorOpen size={16} />
-                                            السماح بدخول الفصل
-                                          </button>
-
-                                          <button
-                                            onClick={() => {
-                                              printStudent(student)
-                                              setExpandedStudentId(null)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-800 rounded font-medium text-sm border border-slate-300 shadow-sm"
-                                          >
-                                            <Printer size={16} />
-                                            طباعة بيانات الطالب
-                                          </button>
-
-                                          <button
-                                            onClick={() => {
-                                              setExpandedStudentId(null)
-                                              setSelectedStudent(student)
-                                              setShowEditModal(true)
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 text-amber-900 rounded font-medium text-sm border border-amber-300 shadow-sm"
-                                          >
-                                            <Edit2 size={16} />
-                                            تعديل
-                                          </button>
-
-                                          <button
-                                            onClick={() => handleDeleteStudent(student.id)}
-                                            disabled={loadingDelete === student.id}
-                                            className="w-full flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-red-100 to-rose-100 hover:from-red-200 hover:to-rose-200 text-red-700 rounded font-medium text-sm border border-red-300 shadow-sm disabled:opacity-50"
-                                          >
-                                            <Trash2 size={16} />
-                                            {loadingDelete === student.id ? 'جاري...' : 'حذف'}
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                )
-                              })}
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
                             </div>
                           )}
                         </div>

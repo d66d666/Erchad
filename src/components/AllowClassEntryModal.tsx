@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { X, Send, DoorOpen } from 'lucide-react'
 import { Teacher, Student } from '../types'
+import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface AllowClassEntryModalProps {
   isOpen: boolean
@@ -79,7 +80,7 @@ export function AllowClassEntryModal({
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
-      const phoneNumber = teacher.phone.replace(/[^0-9]/g, '')
+      const phoneNumber = formatPhoneForWhatsApp(teacher.phone)
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`
 
       window.open(whatsappUrl, '_blank')

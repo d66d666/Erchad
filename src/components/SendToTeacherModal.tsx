@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { X, Send } from 'lucide-react'
 import { Teacher, Group, Student } from '../types'
+import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface SendToTeacherModalProps {
   isOpen: boolean
@@ -120,7 +121,7 @@ export function SendToTeacherModal({
             message += `${index + 1}. *${student.name}*\n`
             message += `   الحالة: ${student.special_status?.name || '-'}\n`
             message += `   جوال الطالب: ${student.phone || '-'}\n`
-            message += `   جوال ولي الأمر: ${student.parent_phone || '-'}\n\n`
+            message += `   جوال ولي الأمر: ${student.guardian_phone || '-'}\n\n`
           })
           message += '\n'
         }
@@ -128,7 +129,7 @@ export function SendToTeacherModal({
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
-      const phoneNumber = teacher.phone.replace(/[^0-9]/g, '')
+      const phoneNumber = formatPhoneForWhatsApp(teacher.phone)
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`
 
       window.open(whatsappUrl, '_blank')

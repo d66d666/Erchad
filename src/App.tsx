@@ -58,6 +58,24 @@ function App() {
   const [groupFilter, setGroupFilter] = useState<string>('all')
   const [activityFilter, setActivityFilter] = useState<string>('all')
 
+  const fetchTodayStats = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+
+      const [visitsRes, permissionsRes, violationsRes] = await Promise.all([
+        supabase.from('visits').select('id', { count: 'exact' }).gte('visit_date', today).lt('visit_date', `${today}T23:59:59`),
+        supabase.from('permissions').select('id', { count: 'exact' }).gte('permission_date', today).lt('permission_date', `${today}T23:59:59`),
+        supabase.from('violations').select('id', { count: 'exact' }).gte('violation_date', today).lt('violation_date', `${today}T23:59:59`),
+      ])
+
+      setTodayReceptionCount(visitsRes.count || 0)
+      setTodayPermissionsCount(permissionsRes.count || 0)
+      setTodayViolationsCount(violationsRes.count || 0)
+    } catch (error) {
+      console.error('Error fetching today stats:', error)
+    }
+  }
+
   const fetchData = async () => {
     try {
       setLoading(true)
@@ -97,6 +115,8 @@ function App() {
         setTeacherName(profileRes.data.name || '')
         setSchoolName(profileRes.data.school_name || '')
       }
+
+      await fetchTodayStats()
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -157,13 +177,14 @@ function App() {
     }
   }
 
-  // إحصائيات
+  // إحصائيات اليوم الحالي
+  const [todayReceptionCount, setTodayReceptionCount] = useState(0)
+  const [todayPermissionsCount, setTodayPermissionsCount] = useState(0)
+  const [todayViolationsCount, setTodayViolationsCount] = useState(0)
+
   const totalStudents = students.length
   const totalTeachers = 0 // سيتم جلبه من قاعدة البيانات
   const specialStatusCount = students.filter(s => s.special_status_id !== null).length
-  const receptionCount = 0
-  const permissionsCount = 0
-  const violationsCount = 0
 
   // أزرار التنقل
   const navItems = [
@@ -341,30 +362,30 @@ function App() {
             </div>
 
             {/* استقبال الطلاب */}
-            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl p-4 text-white shadow-md">
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{receptionCount}</div>
+                <div className="text-3xl font-bold">{todayReceptionCount}</div>
                 <UserCheck size={32} className="opacity-80" />
               </div>
-              <div className="text-sm opacity-90">استقبال الطلاب</div>
+              <div className="text-sm opacity-90">استقبال اليوم</div>
             </div>
 
             {/* استئذانات */}
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-md">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{permissionsCount}</div>
+                <div className="text-3xl font-bold">{todayPermissionsCount}</div>
                 <LogOut size={32} className="opacity-80" />
               </div>
-              <div className="text-sm opacity-90">استئذانات</div>
+              <div className="text-sm opacity-90">استئذانات اليوم</div>
             </div>
 
             {/* المخالفات */}
             <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-md">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{violationsCount}</div>
+                <div className="text-3xl font-bold">{todayViolationsCount}</div>
                 <AlertCircle size={32} className="opacity-80" />
               </div>
-              <div className="text-sm opacity-90">المخالفات</div>
+              <div className="text-sm opacity-90">مخالفات اليوم</div>
             </div>
           </div>
         </div>

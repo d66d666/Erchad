@@ -116,9 +116,15 @@ export function PermissionPage() {
           .gte('permission_date', startOfDay.toISOString())
           .lte('permission_date', endOfDay.toISOString())
       } else {
+        // عرض استئذانات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        query = query.gte('permission_date', today.toISOString())
+        const endOfToday = new Date()
+        endOfToday.setHours(23, 59, 59, 999)
+
+        query = query
+          .gte('permission_date', today.toISOString())
+          .lte('permission_date', endOfToday.toISOString())
       }
 
       const { data: permissionsData, error: permissionsError } = await query
@@ -613,10 +619,15 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Clock size={24} />
-            سجل الاستئذانات {dateFilter ? 'المفلترة' : 'اليوم'}
-          </h3>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Clock size={24} />
+              سجل الاستئذانات {dateFilter ? 'المفلترة' : 'اليوم'}
+            </h3>
+            {!dateFilter && (
+              <p className="text-sm text-gray-500 mt-1">عرض استئذانات اليوم الحالي فقط</p>
+            )}
+          </div>
           <div className="flex gap-2">
             {dateFilter && (
               <button

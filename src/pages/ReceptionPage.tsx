@@ -115,7 +115,15 @@ export function ReceptionPage() {
           .gte('visit_date', startOfDay.toISOString())
           .lte('visit_date', endOfDay.toISOString())
       } else {
-        query = query.limit(50)
+        // عرض زيارات اليوم الحالي فقط بشكل افتراضي
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const endOfToday = new Date()
+        endOfToday.setHours(23, 59, 59, 999)
+
+        query = query
+          .gte('visit_date', today.toISOString())
+          .lte('visit_date', endOfToday.toISOString())
       }
 
       const { data: visitsData } = await query
@@ -590,10 +598,15 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
 
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <FileText size={24} />
-            سجل الزيارات {dateFilter ? 'المفلترة' : 'الأخيرة'}
-          </h3>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <FileText size={24} />
+              سجل الزيارات {dateFilter ? 'المفلترة' : 'اليوم'}
+            </h3>
+            {!dateFilter && (
+              <p className="text-sm text-gray-500 mt-1">عرض زيارات اليوم الحالي فقط</p>
+            )}
+          </div>
           <div className="flex gap-2">
             {dateFilter && (
               <button

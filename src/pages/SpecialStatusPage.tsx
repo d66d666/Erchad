@@ -179,6 +179,17 @@ export function SpecialStatusPage({
             body { font-family: Arial, sans-serif; padding: 20px; }
             .header { text-align: center; margin-bottom: 20px; }
             .header-line { font-size: 14px; color: #374151; margin: 3px 0; }
+            .stage {
+              color: #16a34a;
+              font-size: 20px;
+              font-weight: bold;
+              text-align: center;
+              margin: 15px 0;
+              padding: 10px;
+              background-color: #f0fdf4;
+              border: 2px solid #16a34a;
+              border-radius: 8px;
+            }
             h1 { text-align: center; color: #1e293b; font-size: 22px; font-weight: 700; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -194,6 +205,7 @@ export function SpecialStatusPage({
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
             <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
+          <div class="stage">${group.stage}</div>
           <h1>الحالات الخاصة - ${group.name}</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>

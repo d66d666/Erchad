@@ -36,16 +36,28 @@ export function SpecialStatusPage({
     (s) => s.special_status_id !== null
   )
 
-  const groupedData = groups.map((group) => {
+  const groupedByStage = groups.reduce((acc, group) => {
+    const stage = group.stage || 'غير محدد'
+    if (!acc[stage]) {
+      acc[stage] = []
+    }
+
     const groupStudents = studentsWithSpecialStatus.filter(
       (s) => s.group_id === group.id
     )
-    return {
-      group,
-      students: groupStudents,
-      count: groupStudents.length,
+
+    if (groupStudents.length > 0) {
+      acc[stage].push({
+        group,
+        students: groupStudents,
+        count: groupStudents.length,
+      })
     }
-  })
+
+    return acc
+  }, {} as Record<string, Array<{ group: Group; students: Student[]; count: number }>>)
+
+  const stages = Object.keys(groupedByStage).sort()
 
   const handlePrintAll = async () => {
     const { data: teacherProfile } = await supabase
@@ -82,42 +94,47 @@ export function SpecialStatusPage({
           <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
             <strong>إجمالي الطلاب ذوي الحالات الخاصة: ${studentsWithSpecialStatus.length}</strong>
           </p>
-          ${groupedData.filter(({ count }) => count > 0).map(({ group, students: groupStudents }) => `
-            <div class="group-section">
-              <h2 class="group-title">${group.name}</h2>
-              <p class="group-info"><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
-              <table>
-                <thead>
-                  <tr>
-                    <th>الاسم</th>
-                    <th>السجل المدني</th>
-                    <th>جوال الطالب</th>
-                    <th>جوال ولي الأمر</th>
-                    <th>الحالة الخاصة</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${groupStudents
-                    .map(
-                      (student) => {
-                        const status = specialStatuses.find(
-                          (s) => s.id === student.special_status_id
+          ${stages.map(stage => `
+            <div style="margin-bottom: 50px;">
+              <h2 style="color: #7c3aed; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #7c3aed; padding-bottom: 10px;">${stage}</h2>
+              ${groupedByStage[stage].map(({ group, students: groupStudents }) => `
+                <div class="group-section">
+                  <h3 class="group-title">${group.name}</h3>
+                  <p class="group-info"><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>الاسم</th>
+                        <th>السجل المدني</th>
+                        <th>جوال الطالب</th>
+                        <th>جوال ولي الأمر</th>
+                        <th>الحالة الخاصة</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${groupStudents
+                        .map(
+                          (student) => {
+                            const status = specialStatuses.find(
+                              (s) => s.id === student.special_status_id
+                            )
+                            const statusText = showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'
+                            return `
+                        <tr>
+                          <td>${student.name}</td>
+                          <td>${student.national_id}</td>
+                          <td>${student.phone}</td>
+                          <td>${student.guardian_phone}</td>
+                          <td>${statusText}</td>
+                        </tr>
+                      `
+                          }
                         )
-                        const statusText = showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'
-                        return `
-                    <tr>
-                      <td>${student.name}</td>
-                      <td>${student.national_id}</td>
-                      <td>${student.phone}</td>
-                      <td>${student.guardian_phone}</td>
-                      <td>${statusText}</td>
-                    </tr>
-                  `
-                      }
-                    )
-                    .join('')}
-                </tbody>
-              </table>
+                        .join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `).join('')}
             </div>
           `).join('')}
         </body>
@@ -251,84 +268,91 @@ export function SpecialStatusPage({
         </div>
       </div>
 
-      {groupedData.map(({ group, students: groupStudents, count }) => {
-        if (count === 0) return null
+      {stages.map((stage) => (
+        <div key={stage} className="space-y-4">
+          <div className="bg-gradient-to-r from-purple-600 to-violet-600 rounded-xl shadow-lg px-6 py-4">
+            <h2 className="text-xl font-bold text-white">{stage}</h2>
+            <p className="text-purple-100 text-sm font-medium mt-1">
+              عدد الطلاب: {groupedByStage[stage].reduce((sum, { count }) => sum + count, 0)}
+            </p>
+          </div>
 
-        return (
-          <div
-            key={group.id}
-            className="bg-white rounded-xl shadow-md overflow-hidden border border-purple-100"
-          >
-            <div className="bg-gradient-to-r from-purple-50 to-violet-50 px-5 py-3.5 border-b border-purple-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-800">{group.name}</h2>
-                  <p className="text-sm text-purple-600 font-medium">عدد الطلاب: {count}</p>
+          {groupedByStage[stage].map(({ group, students: groupStudents, count }) => (
+            <div
+              key={group.id}
+              className="bg-white rounded-xl shadow-md overflow-hidden border border-purple-100 mr-6"
+            >
+              <div className="bg-gradient-to-r from-purple-50 to-violet-50 px-5 py-3.5 border-b border-purple-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">{group.name}</h3>
+                    <p className="text-sm text-purple-600 font-medium">عدد الطلاب: {count}</p>
+                  </div>
+                  <button
+                    onClick={() => handlePrint(group, groupStudents)}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm"
+                  >
+                    <Printer size={16} />
+                    <span>طباعة</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => handlePrint(group, groupStudents)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm"
-                >
-                  <Printer size={16} />
-                  <span>طباعة</span>
-                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
+                        الاسم
+                      </th>
+                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
+                        السجل المدني
+                      </th>
+                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
+                        جوال الطالب
+                      </th>
+                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
+                        جوال ولي الأمر
+                      </th>
+                      <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
+                        الحالة الخاصة
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100">
+                    {groupStudents.map((student) => {
+                      const status = specialStatuses.find(
+                        (s) => s.id === student.special_status_id
+                      )
+                      return (
+                        <tr key={student.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
+                            {student.name}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-600">
+                            {student.national_id}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-600">
+                            {student.phone}
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-gray-600">
+                            {student.guardian_phone}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-700">
+                              {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      الاسم
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      السجل المدني
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      جوال الطالب
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      جوال ولي الأمر
-                    </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                      الحالة الخاصة
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-purple-100">
-                  {groupStudents.map((student) => {
-                    const status = specialStatuses.find(
-                      (s) => s.id === student.special_status_id
-                    )
-                    return (
-                      <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
-                          {student.name}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
-                          {student.national_id}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
-                          {student.phone}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm text-gray-600">
-                          {student.guardian_phone}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-700">
-                            {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
-                          </span>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )
-      })}
+          ))}
+        </div>
+      ))}
 
       {studentsWithSpecialStatus.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">

@@ -362,7 +362,7 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
                 </div>
                 <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
                   <span className="font-bold text-blue-600 min-w-[24px]">3.</span>
-                  <span><strong className="text-blue-900">الصف</strong> - مثل: الصف الأول الثانوي</span>
+                  <span><strong className="text-blue-900">الصف</strong> - مثل: الاول الثانوي</span>
                 </div>
                 <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
                   <span className="font-bold text-blue-600 min-w-[24px]">4.</span>
@@ -375,10 +375,6 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
                 <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
                   <span className="font-bold text-blue-600 min-w-[24px]">6.</span>
                   <span><strong className="text-blue-900">جوال ولي الامر</strong> - رقم جوال ولي الأمر (اختياري)</span>
-                </div>
-                <div className="flex items-start gap-2 bg-blue-50 p-2 rounded-lg">
-                  <span className="font-bold text-blue-600 min-w-[24px]">7.</span>
-                  <span><strong className="text-blue-900">الحالة</strong> - نشط أو استئذان (اختياري)</span>
                 </div>
               </div>
             </div>
@@ -428,10 +424,6 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
                 <div className="flex items-start gap-2 bg-orange-50 p-2 rounded-lg">
                   <span className="font-bold text-orange-600 min-w-[24px]">2.</span>
                   <span><strong className="text-orange-900">رقم جوال المعلم</strong> - رقم جوال المعلم</span>
-                </div>
-                <div className="flex items-start gap-2 bg-orange-50 p-2 rounded-lg">
-                  <span className="font-bold text-orange-600 min-w-[24px]">3.</span>
-                  <span><strong className="text-orange-900">التخصص</strong> - مثل: رياضيات، علوم، لغة عربية (اختياري)</span>
                 </div>
               </div>
             </div>

@@ -60,12 +60,30 @@ function App() {
 
   const fetchTodayStats = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0]
+      // استخدام تاريخ اليوم المحلي للمستخدم
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const todayStart = `${year}-${month}-${day}T00:00:00`
+      const todayEnd = `${year}-${month}-${day}T23:59:59`
 
       const [visitsRes, permissionsRes, violationsRes] = await Promise.all([
-        supabase.from('visits').select('id', { count: 'exact' }).gte('visit_date', today).lt('visit_date', `${today}T23:59:59`),
-        supabase.from('permissions').select('id', { count: 'exact' }).gte('permission_date', today).lt('permission_date', `${today}T23:59:59`),
-        supabase.from('violations').select('id', { count: 'exact' }).gte('violation_date', today).lt('violation_date', `${today}T23:59:59`),
+        supabase
+          .from('student_visits')
+          .select('id', { count: 'exact' })
+          .gte('visit_date', todayStart)
+          .lte('visit_date', todayEnd),
+        supabase
+          .from('student_permissions')
+          .select('id', { count: 'exact' })
+          .gte('permission_date', todayStart)
+          .lte('permission_date', todayEnd),
+        supabase
+          .from('student_violations')
+          .select('id', { count: 'exact' })
+          .gte('violation_date', todayStart)
+          .lte('violation_date', todayEnd),
       ])
 
       setTodayReceptionCount(visitsRes.count || 0)
@@ -129,6 +147,7 @@ function App() {
     setIsLoggedIn(loggedIn)
     if (loggedIn) {
       fetchData()
+      fetchTodayStats()
     } else {
       setLoading(false)
     }

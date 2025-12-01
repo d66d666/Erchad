@@ -34,6 +34,7 @@ import {
   Shield,
   List,
   Plus,
+  Trash2,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -57,6 +58,8 @@ function App() {
   const [printStudent, setPrintStudent] = useState<Student | null>(null)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [showManageSpecialStatusModal, setShowManageSpecialStatusModal] = useState(false)
+  const [newStatusName, setNewStatusName] = useState('')
 
   // فلاتر
   const [specialStatusFilter, setSpecialStatusFilter] = useState<string>('all')
@@ -295,6 +298,41 @@ function App() {
     }
   }
 
+  const handleAddSpecialStatus = async () => {
+    if (!newStatusName.trim()) return
+
+    const { data, error } = await supabase
+      .from('special_statuses')
+      .insert([{ name: newStatusName.trim() }])
+      .select()
+      .single()
+
+    if (!error && data) {
+      setNewStatusName('')
+      fetchData()
+    }
+  }
+
+  const handleDeleteSpecialStatus = async (statusId: string) => {
+    const studentsWithStatus = students.filter(
+      (s) => s.special_status_id === statusId
+    )
+
+    if (studentsWithStatus.length > 0) {
+      alert(`لا يمكن حذف هذه الحالة لأن هناك ${studentsWithStatus.length} طالب مرتبط بها`)
+      return
+    }
+
+    const { error } = await supabase
+      .from('special_statuses')
+      .delete()
+      .eq('id', statusId)
+
+    if (!error) {
+      fetchData()
+    }
+  }
+
   const handleExportData = async () => {
     try {
       const dataToExport = {
@@ -442,7 +480,7 @@ function App() {
 
                     <button
                       onClick={() => {
-                        setCurrentPage('special-status')
+                        setShowManageSpecialStatusModal(true)
                         setShowSettingsMenu(false)
                       }}
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
@@ -884,6 +922,92 @@ function App() {
           onClose={() => setShowAddStudentModal(false)}
           onStudentAdded={fetchData}
         />
+      )}
+
+      {showManageSpecialStatusModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">إدارة الحالات الخاصة</h2>
+              <button
+                onClick={() => {
+                  setShowManageSpecialStatusModal(false)
+                  setNewStatusName('')
+                }}
+                className="text-white hover:bg-white/20 rounded-lg p-1.5 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                {specialStatuses.map((status) => {
+                  const studentCount = students.filter(
+                    (s) => s.special_status_id === status.id
+                  ).length
+
+                  return (
+                    <div
+                      key={status.id}
+                      className="flex items-center justify-between bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-pink-300 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <span className="text-gray-800 font-medium">{status.name}</span>
+                        {studentCount > 0 && (
+                          <span className="text-sm text-gray-500 mr-2">
+                            ({studentCount} طالب)
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteSpecialStatus(status.id)}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="حذف"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  )
+                })}
+
+                {specialStatuses.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    لا توجد حالات خاصة بعد
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+              <div className="mb-3 text-sm font-medium text-gray-700">
+                اسم الحالة الخاصة
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newStatusName}
+                  onChange={(e) => setNewStatusName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddSpecialStatus()
+                    }
+                  }}
+                  placeholder="مثال: ربو، سكري، يتيم..."
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all"
+                />
+                <button
+                  onClick={handleAddSpecialStatus}
+                  disabled={!newStatusName.trim()}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-medium hover:from-pink-600 hover:to-pink-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Plus size={18} />
+                  <span>إضافة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {showPrintModal && printStudent && (

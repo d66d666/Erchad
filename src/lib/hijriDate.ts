@@ -9,16 +9,19 @@ export function formatHijriDate(date: Date | string): string {
     dateObj.getDate()
   )
 
-  return `${hijriDate.hy}/${hijriDate.hm}/${hijriDate.hd} هـ`
+  return `${hijriDate.hd}/${hijriDate.hm}/${hijriDate.hy} هـ`
 }
 
 export function formatGregorianDate(date: Date | string): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  return dateObj.toLocaleDateString('ar-SA')
+  const year = dateObj.getFullYear()
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const day = String(dateObj.getDate()).padStart(2, '0')
+  return `${day}/${month}/${year} م`
 }
 
 export function formatBothDates(date: Date | string): string {
-  const gregorian = formatGregorianDate(date)
   const hijri = formatHijriDate(date)
-  return `${gregorian} - ${hijri}`
+  const gregorian = formatGregorianDate(date)
+  return `${hijri} - ${gregorian}`
 }

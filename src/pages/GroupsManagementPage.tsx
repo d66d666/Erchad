@@ -16,6 +16,7 @@ export function GroupsManagementPage() {
   const [editStage, setEditStage] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showManageModal, setShowManageModal] = useState(false)
+  const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetchGroups()
@@ -249,6 +250,35 @@ export function GroupsManagementPage() {
     return studentCounts[groupId] || 0
   }
 
+  const getStageStudentsForGroup = (groupId: string) => {
+    return students.filter(s => s.group_id === groupId)
+  }
+
+  const toggleStage = (stage: string) => {
+    setExpandedStages(prev => ({
+      ...prev,
+      [stage]: !prev[stage]
+    }))
+  }
+
+  const getStageColor = (stage: string) => {
+    const colors = {
+      'الصف الأول الابتدائي': { bg: 'from-blue-500 to-blue-600', light: 'from-blue-50 to-blue-100', border: 'border-blue-200' },
+      'الصف الثاني الابتدائي': { bg: 'from-cyan-500 to-cyan-600', light: 'from-cyan-50 to-cyan-100', border: 'border-cyan-200' },
+      'الصف الثالث الابتدائي': { bg: 'from-teal-500 to-teal-600', light: 'from-teal-50 to-teal-100', border: 'border-teal-200' },
+      'الصف الرابع الابتدائي': { bg: 'from-emerald-500 to-emerald-600', light: 'from-emerald-50 to-emerald-100', border: 'border-emerald-200' },
+      'الصف الخامس الابتدائي': { bg: 'from-green-500 to-green-600', light: 'from-green-50 to-green-100', border: 'border-green-200' },
+      'الصف السادس الابتدائي': { bg: 'from-lime-500 to-lime-600', light: 'from-lime-50 to-lime-100', border: 'border-lime-200' },
+      'الصف الأول المتوسط': { bg: 'from-yellow-500 to-yellow-600', light: 'from-yellow-50 to-yellow-100', border: 'border-yellow-200' },
+      'الصف الثاني المتوسط': { bg: 'from-orange-500 to-orange-600', light: 'from-orange-50 to-orange-100', border: 'border-orange-200' },
+      'الصف الثالث المتوسط': { bg: 'from-amber-500 to-amber-600', light: 'from-amber-50 to-amber-100', border: 'border-amber-200' },
+      'الصف الأول الثانوي': { bg: 'from-red-500 to-red-600', light: 'from-red-50 to-red-100', border: 'border-red-200' },
+      'الصف الثاني الثانوي': { bg: 'from-pink-500 to-pink-600', light: 'from-pink-50 to-pink-100', border: 'border-pink-200' },
+      'الصف الثالث الثانوي': { bg: 'from-rose-500 to-rose-600', light: 'from-rose-50 to-rose-100', border: 'border-rose-200' },
+    }
+    return colors[stage as keyof typeof colors] || { bg: 'from-gray-500 to-gray-600', light: 'from-gray-50 to-gray-100', border: 'border-gray-200' }
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-gradient-to-br from-emerald-100 via-green-100 to-teal-100 rounded-xl shadow-md border border-emerald-200 p-5">
@@ -286,113 +316,149 @@ export function GroupsManagementPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-800">المجموعات الحالية</h2>
-
+      <div className="space-y-3">
         {sortedStages.length === 0 ? (
           <div className="bg-white rounded-lg p-8 text-center text-gray-500">
             لا توجد مجموعات حالياً
           </div>
         ) : (
-          sortedStages.map(([stage, stageGroups]) => (
-            <div key={stage} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 flex items-center gap-3">
-                <Layers size={20} className="text-white" />
-                <h3 className="text-lg font-bold text-white">{stage}</h3>
-              </div>
+          sortedStages.map(([stage, stageGroups]) => {
+            const colors = getStageColor(stage)
+            const isExpanded = expandedStages[stage]
+            const totalStudents = stageGroups.reduce((sum, g) => sum + getStudentCount(g.id), 0)
 
-              <div className="p-4">
-                <div className="space-y-3">
-                  {stageGroups
-                    .sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
-                    .map((group, index) => (
-                      <div
-                        key={group.id}
-                        className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border-2 border-emerald-200 hover:shadow-md transition-all"
-                      >
-                        {editingGroup?.id === group.id ? (
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              <input
-                                type="text"
-                                value={editStage}
-                                onChange={(e) => setEditStage(e.target.value)}
-                                className="px-3 py-2 border-2 border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                placeholder="الصف"
-                              />
-                              <input
-                                type="text"
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                className="px-3 py-2 border-2 border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                placeholder="اسم المجموعة"
-                              />
+            return (
+              <div key={stage} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                <button
+                  onClick={() => toggleStage(stage)}
+                  className={`w-full bg-gradient-to-r ${colors.bg} px-6 py-4 flex items-center justify-between hover:opacity-90 transition-all`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers size={20} className="text-white" />
+                    <h3 className="text-lg font-bold text-white text-right">{stage}</h3>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-white/90 font-medium">
+                      {totalStudents} طالب في {stageGroups.length} مجموعة
+                    </span>
+                    {isExpanded ? <ChevronUp className="text-white" size={24} /> : <ChevronDown className="text-white" size={24} />}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="p-4">
+                    <div className="space-y-3">
+                      {stageGroups
+                        .sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
+                        .map((group, index) => {
+                          const groupStudents = getStageStudentsForGroup(group.id)
+
+                          return (
+                            <div
+                              key={group.id}
+                              className={`bg-gradient-to-r ${colors.light} rounded-lg border-2 ${colors.border} overflow-hidden`}
+                            >
+                              {editingGroup?.id === group.id ? (
+                                <div className="p-4 space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <input
+                                      type="text"
+                                      value={editStage}
+                                      onChange={(e) => setEditStage(e.target.value)}
+                                      className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder="الصف"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={editName}
+                                      onChange={(e) => setEditName(e.target.value)}
+                                      className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder="اسم المجموعة"
+                                    />
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={handleSaveEdit}
+                                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition-colors"
+                                    >
+                                      حفظ
+                                    </button>
+                                    <button
+                                      onClick={handleCancelEdit}
+                                      className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg font-semibold transition-colors"
+                                    >
+                                      إلغاء
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="p-4 flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <h4 className="font-bold text-gray-800 text-lg mb-1">{group.name}</h4>
+                                      <p className="text-sm text-gray-600 font-medium">
+                                        {getStudentCount(group.id)} طالب
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex flex-col gap-1">
+                                        <button
+                                          onClick={() => handleMoveUp(group, stageGroups)}
+                                          disabled={index === 0}
+                                          className="text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                          title="تحريك لأعلى"
+                                        >
+                                          <ChevronUp size={18} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleMoveDown(group, stageGroups)}
+                                          disabled={index === stageGroups.length - 1}
+                                          className="text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                          title="تحريك لأسفل"
+                                        >
+                                          <ChevronDown size={18} />
+                                        </button>
+                                      </div>
+                                      <button
+                                        onClick={() => handleEditGroup(group)}
+                                        className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                                        title="تعديل المجموعة"
+                                      >
+                                        <Edit2 size={18} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteGroup(group.id)}
+                                        className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
+                                        title="حذف المجموعة"
+                                      >
+                                        <Trash2 size={18} />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {groupStudents.length > 0 && (
+                                    <div className="border-t-2 border-white/50 bg-white/30 px-4 py-3">
+                                      <div className="space-y-2">
+                                        {groupStudents.map(student => (
+                                          <div key={student.id} className="flex items-center justify-between text-sm bg-white/50 px-3 py-2 rounded">
+                                            <span className="font-medium text-gray-700">{student.name}</span>
+                                            <span className="text-gray-500">{student.status}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={handleSaveEdit}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition-colors"
-                              >
-                                حفظ
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg font-semibold transition-colors"
-                              >
-                                إلغاء
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-bold text-gray-800 text-lg mb-1">{group.name}</h4>
-                              <p className="text-sm text-teal-700 font-semibold">
-                                {getStudentCount(group.id)} طالب
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col gap-1">
-                                <button
-                                  onClick={() => handleMoveUp(group, stageGroups)}
-                                  disabled={index === 0}
-                                  className="text-emerald-600 hover:bg-emerald-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                  title="تحريك لأعلى"
-                                >
-                                  <ChevronUp size={18} />
-                                </button>
-                                <button
-                                  onClick={() => handleMoveDown(group, stageGroups)}
-                                  disabled={index === stageGroups.length - 1}
-                                  className="text-emerald-600 hover:bg-emerald-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                  title="تحريك لأسفل"
-                                >
-                                  <ChevronDown size={18} />
-                                </button>
-                              </div>
-                              <button
-                                onClick={() => handleEditGroup(group)}
-                                className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
-                                title="تعديل المجموعة"
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteGroup(group.id)}
-                                className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
-                                title="حذف المجموعة"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
+                          )
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 

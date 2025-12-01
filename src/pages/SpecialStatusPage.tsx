@@ -208,15 +208,15 @@ export function SpecialStatusPage({
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 rounded-xl shadow-sm border border-gray-200 p-5">
+      <div className="bg-gradient-to-br from-purple-50 via-violet-50 to-fuchsia-50 rounded-xl shadow-sm border border-purple-100 p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200">
-              <Heart size={20} className="text-gray-600" />
+            <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-100">
+              <Heart size={20} className="text-purple-500" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">الحالات الخاصة</h1>
-              <p className="text-sm text-gray-600 mt-0.5 font-medium">
+              <p className="text-sm text-purple-600 mt-0.5 font-medium">
                 إجمالي الطلاب: {studentsWithSpecialStatus.length}
               </p>
             </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Teacher, Group, TeacherGroup } from '../types'
-import { Users, Plus, Edit2, Trash2, BookOpen } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
 
 interface TeacherWithGroups extends Teacher {
   teacher_groups?: TeacherGroup[]
@@ -14,6 +14,7 @@ export function TeachersPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -95,6 +96,21 @@ export function TeachersPage() {
         </div>
       </div>
 
+      {!loading && teachers.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ابحث عن معلم بالاسم أو رقم الجوال..."
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
           <p className="text-gray-500 text-lg">جاري التحميل...</p>
@@ -111,9 +127,29 @@ export function TeachersPage() {
             <span>إضافة أول معلم</span>
           </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {teachers.map((teacher) => (
+      ) : (() => {
+        const filteredTeachers = teachers.filter((teacher) => {
+          if (!searchQuery.trim()) return true
+          const query = searchQuery.toLowerCase()
+          return (
+            teacher.name.toLowerCase().includes(query) ||
+            teacher.phone.includes(query)
+          )
+        })
+
+        if (filteredTeachers.length === 0) {
+          return (
+            <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+              <Search className="mx-auto text-gray-300 mb-4" size={48} />
+              <p className="text-gray-500 text-lg">لم يتم العثور على نتائج</p>
+              <p className="text-gray-400 text-sm mt-2">جرب البحث بكلمات مختلفة</p>
+            </div>
+          )
+        }
+
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTeachers.map((teacher) => (
             <div
               key={teacher.id}
               className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border border-gray-200 overflow-hidden"
@@ -177,7 +213,8 @@ export function TeachersPage() {
             </div>
           ))}
         </div>
-      )}
+        )
+      })()}
 
       {showModal && (
         <TeacherFormModal

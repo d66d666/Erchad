@@ -587,97 +587,144 @@ function App() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {groups
-                    .filter(g => stageFilter === 'all' || g.stage === stageFilter)
-                    .filter(g => groupFilter === 'all' || g.id === groupFilter)
-                    .sort((a, b) => a.display_order - b.display_order)
-                    .map(group => {
-                      const groupStudents = students
-                        .filter(s => s.group_id === group.id)
-                        .filter(s =>
-                          searchTerm === '' ||
-                          s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          s.national_id.includes(searchTerm) ||
-                          s.phone.includes(searchTerm) ||
-                          s.guardian_phone.includes(searchTerm)
-                        )
-                        .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
+                  {(() => {
+                    const filteredGroups = groups
+                      .filter(g => stageFilter === 'all' || g.stage === stageFilter)
+                      .filter(g => groupFilter === 'all' || g.id === groupFilter)
+                      .sort((a, b) => a.display_order - b.display_order)
 
-                      if (groupStudents.length === 0 && searchTerm !== '') return null
+                    const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
 
-                      const isExpanded = expandedGroups.has(group.id)
+                    return stages.map(stage => {
+                      const stageGroups = filteredGroups.filter(g => g.stage === stage)
+                      const totalStageStudents = stageGroups.reduce((sum, group) => {
+                        const groupStudents = students
+                          .filter(s => s.group_id === group.id)
+                          .filter(s =>
+                            searchTerm === '' ||
+                            s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            s.national_id.includes(searchTerm) ||
+                            s.phone.includes(searchTerm) ||
+                            s.guardian_phone.includes(searchTerm)
+                          )
+                          .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
+                        return sum + groupStudents.length
+                      }, 0)
+
+                      if (totalStageStudents === 0 && searchTerm !== '') return null
+
+                      const isStageExpanded = expandedGroups.has(stage)
 
                       return (
-                        <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200">
+                        <div key={stage} className="space-y-4">
                           <button
-                            onClick={() => toggleGroup(group.id)}
-                            className="w-full bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-5 flex items-center justify-between hover:from-teal-500 hover:to-teal-600 transition-all"
+                            onClick={() => toggleGroup(stage)}
+                            className="w-full bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-5 rounded-2xl flex items-center justify-between hover:from-teal-500 hover:to-teal-600 transition-all shadow-lg"
                           >
                             <div className="flex items-center gap-4">
                               <ChevronDown
                                 size={28}
-                                className={`text-white transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                className={`text-white transition-transform ${isStageExpanded ? 'rotate-180' : ''}`}
                               />
-                              <div className="text-right">
-                                <h3 className="text-xl font-bold text-white">{group.name}</h3>
-                                <p className="text-teal-100 text-sm mt-1">{group.stage}</p>
-                              </div>
+                              <h2 className="text-2xl font-bold text-white">{stage}</h2>
                             </div>
-                            <div className="bg-white bg-opacity-30 px-4 py-2 rounded-full">
-                              <span className="text-white font-bold text-sm">{groupStudents.length} طالب</span>
+                            <div className="bg-white bg-opacity-30 px-5 py-2.5 rounded-full">
+                              <span className="text-white font-bold text-base">{totalStageStudents} طالب</span>
                             </div>
                           </button>
 
-                          {isExpanded && (
-                            <div className="p-6">
-                              {groupStudents.length === 0 ? (
-                                <p className="text-center text-gray-500 py-8">لا يوجد طلاب</p>
-                              ) : (
-                                <div className="space-y-3">
-                                  {groupStudents.map(student => {
-                                    const specialStatus = specialStatuses.find(ss => ss.id === student.special_status_id)
-                                    return (
-                                      <div
-                                        key={student.id}
-                                        className={`border-2 rounded-xl p-4 transition-all ${
-                                          specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
-                                        }`}
-                                      >
-                                        <div className="flex items-start justify-between">
-                                          <div className="flex-1">
-                                            <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>
-                                            <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right mb-3">
-                                              <p className="text-gray-700">السجل: {student.national_id}</p>
-                                              <p className="text-gray-700">الصف: {student.grade}</p>
-                                              <p className="text-gray-700">جوال: {student.phone}</p>
-                                              <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
-                                            </div>
-                                            <div className="flex gap-3 text-xs font-semibold">
-                                              <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
-                                                الاستقبال: {student.visit_count || 0}
-                                              </span>
-                                              <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
-                                                الاستئذانات: {student.permission_count || 0}
-                                              </span>
-                                              <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
-                                                المخالفات: {student.violation_count || 0}
-                                              </span>
-                                            </div>
-                                          </div>
-                                          <button className="p-2 hover:bg-white rounded-lg">
-                                            <span className="text-2xl text-gray-600">⋮</span>
-                                          </button>
-                                        </div>
+                          {isStageExpanded && (
+                            <div className="space-y-4 pr-4">
+                              {stageGroups.map(group => {
+                                const groupStudents = students
+                                  .filter(s => s.group_id === group.id)
+                                  .filter(s =>
+                                    searchTerm === '' ||
+                                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    s.national_id.includes(searchTerm) ||
+                                    s.phone.includes(searchTerm) ||
+                                    s.guardian_phone.includes(searchTerm)
+                                  )
+                                  .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
+
+                                if (groupStudents.length === 0 && searchTerm !== '') return null
+
+                                const isGroupExpanded = expandedGroups.has(group.id)
+
+                                return (
+                                  <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200">
+                                    <button
+                                      onClick={() => toggleGroup(group.id)}
+                                      className="w-full bg-gradient-to-r from-teal-300 to-teal-400 px-6 py-4 flex items-center justify-between hover:from-teal-400 hover:to-teal-500 transition-all"
+                                    >
+                                      <div className="flex items-center gap-4">
+                                        <ChevronDown
+                                          size={24}
+                                          className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
+                                        />
+                                        <h3 className="text-xl font-bold text-white">{group.name}</h3>
                                       </div>
-                                    )
-                                  })}
-                                </div>
-                              )}
+                                      <div className="bg-white bg-opacity-30 px-4 py-2 rounded-full">
+                                        <span className="text-white font-bold text-sm">{groupStudents.length} طالب</span>
+                                      </div>
+                                    </button>
+
+                                    {isGroupExpanded && (
+                                      <div className="p-6">
+                                        {groupStudents.length === 0 ? (
+                                          <p className="text-center text-gray-500 py-8">لا يوجد طلاب</p>
+                                        ) : (
+                                          <div className="space-y-3">
+                                            {groupStudents.map(student => {
+                                              const specialStatus = specialStatuses.find(ss => ss.id === student.special_status_id)
+                                              return (
+                                                <div
+                                                  key={student.id}
+                                                  className={`border-2 rounded-xl p-4 transition-all ${
+                                                    specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
+                                                  }`}
+                                                >
+                                                  <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                      <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>
+                                                      <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right mb-3">
+                                                        <p className="text-gray-700">السجل: {student.national_id}</p>
+                                                        <p className="text-gray-700">الصف: {student.grade}</p>
+                                                        <p className="text-gray-700">جوال: {student.phone}</p>
+                                                        <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
+                                                      </div>
+                                                      <div className="flex gap-3 text-xs font-semibold">
+                                                        <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
+                                                          الاستقبال: {student.visit_count || 0}
+                                                        </span>
+                                                        <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
+                                                          الاستئذانات: {student.permission_count || 0}
+                                                        </span>
+                                                        <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
+                                                          المخالفات: {student.violation_count || 0}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                    <button className="p-2 hover:bg-white rounded-lg">
+                                                      <span className="text-2xl text-gray-600">⋮</span>
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              )
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
                             </div>
                           )}
                         </div>
                       )
-                    })}
+                    })
+                  })()}
                 </div>
               )}
             </div>

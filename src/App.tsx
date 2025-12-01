@@ -533,12 +533,9 @@ function App() {
                       <select
                         value={activityFilter}
                         onChange={(e) => setActivityFilter(e.target.value)}
-                        className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none cursor-pointer text-gray-800"
                       >
                         <option value="all">الكل</option>
-                        <option value="reception">لديهم استقبال اليوم</option>
-                        <option value="permission">لديهم استئذان اليوم</option>
-                        <option value="violation">لديهم مخالفة اليوم</option>
                       </select>
                       <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
                     </div>

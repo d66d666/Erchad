@@ -596,10 +596,10 @@ function App() {
                     const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
 
                     const stageColors = [
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-amber-100', groupTo: 'to-amber-200', groupHoverFrom: 'hover:from-amber-200', groupHoverTo: 'hover:to-amber-300' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-amber-100', groupTo: 'to-amber-200', groupHoverFrom: 'hover:from-amber-200', groupHoverTo: 'hover:to-amber-300' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-amber-100', groupTo: 'to-amber-200', groupHoverFrom: 'hover:from-amber-200', groupHoverTo: 'hover:to-amber-300' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-amber-100', groupTo: 'to-amber-200', groupHoverFrom: 'hover:from-amber-200', groupHoverTo: 'hover:to-amber-300' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-blue-100', groupTo: 'to-blue-200', groupHoverFrom: 'hover:from-blue-200', groupHoverTo: 'hover:to-blue-300' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-blue-100', groupTo: 'to-blue-200', groupHoverFrom: 'hover:from-blue-200', groupHoverTo: 'hover:to-blue-300' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-blue-100', groupTo: 'to-blue-200', groupHoverFrom: 'hover:from-blue-200', groupHoverTo: 'hover:to-blue-300' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-blue-100', groupTo: 'to-blue-200', groupHoverFrom: 'hover:from-blue-200', groupHoverTo: 'hover:to-blue-300' },
                     ]
 
                     return stages.map((stage, index) => {

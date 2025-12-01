@@ -414,27 +414,36 @@ export function GroupsManagementPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
                         الصف (المرحلة)
                       </label>
-                      <select
-                        value={newStage}
-                        onChange={(e) => setNewStage(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right bg-white"
-                        size={12}
-                        required
-                      >
-                        <option value="">اختر المرحلة</option>
-                        <option value="الصف الأول الابتدائي">الصف الأول الابتدائي</option>
-                        <option value="الصف الثاني الابتدائي">الصف الثاني الابتدائي</option>
-                        <option value="الصف الثالث الابتدائي">الصف الثالث الابتدائي</option>
-                        <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
-                        <option value="الصف الخامس الابتدائي">الصف الخامس الابتدائي</option>
-                        <option value="الصف السادس الابتدائي">الصف السادس الابتدائي</option>
-                        <option value="الصف الأول المتوسط">الصف الأول المتوسط</option>
-                        <option value="الصف الثاني المتوسط">الصف الثاني المتوسط</option>
-                        <option value="الصف الثالث المتوسط">الصف الثالث المتوسط</option>
-                        <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
-                        <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
-                        <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
-                      </select>
+                      <div className="w-full border-2 border-gray-300 rounded-lg bg-white overflow-hidden max-h-80 overflow-y-auto">
+                        {[
+                          'الصف الأول الابتدائي',
+                          'الصف الثاني الابتدائي',
+                          'الصف الثالث الابتدائي',
+                          'الصف الرابع الابتدائي',
+                          'الصف الخامس الابتدائي',
+                          'الصف السادس الابتدائي',
+                          'الصف الأول المتوسط',
+                          'الصف الثاني المتوسط',
+                          'الصف الثالث المتوسط',
+                          'الصف الأول الثانوي',
+                          'الصف الثاني الثانوي',
+                          'الصف الثالث الثانوي'
+                        ].map((stage, index) => (
+                          <div
+                            key={stage}
+                            onClick={() => setNewStage(stage)}
+                            className={`px-4 py-3 text-right cursor-pointer transition-colors ${
+                              newStage === stage
+                                ? 'bg-blue-600 text-white font-semibold'
+                                : index === 0 && !newStage
+                                ? 'bg-gray-100 text-gray-700'
+                                : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {index === 0 && !newStage ? 'مثال: ' + stage : stage}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">

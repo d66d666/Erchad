@@ -617,11 +617,22 @@ function App() {
                                       <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                           <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>
-                                          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right">
+                                          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right mb-3">
                                             <p className="text-gray-700">السجل: {student.national_id}</p>
                                             <p className="text-gray-700">الصف: {student.grade}</p>
                                             <p className="text-gray-700">جوال: {student.phone}</p>
                                             <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
+                                          </div>
+                                          <div className="flex gap-3 text-xs font-semibold">
+                                            <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
+                                              الاستقبال: {student.visit_count || 0}
+                                            </span>
+                                            <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
+                                              الاستئذانات: {student.permission_count || 0}
+                                            </span>
+                                            <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
+                                              المخالفات: {student.violation_count || 0}
+                                            </span>
                                           </div>
                                         </div>
                                         <button className="p-2 hover:bg-white rounded-lg">

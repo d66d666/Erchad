@@ -64,15 +64,16 @@ export function SpecialStatusPage({
           <title>جميع الحالات الخاصة</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { text-align: center; color: #9333ea; margin-bottom: 10px; }
+            h1 { text-align: center; color: #f43f5e; margin-bottom: 10px; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 30px; }
             .group-section { margin-bottom: 40px; page-break-after: always; }
-            .group-title { color: #9333ea; font-size: 24px; margin-bottom: 10px; }
-            .group-info { margin-bottom: 15px; color: #666; }
+            .group-title { color: #1e293b; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
+            .group-info { margin-bottom: 15px; color: #64748b; font-size: 14px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
-            th { background-color: #9333ea; color: white; }
-            tr:nth-child(even) { background-color: #f2f2f2; }
+            th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
+            th { background-color: #f8fafc; color: #475569; font-size: 12px; font-weight: 600; }
+            tr:nth-child(even) { background-color: #fafafa; }
+            td { font-size: 13px; color: #334155; }
           </style>
         </head>
         <body>
@@ -148,12 +149,13 @@ export function SpecialStatusPage({
           <title>الحالات الخاصة - ${group.name}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { text-align: center; color: #9333ea; }
+            h1 { text-align: center; color: #1e293b; font-size: 22px; font-weight: 700; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
-            th { background-color: #9333ea; color: white; }
-            tr:nth-child(even) { background-color: #f2f2f2; }
+            th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
+            th { background-color: #f8fafc; color: #475569; font-size: 12px; font-weight: 600; }
+            tr:nth-child(even) { background-color: #fafafa; }
+            td { font-size: 13px; color: #334155; }
           </style>
         </head>
         <body>
@@ -205,45 +207,45 @@ export function SpecialStatusPage({
 
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-2xl shadow-lg p-8 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-white bg-opacity-20 p-3 rounded-xl">
-              <Heart size={32} />
+    <div className="space-y-4">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-rose-50 p-2 rounded-lg">
+              <Heart size={20} className="text-rose-500" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">الحالات الخاصة</h1>
-              <p className="text-purple-100 text-lg mt-1">
-                إجمالي الطلاب ذوي الحالات الخاصة: {studentsWithSpecialStatus.length}
+              <h1 className="text-xl font-bold text-gray-800">الحالات الخاصة</h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                إجمالي الطلاب: {studentsWithSpecialStatus.length}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowSendToTeacherModal(true)}
               disabled={studentsWithSpecialStatus.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send size={20} />
+              <Send size={16} />
               <span>إرسال للمعلم</span>
             </button>
             <button
               onClick={handlePrintAll}
               disabled={studentsWithSpecialStatus.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Printer size={20} />
+              <Printer size={16} />
               <span>طباعة الكل</span>
             </button>
-            <label className="flex items-center gap-3 bg-white bg-opacity-20 px-4 py-3 rounded-xl cursor-pointer hover:bg-opacity-30 transition-all">
+            <label className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
               <input
                 type="checkbox"
                 checked={showStatusDetails}
                 onChange={(e) => setShowStatusDetails(e.target.checked)}
-                className="w-5 h-5 rounded cursor-pointer"
+                className="w-4 h-4 rounded cursor-pointer text-rose-500 focus:ring-rose-500"
               />
-              <span className="text-white font-semibold">إظهار تفاصيل الحالة</span>
+              <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
             </label>
           </div>
         </div>
@@ -255,19 +257,19 @@ export function SpecialStatusPage({
         return (
           <div
             key={group.id}
-            className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200"
+            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200"
           >
-            <div className="bg-gradient-to-r from-purple-600 to-purple-500 p-6">
+            <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-3 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">{group.name}</h2>
-                  <p className="text-purple-100">عدد الطلاب: {count}</p>
+                  <h2 className="text-lg font-bold text-gray-800">{group.name}</h2>
+                  <p className="text-sm text-gray-500">عدد الطلاب: {count}</p>
                 </div>
                 <button
                   onClick={() => handlePrint(group, groupStudents)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-purple-600 rounded-xl font-semibold hover:bg-purple-50 transition-all hover:shadow-md"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
                 >
-                  <Printer size={20} />
+                  <Printer size={16} />
                   <span>طباعة</span>
                 </button>
               </div>
@@ -275,46 +277,46 @@ export function SpecialStatusPage({
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       الاسم
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       السجل المدني
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       جوال الطالب
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       جوال ولي الأمر
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       الحالة الخاصة
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-100">
                   {groupStudents.map((student) => {
                     const status = specialStatuses.find(
                       (s) => s.id === student.special_status_id
                     )
                     return (
-                      <tr key={student.id} className="hover:bg-purple-50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <tr key={student.id} className="hover:bg-rose-50/30 transition-colors">
+                        <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
                           {student.name}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600">
                           {student.national_id}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600">
                           {student.phone}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-5 py-3.5 text-sm text-gray-600">
                           {student.guardian_phone}
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-rose-50 text-rose-700">
                             {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
                           </span>
                         </td>
@@ -329,9 +331,9 @@ export function SpecialStatusPage({
       })}
 
       {studentsWithSpecialStatus.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-lg p-16 text-center border border-gray-200">
-          <FileText className="mx-auto text-gray-300 mb-4" size={64} />
-          <p className="text-gray-500 text-xl">لا يوجد طلاب بحالات خاصة</p>
+        <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
+          <FileText className="mx-auto text-gray-300 mb-3" size={48} />
+          <p className="text-gray-500 text-base">لا يوجد طلاب بحالات خاصة</p>
         </div>
       )}
 

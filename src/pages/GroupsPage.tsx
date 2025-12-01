@@ -668,8 +668,10 @@ export function GroupsPage() {
             </button>
             <button
               onClick={() => {
+                console.log('زر إضافة طالب تم الضغط عليه')
                 setSelectedGroupId(null)
                 setShowAddStudentModal(true)
+                console.log('showAddStudentModal تم تعيينه إلى true')
               }}
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all hover:shadow-lg"
             >

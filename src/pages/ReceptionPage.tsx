@@ -434,7 +434,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
     const visitDate = new Date(visit.visit_date)
     const message = `━━━━━━━━━━━━━━━━━━
-🏫 *إشعار من الإرشاد الطلابي*
+*إشعار من الإرشاد الطلابي*
 ━━━━━━━━━━━━━━━━━━
 
 السلام عليكم ورحمة الله وبركاته
@@ -443,11 +443,11 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
 نود إعلامكم بأن الطالب قد حضر إلى الإرشاد الطلابي
 
-📅 *التاريخ:* ${visitDate.toLocaleDateString('ar-SA')}
-⏰ *الوقت:* ${visitDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
+*التاريخ:* ${visitDate.toLocaleDateString('ar-SA')}
+*الوقت:* ${visitDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 
 ─────────────────
-📝 *تفاصيل الزيارة*
+*تفاصيل الزيارة*
 ─────────────────
 
 • *سبب الزيارة:* ${visit.reason}
@@ -456,7 +456,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 ${visit.referred_to !== 'لا يوجد' ? `\n• *تم التحويل إلى:* ${visit.referred_to}` : ''}
 
 ━━━━━━━━━━━━━━━━━━
-📞 *للاستفسار يرجى التواصل مع:*
+*للاستفسار يرجى التواصل مع:*
 الأستاذ ${teacherName || 'مسؤول النظام'}${teacherPhone ? `\nرقم الجوال: ${teacherPhone}` : ''}
 
 مع تحيات إدارة المدرسة

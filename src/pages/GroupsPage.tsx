@@ -666,18 +666,6 @@ export function GroupsPage() {
               <Layers size={20} />
               <span>إدارة المجموعات</span>
             </button>
-            <button
-              onClick={() => {
-                console.log('زر إضافة طالب تم الضغط عليه')
-                setSelectedGroupId(null)
-                setShowAddStudentModal(true)
-                console.log('showAddStudentModal تم تعيينه إلى true')
-              }}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all hover:shadow-lg"
-            >
-              <UserPlus size={20} />
-              <span>إضافة طالب</span>
-            </button>
           </div>
           <label className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 rounded-xl cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-purple-200">
             <input

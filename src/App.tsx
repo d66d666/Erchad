@@ -282,6 +282,30 @@ function App() {
     }
   }, [studentMenuOpen])
 
+  useEffect(() => {
+    if (searchTerm.trim() !== '') {
+      const matchingGroups = new Set<string>()
+
+      groups.forEach(group => {
+        const hasMatchingStudents = students.some(student =>
+          student.group_id === group.id && (
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.national_id.includes(searchTerm) ||
+            student.phone.includes(searchTerm) ||
+            student.guardian_phone.includes(searchTerm)
+          )
+        )
+
+        if (hasMatchingStudents) {
+          matchingGroups.add(group.stage || '')
+          matchingGroups.add(group.id)
+        }
+      })
+
+      setExpandedGroups(matchingGroups)
+    }
+  }, [searchTerm, students, groups])
+
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')

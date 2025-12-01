@@ -1734,9 +1734,10 @@ function App() {
                   <Check size={18} />
                 </h4>
                 <div className="text-sm text-gray-800 text-right space-y-1 bg-white rounded-lg p-3">
-                  <p className="font-bold">✅ السماح بدخول الطالب للفصل</p>
-                  <p>اسم الطالب: <span className="font-bold">{allowEntryStudent.name}</span></p>
-                  <p>المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
+                  <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
+                  <p className="font-bold mt-2">الرجاء السماح بدخول الطالب للفصل</p>
+                  <p className="mt-2">اسم الطالب: <span className="font-bold">{allowEntryStudent.name}</span></p>
+                  <p>المرسل الأستاذ: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
                 </div>
               </div>
 
@@ -1770,10 +1771,12 @@ function App() {
                       return
                     }
 
-                    const message = `*✅ السماح بدخول الطالب للفصل*
+                    const message = `السلام عليكم ورحمة الله وبركاته
+
+*الرجاء السماح بدخول الطالب للفصل*
 
 اسم الطالب: *${allowEntryStudent.name}*
-المرسل: ${teacherName || 'مسؤول النظام'}`
+المرسل الأستاذ: ${teacherName || 'مسؤول النظام'}`
 
                     const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
                     window.open(whatsappUrl, '_blank')

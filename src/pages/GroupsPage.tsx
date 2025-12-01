@@ -275,9 +275,12 @@ export function GroupsPage() {
   }
 
   const handleAddStudent = (groupId: string) => {
+    console.log('handleAddStudent called with groupId:', groupId)
     const group = groups.find(g => g.id === groupId)
+    console.log('Found group:', group)
     setSelectedGroupId(groupId)
     setShowAddStudentModal(true)
+    console.log('Modal state should be true now')
   }
 
   const handleCloseModal = () => {
@@ -497,15 +500,18 @@ export function GroupsPage() {
         </div>
       )}
 
-      {showAddStudentModal && selectedGroupId && (
-        <AddStudentModal
-          groups={groups}
-          specialStatuses={specialStatuses}
-          onClose={handleCloseModal}
-          onStudentAdded={fetchData}
-          preselectedGroupId={selectedGroupId}
-        />
-      )}
+      {(() => {
+        console.log('showAddStudentModal:', showAddStudentModal, 'selectedGroupId:', selectedGroupId)
+        return showAddStudentModal && selectedGroupId && (
+          <AddStudentModal
+            groups={groups}
+            specialStatuses={specialStatuses}
+            onClose={handleCloseModal}
+            onStudentAdded={fetchData}
+            preselectedGroupId={selectedGroupId}
+          />
+        )
+      })()}
 
       {showManageGroupsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

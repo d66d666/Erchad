@@ -626,7 +626,13 @@ function App() {
 
         {currentPage === 'groups' && <GroupsManagementPage />}
 
-        {currentPage === 'special-status' && <SpecialStatusPage />}
+        {currentPage === 'special-status' && (
+          <SpecialStatusPage
+            students={students}
+            groups={groups}
+            specialStatuses={specialStatuses}
+          />
+        )}
 
         {currentPage === 'reception' && <ReceptionPage onUpdateStats={fetchTodayStats} />}
 

@@ -248,17 +248,6 @@ function App() {
 
                     <button
                       onClick={() => {
-                        setShowExcelImport(true)
-                        setShowSettingsMenu(false)
-                      }}
-                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                    >
-                      <Upload size={18} className="text-blue-600" />
-                      <span className="text-sm font-medium text-gray-700">استيراد البيانات الكاملة</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
                         setCurrentPage('groups')
                         setShowSettingsMenu(false)
                       }}

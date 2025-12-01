@@ -711,15 +711,16 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
               visit.student?.name.toLowerCase().includes(visitSearchTerm.toLowerCase()) ||
               visit.student?.national_id.includes(visitSearchTerm)
             ).map(visit => (
-            <div key={visit.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={visit.id} className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <div>
-                    <h4 className="font-bold text-gray-800">{visit.student?.name}</h4>
-                    <p className="text-xs text-gray-500">
-                      {formatBothDates(visit.visit_date)}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <h4 className="font-bold text-blue-900">{visit.student?.name}</h4>
                   </div>
+                  <p className="text-xs text-blue-600 font-medium mt-1 mr-5">
+                    {formatBothDates(visit.visit_date)}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -747,16 +748,16 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
               </div>
 
               <div className="space-y-2 text-sm">
-                <div><span className="font-semibold">السبب:</span> {visit.reason}</div>
-                <div><span className="font-semibold">الإجراء:</span> {visit.action_taken}</div>
+                <div className="bg-white/70 rounded-lg p-2"><span className="font-semibold text-blue-700">السبب:</span> <span className="text-gray-800">{visit.reason}</span></div>
+                <div className="bg-white/70 rounded-lg p-2"><span className="font-semibold text-blue-700">الإجراء:</span> <span className="text-gray-800">{visit.action_taken}</span></div>
                 {visit.referred_to !== 'لا يوجد' && (
-                  <div className="text-orange-600 font-semibold">
+                  <div className="bg-orange-100 border border-orange-300 rounded-lg p-2 text-orange-700 font-semibold">
                     تم التحويل إلى: {visit.referred_to}
                   </div>
                 )}
                 {visit.notes && (
-                  <div className="text-gray-600">
-                    <span className="font-semibold">ملاحظات:</span> {visit.notes}
+                  <div className="bg-white/70 rounded-lg p-2">
+                    <span className="font-semibold text-blue-700">ملاحظات:</span> <span className="text-gray-800">{visit.notes}</span>
                   </div>
                 )}
               </div>

@@ -69,6 +69,9 @@ function App() {
   const [newStage, setNewStage] = useState('')
   const [newGroupName, setNewGroupName] = useState('')
   const [showManageHeaderModal, setShowManageHeaderModal] = useState(false)
+  const [studentMenuOpen, setStudentMenuOpen] = useState<string | null>(null)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const [headerCards, setHeaderCards] = useState({
     totalStudents: true,
@@ -252,6 +255,14 @@ function App() {
       fetchTeachersCount()
     }
   }, [currentPage])
+
+  useEffect(() => {
+    const handleClickOutside = () => setStudentMenuOpen(null)
+    if (studentMenuOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [studentMenuOpen])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
@@ -1002,9 +1013,56 @@ function App() {
                                                         )}
                                                       </div>
                                                     </div>
-                                                    <button className="p-2 hover:bg-white rounded-lg">
-                                                      <span className="text-2xl text-gray-600">⋮</span>
-                                                    </button>
+                                                    <div className="relative">
+                                                      <button
+                                                        onClick={(e) => {
+                                                          e.stopPropagation()
+                                                          setStudentMenuOpen(studentMenuOpen === student.id ? null : student.id)
+                                                        }}
+                                                        className="p-2 hover:bg-white rounded-lg transition-colors"
+                                                      >
+                                                        <span className="text-2xl text-gray-600">⋮</span>
+                                                      </button>
+                                                      {studentMenuOpen === student.id && (
+                                                        <div className="absolute left-0 mt-1 w-40 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                                          <button
+                                                            onClick={() => {
+                                                              setEditingStudent(student)
+                                                              setShowEditModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-gray-700"
+                                                          >
+                                                            <span>تعديل</span>
+                                                          </button>
+                                                          <button
+                                                            onClick={async () => {
+                                                              if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
+                                                                try {
+                                                                  const { error } = await supabase
+                                                                    .from('students')
+                                                                    .delete()
+                                                                    .eq('id', student.id)
+
+                                                                  if (error) throw error
+
+                                                                  await db.students.delete(student.id)
+                                                                  alert('تم حذف الطالب بنجاح')
+                                                                  fetchData()
+                                                                  setStudentMenuOpen(null)
+                                                                } catch (error) {
+                                                                  console.error('Error deleting student:', error)
+                                                                  alert('حدث خطأ أثناء حذف الطالب')
+                                                                }
+                                                              }
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
+                                                          >
+                                                            <span>حذف</span>
+                                                          </button>
+                                                        </div>
+                                                      )}
+                                                    </div>
                                                   </div>
                                                 </div>
                                               )
@@ -1573,6 +1631,135 @@ function App() {
                 <Check size={18} />
                 <span>حفظ وإغلاق</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowEditModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <h2 className="text-2xl font-bold">تعديل بيانات الطالب</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingStudent(null)
+                }}
+                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">الاسم</label>
+                  <input
+                    type="text"
+                    value={editingStudent.name}
+                    onChange={(e) => setEditingStudent({...editingStudent, name: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">السجل المدني</label>
+                  <input
+                    type="text"
+                    value={editingStudent.national_id}
+                    onChange={(e) => setEditingStudent({...editingStudent, national_id: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">جوال الطالب</label>
+                    <input
+                      type="text"
+                      value={editingStudent.phone}
+                      onChange={(e) => setEditingStudent({...editingStudent, phone: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">جوال ولي الأمر</label>
+                    <input
+                      type="text"
+                      value={editingStudent.guardian_phone}
+                      onChange={(e) => setEditingStudent({...editingStudent, guardian_phone: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">المجموعة</label>
+                  <select
+                    value={editingStudent.group_id}
+                    onChange={(e) => setEditingStudent({...editingStudent, group_id: e.target.value})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {groups.map(g => (
+                      <option key={g.id} value={g.id}>{g.stage} - {g.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">الحالة الخاصة</label>
+                  <select
+                    value={editingStudent.special_status_id || ''}
+                    onChange={(e) => setEditingStudent({...editingStudent, special_status_id: e.target.value || null})}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">لا توجد</option>
+                    {specialStatuses.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingStudent(null)
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-xl font-bold transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase
+                        .from('students')
+                        .update({
+                          name: editingStudent.name,
+                          national_id: editingStudent.national_id,
+                          phone: editingStudent.phone,
+                          guardian_phone: editingStudent.guardian_phone,
+                          group_id: editingStudent.group_id,
+                          special_status_id: editingStudent.special_status_id,
+                          updated_at: new Date().toISOString()
+                        })
+                        .eq('id', editingStudent.id)
+
+                      if (error) throw error
+
+                      await db.students.update(editingStudent.id, editingStudent)
+                      alert('تم تحديث بيانات الطالب بنجاح')
+                      fetchData()
+                      setShowEditModal(false)
+                      setEditingStudent(null)
+                    } catch (error) {
+                      console.error('Error updating student:', error)
+                      alert('حدث خطأ أثناء التحديث')
+                    }
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors"
+                >
+                  حفظ التغييرات
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -424,14 +424,13 @@ export function GroupsManagementPage() {
                               <>
                                 <div className="bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-4">
                                   <div className="flex items-center justify-between">
+                                    <div className="text-left">
+                                      <h4 className="text-2xl font-bold text-white mb-1">{group.name}</h4>
+                                      <p className="text-sm text-white/90">
+                                        عدد الطلاب: {getStudentCount(group.id)}
+                                      </p>
+                                    </div>
                                     <div className="flex items-center gap-4">
-                                      <button
-                                        onClick={() => window.print()}
-                                        className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
-                                      >
-                                        <Printer size={16} />
-                                        <span>طباعة</span>
-                                      </button>
                                       <button
                                         onClick={() => setShowAddStudentModal(true)}
                                         className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
@@ -439,12 +438,13 @@ export function GroupsManagementPage() {
                                         <UserPlus size={16} />
                                         <span>إضافة طالب</span>
                                       </button>
-                                    </div>
-                                    <div className="text-right">
-                                      <h4 className="text-2xl font-bold text-white mb-1">المجموعة {group.name}</h4>
-                                      <p className="text-sm text-white/90">
-                                        عدد الطلاب: {getStudentCount(group.id)}
-                                      </p>
+                                      <button
+                                        onClick={() => window.print()}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
+                                      >
+                                        <Printer size={16} />
+                                        <span>طباعة</span>
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
@@ -454,16 +454,20 @@ export function GroupsManagementPage() {
                                     <table className="w-full">
                                       <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الحالة الخاصة</th>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال ولي الأمر</th>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">جوال الطالب</th>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">السجل المدني</th>
-                                          <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">الاسم</th>
+                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">الاسم</th>
+                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">السجل المدني</th>
+                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">جوال الطالب</th>
+                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">جوال ولي الأمر</th>
+                                          <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">الحالة الخاصة</th>
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-200">
                                         {groupStudents.map((student, idx) => (
                                           <tr key={student.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{student.name}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{student.civil_id || '-'}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{student.phone || '-'}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">{student.guardian_phone || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900">
                                               {student.special_status ? (
                                                 <span className="inline-block px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
@@ -473,10 +477,6 @@ export function GroupsManagementPage() {
                                                 <span className="text-gray-400">-</span>
                                               )}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.guardian_phone || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.phone || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{student.civil_id || '-'}</td>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{student.name}</td>
                                           </tr>
                                         ))}
                                       </tbody>
@@ -489,23 +489,15 @@ export function GroupsManagementPage() {
                                 )}
 
                                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => handleDeleteGroup(group.id)}
-                                      className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
-                                      title="حذف المجموعة"
-                                    >
-                                      <Trash2 size={18} />
-                                    </button>
-                                    <button
-                                      onClick={() => handleEditGroup(group)}
-                                      className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
-                                      title="تعديل المجموعة"
-                                    >
-                                      <Edit2 size={18} />
-                                    </button>
-                                  </div>
                                   <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => handleMoveUp(group, stageGroups)}
+                                      disabled={index === 0}
+                                      className="text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                      title="تحريك لأعلى"
+                                    >
+                                      <ChevronUp size={18} />
+                                    </button>
                                     <button
                                       onClick={() => handleMoveDown(group, stageGroups)}
                                       disabled={index === stageGroups.length - 1}
@@ -514,13 +506,21 @@ export function GroupsManagementPage() {
                                     >
                                       <ChevronDown size={18} />
                                     </button>
+                                  </div>
+                                  <div className="flex items-center gap-2">
                                     <button
-                                      onClick={() => handleMoveUp(group, stageGroups)}
-                                      disabled={index === 0}
-                                      className="text-gray-600 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                      title="تحريك لأعلى"
+                                      onClick={() => handleEditGroup(group)}
+                                      className="text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors"
+                                      title="تعديل المجموعة"
                                     >
-                                      <ChevronUp size={18} />
+                                      <Edit2 size={18} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteGroup(group.id)}
+                                      className="text-red-500 hover:bg-red-50 p-2 rounded transition-colors"
+                                      title="حذف المجموعة"
+                                    >
+                                      <Trash2 size={18} />
                                     </button>
                                   </div>
                                 </div>

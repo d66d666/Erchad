@@ -12,6 +12,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [teacherName, setTeacherName] = useState('')
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
+  const [systemDescription, setSystemDescription] = useState('')
   const [profileId, setProfileId] = useState('')
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
@@ -44,6 +45,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setTeacherName(supabaseProfile.name || '')
         setTeacherPhone(supabaseProfile.phone || '')
         setSchoolName(supabaseProfile.school_name || '')
+        setSystemDescription(supabaseProfile.system_description || '')
       } else {
         // لو ما في بيانات في Supabase، نترك الحقول فاضية
         setTeacherName('')
@@ -76,6 +78,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         name: teacherName,
         phone: teacherPhone,
         school_name: schoolName,
+        system_description: systemDescription,
       }
 
       if (profileId) {
@@ -110,8 +113,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       }
 
       alert('تم حفظ البيانات بنجاح')
-      window.location.reload()
       onClose()
+      window.location.reload()
     } catch (error) {
       console.error('Error saving profile:', error)
       alert('حدث خطأ في حفظ البيانات')
@@ -281,8 +284,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
               </label>
               <input
                 type="text"
-                value={schoolName}
-                onChange={(e) => setSchoolName(e.target.value)}
+                value={systemDescription}
+                onChange={(e) => setSystemDescription(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 placeholder="مثال: نظام إدارة شاملة لبيانات الطلاب"
               />
@@ -294,6 +297,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
               </label>
               <input
                 type="text"
+                value={schoolName}
+                onChange={(e) => setSchoolName(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                 placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
               />

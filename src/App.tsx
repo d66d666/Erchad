@@ -48,7 +48,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home')
   const [showProfileSettings, setShowProfileSettings] = useState(false)
   const [teacherName, setTeacherName] = useState('')
+  const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
+  const [systemDescription, setSystemDescription] = useState('')
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
   const [showExcelImport, setShowExcelImport] = useState(false)
   const [showPrintModal, setShowPrintModal] = useState(false)
@@ -159,7 +161,9 @@ function App() {
 
       if (profileRes.data) {
         setTeacherName(profileRes.data.name || '')
+        setTeacherPhone(profileRes.data.phone || '')
         setSchoolName(profileRes.data.school_name || '')
+        setSystemDescription(profileRes.data.system_description || '')
       }
 
       await fetchTodayStats()
@@ -282,10 +286,10 @@ function App() {
               </div>
               <div className="text-right">
                 <h1 className="text-2xl font-bold text-gray-800">
-                  نظام إدارة شاملة لبيانات الطلاب
+                  {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  {schoolName || 'قم بإضافة وصف النظام من الإعدادات'}
+                  {schoolName || 'قم بإضافة اسم المدرسة من الإعدادات'}
                 </p>
               </div>
             </div>

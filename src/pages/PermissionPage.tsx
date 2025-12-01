@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db, StudentPermission } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student } from '../types'
-import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2, Home } from 'lucide-react'
+import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2 } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface PermissionWithStudent extends StudentPermission {
@@ -340,36 +340,6 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
     }
   }
 
-  async function handleReturnStudent(permissionId: string, studentId: string) {
-    if (!confirm('هل عاد الطالب إلى المدرسة؟')) return
-
-    try {
-      const { error: deleteError } = await supabase
-        .from('student_permissions')
-        .delete()
-        .eq('id', permissionId)
-
-      if (deleteError) throw deleteError
-
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({ status: 'نشط' })
-        .eq('id', studentId)
-
-      if (updateError) throw updateError
-
-      await db.student_permissions.delete(permissionId)
-      await db.students.update(studentId, { status: 'نشط' })
-
-      alert('تم تسجيل عودة الطالب بنجاح')
-      fetchStudents()
-      fetchPermissions(dateFilter)
-    } catch (error) {
-      console.error('Error returning student:', error)
-      alert('حدث خطأ أثناء تسجيل العودة')
-    }
-  }
-
   async function printPermission(permission: PermissionWithStudent) {
     const printWindow = window.open('', '', 'width=800,height=600')
     if (!printWindow) return
@@ -678,13 +648,6 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
                     >
                       <Trash2 size={16} />
                       حذف
-                    </button>
-                    <button
-                      onClick={() => handleReturnStudent(permission.id, permission.student_id)}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
-                    >
-                      <Home size={16} />
-                      عودة
                     </button>
                     <button
                       onClick={() => printPermission(permission)}

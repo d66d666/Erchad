@@ -384,47 +384,62 @@ export function StudentsList({
             const hasSpecialStatus = student.special_status_id !== null
             const bgColorClass = hasSpecialStatus
               ? 'bg-amber-50 border-amber-200'
-              : `${colors.bg} ${colors.border}`
+              : 'bg-gradient-to-l from-[#fef5e7] to-[#fef9f0] border-[#f0d9b5]'
 
             return (
           <div
             key={student.id}
-            className={`${bgColorClass} rounded-lg shadow-sm border-2 hover:shadow-md transition-shadow`}
+            className={`${bgColorClass} rounded-xl shadow-sm border hover:shadow-md transition-all relative`}
           >
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <h4 className="font-bold text-gray-800">{student.name}</h4>
-                  <p className="text-sm text-gray-600">السجل: {student.national_id}</p>
+            <div className="px-5 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => setExpandedId(expandedId === student.id ? null : student.id)}
+                  className="p-1.5 hover:bg-black/5 rounded transition-colors flex-shrink-0"
+                  aria-label="المزيد"
+                >
+                  <MoreVertical size={20} className="text-gray-700" />
+                </button>
+
+                <div className="flex items-center gap-6 flex-1">
+                  <div className="text-right min-w-[80px]">
+                    <div className="text-xs text-gray-500 mb-0.5">الصف</div>
+                    <div className="text-sm font-semibold text-gray-800">{student.grade}</div>
+                  </div>
+
+                  <div className="text-right min-w-[120px]">
+                    <div className="text-xs text-gray-500 mb-0.5">ولي أمر</div>
+                    <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.guardian_phone}</div>
+                  </div>
+
+                  <div className="text-right min-w-[120px]">
+                    <div className="text-xs text-gray-500 mb-0.5">جوال</div>
+                    <div className="text-sm font-semibold text-gray-800 direction-ltr text-right">{student.phone}</div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {student.status === 'استئذان' && (
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                      استئذان
-                    </span>
-                  )}
+
+                <div className="flex items-center gap-3 flex-shrink-0">
                   {student.special_status_id && (
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                       {getSpecialStatusName(student.special_status_id)}
                     </span>
                   )}
-                  <button
-                    onClick={() => setExpandedId(expandedId === student.id ? null : student.id)}
-                    className="p-1 hover:bg-gray-100 rounded"
-                  >
-                    <MoreVertical size={20} />
-                  </button>
+                  {student.status === 'استئذان' && (
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                      استئذان
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-right">
+                  <div className="text-xs text-gray-500 mb-0.5">الاسم</div>
+                  <h4 className="font-bold text-gray-900 text-base">{student.name}</h4>
+                  <p className="text-xs text-gray-600 mt-0.5">السجل: {student.national_id}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600 mb-2">
-                <div>الصف: {student.grade}</div>
-                <div>جوال: {student.phone}</div>
-                <div>ولي أمر: {student.guardian_phone}</div>
-              </div>
-
               {expandedId === student.id && (
-                <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                <div className="mt-4 pt-4 border-t border-gray-300/50 space-y-2">
                   <button
                     onClick={() => {
                       setSelectedStudent(student)

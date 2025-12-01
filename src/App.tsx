@@ -22,6 +22,10 @@ import {
   Printer,
   MessageCircle,
   X,
+  Upload,
+  FileSpreadsheet,
+  Shield,
+  List,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -116,6 +120,37 @@ function App() {
     fetchData()
   }
 
+  const handleExportData = async () => {
+    try {
+      const dataToExport = {
+        students,
+        groups,
+        specialStatuses,
+        teacherProfile: {
+          name: teacherName,
+          schoolName: schoolName
+        },
+        exportDate: new Date().toISOString()
+      }
+
+      const jsonString = JSON.stringify(dataToExport, null, 2)
+      const blob = new Blob([jsonString], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `schmang-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      alert('تم تصدير البيانات بنجاح!')
+    } catch (error) {
+      console.error('Error exporting data:', error)
+      alert('حدث خطأ أثناء تصدير البيانات')
+    }
+  }
+
   // إحصائيات
   const totalStudents = students.length
   const totalTeachers = 0 // سيتم جلبه من قاعدة البيانات
@@ -182,27 +217,83 @@ function App() {
                 </button>
 
                 {showSettingsMenu && (
-                  <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                  <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
                     <button
                       onClick={() => {
                         setShowExcelImport(true)
                         setShowSettingsMenu(false)
                       }}
-                      className="w-full text-right px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
                     >
-                      <Download size={16} className="text-green-600" />
-                      <span className="text-sm">استيراد من Excel</span>
+                      <Download size={18} className="text-green-600" />
+                      <span className="text-sm font-medium text-gray-700">استيراد من Excel</span>
                     </button>
+
+                    <button
+                      onClick={() => {
+                        handleExportData()
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Download size={18} className="text-pink-600" />
+                      <span className="text-sm font-medium text-gray-700">تصدير البيانات الكاملة</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowExcelImport(true)
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Upload size={18} className="text-blue-600" />
+                      <span className="text-sm font-medium text-gray-700">استيراد البيانات الكاملة</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setCurrentPage('groups')
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Users size={18} className="text-blue-600" />
+                      <span className="text-sm font-medium text-gray-700">إدارة المجموعات</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setCurrentPage('special-status')
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <Heart size={18} className="text-pink-600" />
+                      <span className="text-sm font-medium text-gray-700">إدارة الحالات الخاصة</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowSettingsMenu(false)
+                      }}
+                      className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <List size={18} className="text-cyan-600" />
+                      <span className="text-sm font-medium text-gray-700">إدارة التهديد والقوائم</span>
+                    </button>
+
                     <div className="border-t border-gray-200 my-1"></div>
+
                     <button
                       onClick={() => {
                         handleLogout()
                         setShowSettingsMenu(false)
                       }}
-                      className="w-full text-right px-4 py-2 hover:bg-red-50 transition-colors flex items-center gap-2"
+                      className="w-full text-right px-4 py-3 hover:bg-red-50 transition-colors flex items-center gap-3"
                     >
-                      <LogOut size={16} className="text-red-600" />
-                      <span className="text-sm text-red-600">تسجيل الخروج</span>
+                      <LogOut size={18} className="text-red-600" />
+                      <span className="text-sm font-medium text-red-600">تسجيل الخروج</span>
                     </button>
                   </div>
                 )}

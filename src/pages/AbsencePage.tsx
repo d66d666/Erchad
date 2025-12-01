@@ -46,6 +46,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     fetchStudents()
     fetchViolations()
     fetchTeacherProfile()
+    fetchSchoolName()
   }, [])
 
   useEffect(() => {
@@ -64,8 +65,16 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     if (profile?.phone) {
       setTeacherPhone(profile.phone)
     }
-    if (profile?.school_name) {
-      setSchoolName(profile.school_name)
+  }
+
+  async function fetchSchoolName() {
+    const { data: schoolInfo } = await supabase
+      .from('school_info')
+      .select('school_name')
+      .maybeSingle()
+
+    if (schoolInfo?.school_name) {
+      setSchoolName(schoolInfo.school_name)
     }
   }
 
@@ -381,6 +390,7 @@ ${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
         </head>
         <body>
           <div class="header">
+            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">نظام المشرف الصحي المدرسي</div>
             <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">إشعار مخالفة سلوكية</div>

@@ -46,7 +46,6 @@ export function GroupsPage() {
       // Fetch school info from Supabase
       const profileRes = await supabase.from('teacher_profile').select('*').maybeSingle()
       if (profileRes.data) {
-        setSchoolName(profileRes.data.school_name || '')
         setTeacherName(profileRes.data.name || '')
       }
 
@@ -56,7 +55,10 @@ export function GroupsPage() {
         .limit(1)
         .maybeSingle()
 
-      if (schoolInfoData) setSchoolInfo(schoolInfoData)
+      if (schoolInfoData) {
+        setSchoolInfo(schoolInfoData)
+        setSchoolName(schoolInfoData.school_name || '')
+      }
 
       // Sort groups by stage and display_order
       const sortedGroups = groupsData.sort((a, b) => {

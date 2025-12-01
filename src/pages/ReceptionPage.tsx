@@ -36,11 +36,13 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [loading, setLoading] = useState(false)
   const [teacherName, setTeacherName] = useState('')
   const [teacherPhone, setTeacherPhone] = useState('')
+  const [schoolName, setSchoolName] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchVisits()
     fetchTeacherProfile()
+    fetchSchoolName()
   }, [])
 
   useEffect(() => {
@@ -58,6 +60,17 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     }
     if (profile?.phone) {
       setTeacherPhone(profile.phone)
+    }
+  }
+
+  async function fetchSchoolName() {
+    const { data: schoolInfo } = await supabase
+      .from('school_info')
+      .select('school_name')
+      .maybeSingle()
+
+    if (schoolInfo?.school_name) {
+      setSchoolName(schoolInfo.school_name)
     }
   }
 
@@ -357,6 +370,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
         </head>
         <body>
           <div class="header">
+            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">نظام المشرف الصحي المدرسي</div>
             <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">تقرير زيارة طالب</div>

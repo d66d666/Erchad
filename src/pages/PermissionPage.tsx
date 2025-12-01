@@ -35,11 +35,13 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   const [loading, setLoading] = useState(false)
   const [teacherName, setTeacherName] = useState('')
   const [teacherPhone, setTeacherPhone] = useState('')
+  const [schoolName, setSchoolName] = useState('')
 
   useEffect(() => {
     fetchStudents()
     fetchPermissions()
     fetchTeacherProfile()
+    fetchSchoolName()
   }, [])
 
   useEffect(() => {
@@ -57,6 +59,17 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
     }
     if (profile?.phone) {
       setTeacherPhone(profile.phone)
+    }
+  }
+
+  async function fetchSchoolName() {
+    const { data: schoolInfo } = await supabase
+      .from('school_info')
+      .select('school_name')
+      .maybeSingle()
+
+    if (schoolInfo?.school_name) {
+      setSchoolName(schoolInfo.school_name)
     }
   }
 
@@ -454,6 +467,7 @@ ${teacherPhone ? `رقم الجوال: ${teacherPhone}` : ''}
         </head>
         <body>
           <div class="header">
+            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">نظام المشرف الصحي المدرسي</div>
             <div class="header-line">المرشد الطلابي: ${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">إذن مغادرة طالب</div>

@@ -312,11 +312,12 @@ function App() {
 
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-6 py-6">
-        <div className="flex gap-6">
-          {/* Main Area */}
-          <div className="flex-1">
-            {/* Search Box */}
-            <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
+        {currentPage === 'home' && (
+          <div className="flex gap-6">
+            {/* Main Area */}
+            <div className="flex-1">
+              {/* Search Box */}
+              <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Search className="text-white" size={28} />
@@ -492,7 +493,50 @@ function App() {
               </div>
             </div>
           </aside>
-        </div>
+          </div>
+        )}
+
+        {currentPage === 'teachers' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المعلمين</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
+
+        {currentPage === 'groups' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المجموعات</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
+
+        {currentPage === 'special-status' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة الحالات الخاصة</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
+
+        {currentPage === 'reception' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة استقبال الطلاب</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
+
+        {currentPage === 'permission' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة الاستئذان</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
+
+        {currentPage === 'absence' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">صفحة المخالفات</h2>
+            <p className="text-gray-600">قريباً...</p>
+          </div>
+        )}
       </div>
 
       {/* Modals */}

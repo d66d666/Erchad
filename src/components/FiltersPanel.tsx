@@ -9,12 +9,16 @@ interface FiltersPanelProps {
     value: string
   } | null
   onFilterChange: (filter: any) => void
+  showPermission?: boolean
+  showSpecialStatus?: boolean
 }
 
 export function FiltersPanel({
   specialStatuses,
   filter,
   onFilterChange,
+  showPermission = true,
+  showSpecialStatus = true,
 }: FiltersPanelProps) {
   const [isSpecialStatusOpen, setIsSpecialStatusOpen] = useState(false)
   const [isStudentStatusOpen, setIsStudentStatusOpen] = useState(false)
@@ -34,7 +38,8 @@ export function FiltersPanel({
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="space-y-3">
-        <div>
+        {showSpecialStatus && (
+          <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             الحالات الخاصة
           </label>
@@ -94,7 +99,8 @@ export function FiltersPanel({
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -137,19 +143,22 @@ export function FiltersPanel({
                 >
                   نشط
                 </button>
-                <button
-                  onClick={() => {
-                    onFilterChange({ type: 'status', value: 'استئذان' })
-                    setIsStudentStatusOpen(false)
-                  }}
-                  className={`w-full px-3 py-2 text-right text-sm font-medium hover:bg-teal-100 ${
-                    filter?.type === 'status' && filter?.value === 'استئذان'
-                      ? 'bg-teal-100 text-teal-800'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  استئذان
-                </button>
+                {showPermission && (
+                  <button
+                    onClick={() => {
+                      onFilterChange({ type: 'status', value: 'استئذان' })
+                      setIsStudentStatusOpen(false)
+                    }}
+                    className={`w-full px-3 py-2 text-right text-sm font-medium hover:bg-teal-100 ${
+                      filter?.type === 'status' && filter?.value === 'استئذان'
+                        ? 'bg-teal-100 text-teal-800'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    استئذان
+                  </button>
+                )}
+              )}
               </div>
             )}
           </div>

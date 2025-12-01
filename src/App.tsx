@@ -624,25 +624,25 @@ function App() {
                       const colors = stageColors[index % stageColors.length]
 
                       return (
-                        <div key={stage} className="space-y-4">
+                        <div key={stage} className="space-y-3">
                           <button
                             onClick={() => toggleGroup(stage)}
-                            className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} px-6 py-5 rounded-2xl flex items-center justify-between ${colors.hoverFrom} ${colors.hoverTo} transition-all shadow-lg`}
+                            className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} px-5 py-3.5 rounded-xl flex items-center justify-between ${colors.hoverFrom} ${colors.hoverTo} transition-all shadow-md`}
                           >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                               <ChevronDown
-                                size={28}
+                                size={22}
                                 className={`text-white transition-transform ${isStageExpanded ? 'rotate-180' : ''}`}
                               />
-                              <h2 className="text-2xl font-bold text-white">{stage}</h2>
+                              <h2 className="text-lg font-bold text-white">{stage}</h2>
                             </div>
-                            <div className="bg-white bg-opacity-30 px-5 py-2.5 rounded-full">
-                              <span className="text-white font-bold text-base">{totalStageStudents} طالب</span>
+                            <div className="bg-white bg-opacity-30 px-4 py-1.5 rounded-full">
+                              <span className="text-white font-bold text-sm">{totalStageStudents} طالب</span>
                             </div>
                           </button>
 
                           {isStageExpanded && (
-                            <div className="space-y-4 pr-4">
+                            <div className="space-y-3 pr-3">
                               {stageGroups.map(group => {
                                 const groupStudents = students
                                   .filter(s => s.group_id === group.id)
@@ -660,20 +660,20 @@ function App() {
                                 const isGroupExpanded = expandedGroups.has(group.id)
 
                                 return (
-                                  <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200">
+                                  <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className={`w-full bg-gradient-to-r ${colors.light} ${colors.lightTo} px-6 py-4 flex items-center justify-between hover:${colors.from} hover:${colors.to} transition-all`}
+                                      className={`w-full bg-gradient-to-r ${colors.light} ${colors.lightTo} px-5 py-3 flex items-center justify-between hover:${colors.from} hover:${colors.to} transition-all`}
                                     >
-                                      <div className="flex items-center gap-4">
+                                      <div className="flex items-center gap-3">
                                         <ChevronDown
-                                          size={24}
+                                          size={20}
                                           className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
                                         />
-                                        <h3 className="text-xl font-bold text-white">{group.name}</h3>
+                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
                                       </div>
-                                      <div className="bg-white bg-opacity-30 px-4 py-2 rounded-full">
-                                        <span className="text-white font-bold text-sm">{groupStudents.length} طالب</span>
+                                      <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
+                                        <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
                                       </div>
                                     </button>
 

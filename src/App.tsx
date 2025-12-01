@@ -596,10 +596,10 @@ function App() {
                     const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
 
                     const stageColors = [
-                      { from: 'from-teal-400', to: 'to-teal-500', hoverFrom: 'hover:from-teal-500', hoverTo: 'hover:to-teal-600', light: 'from-teal-300', lightTo: 'to-teal-400' },
-                      { from: 'from-emerald-400', to: 'to-emerald-500', hoverFrom: 'hover:from-emerald-500', hoverTo: 'hover:to-emerald-600', light: 'from-emerald-300', lightTo: 'to-emerald-400' },
-                      { from: 'from-cyan-400', to: 'to-cyan-500', hoverFrom: 'hover:from-cyan-500', hoverTo: 'hover:to-cyan-600', light: 'from-cyan-300', lightTo: 'to-cyan-400' },
-                      { from: 'from-sky-400', to: 'to-sky-500', hoverFrom: 'hover:from-sky-500', hoverTo: 'hover:to-sky-600', light: 'from-sky-300', lightTo: 'to-sky-400' },
+                      { from: 'from-teal-400', to: 'to-teal-500', hoverFrom: 'hover:from-teal-500', hoverTo: 'hover:to-teal-600', group: 'from-orange-400', groupTo: 'to-orange-500', groupHoverFrom: 'hover:from-orange-500', groupHoverTo: 'hover:to-orange-600' },
+                      { from: 'from-emerald-400', to: 'to-emerald-500', hoverFrom: 'hover:from-emerald-500', hoverTo: 'hover:to-emerald-600', group: 'from-pink-400', groupTo: 'to-pink-500', groupHoverFrom: 'hover:from-pink-500', groupHoverTo: 'hover:to-pink-600' },
+                      { from: 'from-cyan-400', to: 'to-cyan-500', hoverFrom: 'hover:from-cyan-500', hoverTo: 'hover:to-cyan-600', group: 'from-amber-400', groupTo: 'to-amber-500', groupHoverFrom: 'hover:from-amber-500', groupHoverTo: 'hover:to-amber-600' },
+                      { from: 'from-sky-400', to: 'to-sky-500', hoverFrom: 'hover:from-sky-500', hoverTo: 'hover:to-sky-600', group: 'from-rose-400', groupTo: 'to-rose-500', groupHoverFrom: 'hover:from-rose-500', groupHoverTo: 'hover:to-rose-600' },
                     ]
 
                     return stages.map((stage, index) => {
@@ -663,7 +663,7 @@ function App() {
                                   <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className={`w-full bg-gradient-to-r ${colors.light} ${colors.lightTo} px-5 py-3 flex items-center justify-between hover:${colors.from} hover:${colors.to} transition-all`}
+                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between ${colors.groupHoverFrom} ${colors.groupHoverTo} transition-all`}
                                     >
                                       <div className="flex items-center gap-3">
                                         <ChevronDown

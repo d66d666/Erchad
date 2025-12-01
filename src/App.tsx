@@ -10,7 +10,7 @@ import { ReceptionPage } from './pages/ReceptionPage'
 import { PermissionPage } from './pages/PermissionPage'
 import { AbsencePage } from './pages/AbsencePage'
 import { ProfileSettings } from './components/ProfileSettings'
-import { ExcelImport } from './components/ExcelImport'
+import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import {
@@ -1016,15 +1016,14 @@ function App() {
         />
       )}
 
-      {showExcelImport && (
-        <ExcelImport
-          onImportComplete={() => {
-            setShowExcelImport(false)
-            fetchData()
-            fetchTeachersCount()
-          }}
-        />
-      )}
+      <ExcelImportModal
+        isOpen={showExcelImport}
+        onClose={() => setShowExcelImport(false)}
+        onImportComplete={() => {
+          fetchData()
+          fetchTeachersCount()
+        }}
+      />
 
       {showAddStudentModal && (
         <AddStudentModal

@@ -1030,8 +1030,6 @@ function App() {
 
         {currentPage === 'teachers' && <TeachersPage />}
 
-        {currentPage === 'groups' && <GroupsManagementPage />}
-
         {currentPage === 'special-status' && (
           <SpecialStatusPage
             students={students}

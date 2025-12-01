@@ -595,7 +595,14 @@ function App() {
 
                     const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
 
-                    return stages.map(stage => {
+                    const stageColors = [
+                      { from: 'from-teal-400', to: 'to-teal-500', hoverFrom: 'hover:from-teal-500', hoverTo: 'hover:to-teal-600', light: 'from-teal-300', lightTo: 'to-teal-400' },
+                      { from: 'from-emerald-400', to: 'to-emerald-500', hoverFrom: 'hover:from-emerald-500', hoverTo: 'hover:to-emerald-600', light: 'from-emerald-300', lightTo: 'to-emerald-400' },
+                      { from: 'from-cyan-400', to: 'to-cyan-500', hoverFrom: 'hover:from-cyan-500', hoverTo: 'hover:to-cyan-600', light: 'from-cyan-300', lightTo: 'to-cyan-400' },
+                      { from: 'from-sky-400', to: 'to-sky-500', hoverFrom: 'hover:from-sky-500', hoverTo: 'hover:to-sky-600', light: 'from-sky-300', lightTo: 'to-sky-400' },
+                    ]
+
+                    return stages.map((stage, index) => {
                       const stageGroups = filteredGroups.filter(g => g.stage === stage)
                       const totalStageStudents = stageGroups.reduce((sum, group) => {
                         const groupStudents = students
@@ -614,12 +621,13 @@ function App() {
                       if (totalStageStudents === 0 && searchTerm !== '') return null
 
                       const isStageExpanded = expandedGroups.has(stage)
+                      const colors = stageColors[index % stageColors.length]
 
                       return (
                         <div key={stage} className="space-y-4">
                           <button
                             onClick={() => toggleGroup(stage)}
-                            className="w-full bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-5 rounded-2xl flex items-center justify-between hover:from-teal-500 hover:to-teal-600 transition-all shadow-lg"
+                            className={`w-full bg-gradient-to-r ${colors.from} ${colors.to} px-6 py-5 rounded-2xl flex items-center justify-between ${colors.hoverFrom} ${colors.hoverTo} transition-all shadow-lg`}
                           >
                             <div className="flex items-center gap-4">
                               <ChevronDown
@@ -655,7 +663,7 @@ function App() {
                                   <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200">
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className="w-full bg-gradient-to-r from-teal-300 to-teal-400 px-6 py-4 flex items-center justify-between hover:from-teal-400 hover:to-teal-500 transition-all"
+                                      className={`w-full bg-gradient-to-r ${colors.light} ${colors.lightTo} px-6 py-4 flex items-center justify-between hover:${colors.from} hover:${colors.to} transition-all`}
                                     >
                                       <div className="flex items-center gap-4">
                                         <ChevronDown

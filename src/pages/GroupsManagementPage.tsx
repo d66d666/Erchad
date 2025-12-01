@@ -412,19 +412,6 @@ export function GroupsManagementPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
-                        اسم المجموعة
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="مثال: مجموعة 1"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
                         الصف (المرحلة)
                       </label>
                       <select
@@ -448,6 +435,19 @@ export function GroupsManagementPage() {
                         <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
                         <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                        اسم المجموعة
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="مثال: مجموعة 1"
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-right"
+                        required
+                      />
                     </div>
                   </div>
                   <button

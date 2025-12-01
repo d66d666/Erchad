@@ -474,53 +474,73 @@ function App() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">الحالات الخاصة</label>
-                    <select
-                      value={specialStatusFilter}
-                      onChange={(e) => setSpecialStatusFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-orange-50 border-2 border-orange-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    >
-                      <option value="all">الكل</option>
-                      {specialStatuses.map(status => (
-                        <option key={status.id} value={status.id}>{status.name}</option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">الحالات الخاصة</label>
+                    <div className="relative">
+                      <select
+                        value={specialStatusFilter}
+                        onChange={(e) => setSpecialStatusFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none cursor-pointer"
+                      >
+                        <option value="all">الكل</option>
+                        {specialStatuses.map(status => (
+                          <option key={status.id} value={status.id}>{status.name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">حالة الطالب</label>
-                    <select
-                      value={activityFilter}
-                      onChange={(e) => setActivityFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-teal-50 border-2 border-teal-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    >
-                      <option value="all">الكل</option>
-                    </select>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المرحلة الدراسية</label>
+                    <div className="relative">
+                      <select
+                        value={stageFilter}
+                        onChange={(e) => setStageFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-blue-50 border-2 border-blue-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
+                      >
+                        <option value="all">الكل</option>
+                        {Array.from(new Set(groups.map(g => g.stage))).sort().map(stage => (
+                          <option key={stage} value={stage}>{stage}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                    </div>
                   </div>
 
-                  <div className="border-t pt-4 mt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-bold text-gray-800">المجموعات</h4>
-                      <Users className="text-blue-600" size={20} />
-                    </div>
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => setGroupFilter('all')}
-                        className={`w-full px-4 py-3 rounded-xl font-bold ${groupFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المجموعات</label>
+                    <div className="relative">
+                      <select
+                        value={groupFilter}
+                        onChange={(e) => setGroupFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-gray-400 appearance-none cursor-pointer"
                       >
-                        جميع المجموعات
-                      </button>
-                      {groups.sort((a, b) => a.display_order - b.display_order).map(group => (
-                        <button
-                          key={group.id}
-                          onClick={() => setGroupFilter(group.id)}
-                          className={`w-full px-4 py-3 rounded-xl font-bold flex items-center justify-between ${
-                            groupFilter === group.id ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white' : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          <span>{group.name}</span>
-                        </button>
-                      ))}
+                        <option value="all">الكل</option>
+                        {groups
+                          .filter(g => stageFilter === 'all' || g.stage === stageFilter)
+                          .sort((a, b) => a.display_order - b.display_order)
+                          .map(group => (
+                            <option key={group.id} value={group.id}>{group.name}</option>
+                          ))}
+                      </select>
+                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">تصفية حسب النشاط</label>
+                    <div className="relative">
+                      <select
+                        value={activityFilter}
+                        onChange={(e) => setActivityFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none cursor-pointer"
+                      >
+                        <option value="all">الكل</option>
+                        <option value="reception">لديهم استقبال اليوم</option>
+                        <option value="permission">لديهم استئذان اليوم</option>
+                        <option value="violation">لديهم مخالفة اليوم</option>
+                      </select>
+                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
                     </div>
                   </div>
                 </div>
@@ -555,6 +575,7 @@ function App() {
               ) : (
                 <div className="space-y-6">
                   {groups
+                    .filter(g => stageFilter === 'all' || g.stage === stageFilter)
                     .filter(g => groupFilter === 'all' || g.id === groupFilter)
                     .sort((a, b) => a.display_order - b.display_order)
                     .map(group => {

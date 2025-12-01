@@ -279,24 +279,19 @@ function App() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowProfileSettings(true)}
-                className="bg-gradient-to-r from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-500 text-gray-800 px-4 py-2 rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
               >
-                <UserIcon size={18} />
-                <span className="text-sm">الملف الشخصي</span>
-              </button>
-
-              <button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-800 px-4 py-2 rounded-xl font-bold shadow-md transition-all flex items-center gap-2">
-                <span className="text-lg">👑</span>
-                <span className="text-sm">مالك النظام</span>
+                <UserIcon size={20} />
+                <span>الملف الشخصي</span>
               </button>
 
               <div className="relative">
                 <button
                   onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                  className="bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
+                  className="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
                 >
-                  <Settings size={18} />
-                  <span className="text-sm">الإعدادات</span>
+                  <Settings size={20} />
+                  <span>الإعدادات</span>
                 </button>
 
                 {showSettingsMenu && (
@@ -374,16 +369,16 @@ function App() {
 
             {/* Right Side - Title */}
             <div className="flex items-center gap-4">
+              <div className="bg-blue-600 p-3 rounded-2xl">
+                <Users className="text-white" size={32} />
+              </div>
               <div className="text-right">
                 <h1 className="text-2xl font-bold text-gray-800">
                   نظام إدارة شاملة لبيانات الطلاب
                 </h1>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  قم بإضافة اسم المدرسة من الإعدادات
+                <p className="text-sm text-gray-500 mt-1">
+                  {schoolName || 'قم بإضافة وصف النظام من الإعدادات'}
                 </p>
-              </div>
-              <div className="bg-blue-600 p-3 rounded-2xl">
-                <Users className="text-white" size={28} />
               </div>
             </div>
           </div>

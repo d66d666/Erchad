@@ -465,13 +465,13 @@ function App() {
 
   // أزرار التنقل
   const navItems = [
-    { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home },
-    { id: 'teachers' as Page, label: 'المعلمين', icon: GraduationCap },
-    { id: 'groups' as Page, label: 'المجموعات', icon: Users },
-    { id: 'special-status' as Page, label: 'الحالات الخاصة', icon: Heart },
-    { id: 'reception' as Page, label: 'استقبال الطلاب', icon: UserCheck },
-    { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut },
-    { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle },
+    { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home, show: true },
+    { id: 'teachers' as Page, label: 'المعلمين', icon: GraduationCap, show: mainMenuItems.teachers },
+    { id: 'groups' as Page, label: 'المجموعات', icon: Users, show: mainMenuItems.groups },
+    { id: 'special-status' as Page, label: 'الحالات الخاصة', icon: Heart, show: mainMenuItems.specialNeeds },
+    { id: 'reception' as Page, label: 'استقبال الطلاب', icon: UserCheck, show: mainMenuItems.reception },
+    { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut, show: mainMenuItems.permission },
+    { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle, show: mainMenuItems.violations },
   ]
 
   if (!isLoggedIn) {
@@ -619,58 +619,70 @@ function App() {
           {/* Stats Cards */}
           <div className="grid grid-cols-6 gap-3">
             {/* إجمالي الطلاب */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{totalStudents}</div>
-                <Users size={32} className="opacity-80" />
+            {headerCards.totalStudents && (
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{totalStudents}</div>
+                  <Users size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">إجمالي الطلاب</div>
               </div>
-              <div className="text-sm opacity-90">إجمالي الطلاب</div>
-            </div>
+            )}
 
             {/* المعلمين */}
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{totalTeachers}</div>
-                <GraduationCap size={32} className="opacity-80" />
+            {headerCards.teachers && (
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{totalTeachers}</div>
+                  <GraduationCap size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">المعلمين</div>
               </div>
-              <div className="text-sm opacity-90">المعلمين</div>
-            </div>
+            )}
 
             {/* حالات خاصة */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{specialStatusCount}</div>
-                <Heart size={32} className="opacity-80" />
+            {headerCards.reception && (
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{specialStatusCount}</div>
+                  <Heart size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">حالات خاصة</div>
               </div>
-              <div className="text-sm opacity-90">حالات خاصة</div>
-            </div>
+            )}
 
             {/* استقبال الطلاب */}
-            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{todayReceptionCount}</div>
-                <UserCheck size={32} className="opacity-80" />
+            {headerCards.reception && (
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{todayReceptionCount}</div>
+                  <UserCheck size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">استقبال اليوم</div>
               </div>
-              <div className="text-sm opacity-90">استقبال اليوم</div>
-            </div>
+            )}
 
             {/* استئذانات */}
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{todayPermissionsCount}</div>
-                <LogOut size={32} className="opacity-80" />
+            {headerCards.permission && (
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{todayPermissionsCount}</div>
+                  <LogOut size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">استئذانات اليوم</div>
               </div>
-              <div className="text-sm opacity-90">استئذانات اليوم</div>
-            </div>
+            )}
 
             {/* المخالفات */}
-            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-md">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl font-bold">{todayViolationsCount}</div>
-                <AlertCircle size={32} className="opacity-80" />
+            {headerCards.violations && (
+              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-3xl font-bold">{todayViolationsCount}</div>
+                  <AlertCircle size={32} className="opacity-80" />
+                </div>
+                <div className="text-sm opacity-90">مخالفات اليوم</div>
               </div>
-              <div className="text-sm opacity-90">مخالفات اليوم</div>
-            </div>
+            )}
           </div>
         </div>
       </header>
@@ -679,7 +691,7 @@ function App() {
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex gap-2 py-3 justify-center">
-            {navItems.map((item) => {
+            {navItems.filter(item => item.show).map((item) => {
               const Icon = item.icon
               const isActive = currentPage === item.id
               return (

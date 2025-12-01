@@ -275,16 +275,23 @@ function App() {
         <div className="max-w-[1400px] mx-auto px-6 py-4">
           {/* Top Bar */}
           <div className="flex items-center justify-between mb-4">
+            {/* Right Side - Title */}
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-600 p-3 rounded-2xl">
+                <Users className="text-white" size={32} />
+              </div>
+              <div className="text-right">
+                <h1 className="text-2xl font-bold text-gray-800">
+                  نظام إدارة شاملة لبيانات الطلاب
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  {schoolName || 'قم بإضافة وصف النظام من الإعدادات'}
+                </p>
+              </div>
+            </div>
+
             {/* Left Side - Buttons */}
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowProfileSettings(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
-              >
-                <UserIcon size={20} />
-                <span>الملف الشخصي</span>
-              </button>
-
               <div className="relative">
                 <button
                   onClick={() => setShowSettingsMenu(!showSettingsMenu)}
@@ -295,7 +302,7 @@ function App() {
                 </button>
 
                 {showSettingsMenu && (
-                  <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
                     <button
                       onClick={() => {
                         setShowExcelImport(true)
@@ -365,21 +372,14 @@ function App() {
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Right Side - Title */}
-            <div className="flex items-center gap-4">
-              <div className="bg-blue-600 p-3 rounded-2xl">
-                <Users className="text-white" size={32} />
-              </div>
-              <div className="text-right">
-                <h1 className="text-2xl font-bold text-gray-800">
-                  نظام إدارة شاملة لبيانات الطلاب
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  {schoolName || 'قم بإضافة وصف النظام من الإعدادات'}
-                </p>
-              </div>
+              <button
+                onClick={() => setShowProfileSettings(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
+              >
+                <UserIcon size={20} />
+                <span>الملف الشخصي</span>
+              </button>
             </div>
           </div>
 

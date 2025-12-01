@@ -169,31 +169,53 @@ export function TeachersPage() {
                   </div>
                 </div>
 
-                {teacher.specialization && (
-                  <div className="flex items-start gap-3">
-                    <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
-                    <div>
-                      <p className="text-xs text-gray-500 mb-0.5">المرحلة</p>
-                      <p className="text-sm font-semibold text-gray-800">{teacher.specialization}</p>
-                    </div>
-                  </div>
-                )}
+                {teacher.groups && teacher.groups.length > 0 && (() => {
+                  const stages = Array.from(new Set(teacher.groups!.map(g => g.stage)))
+                  return (
+                    <>
+                      <div className="flex items-start gap-3">
+                        <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 mb-1.5">المراحل</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {stages.map((stage) => (
+                              <span
+                                key={stage}
+                                className="px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded"
+                              >
+                                {stage}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
-                {teacher.groups && teacher.groups.length > 0 && (
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 mb-2">المجموعات</p>
-                    <div className="flex flex-wrap gap-2">
-                      {teacher.groups.map((group) => (
-                        <span
-                          key={group.id}
-                          className="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg"
-                        >
-                          {group.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      <div className="pt-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-500 mb-2">المجموعات</p>
+                        <div className="space-y-2">
+                          {stages.map((stage) => {
+                            const stageGroups = teacher.groups!.filter(g => g.stage === stage)
+                            return (
+                              <div key={stage}>
+                                <p className="text-xs font-semibold text-gray-600 mb-1">{stage}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {stageGroups.map((group) => (
+                                    <span
+                                      key={group.id}
+                                      className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded"
+                                    >
+                                      {group.name}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )
+                })()}
 
                 <div className="flex gap-2 pt-4 border-t border-gray-100">
                   <button
@@ -244,9 +266,12 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingGroups, setLoadingGroups] = useState(true)
+  const [selectedStages, setSelectedStages] = useState<string[]>([])
 
   const stages = Array.from(new Set(groups.map(g => g.stage))).sort()
-  const filteredGroups = specialization ? groups.filter(g => g.stage === specialization) : []
+  const filteredGroups = selectedStages.length > 0
+    ? groups.filter(g => selectedStages.includes(g.stage))
+    : []
 
   useEffect(() => {
     if (teacher) {
@@ -261,13 +286,29 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
     const { data } = await supabase
       .from('teacher_groups')
-      .select('group_id')
+      .select('group_id, groups(stage)')
       .eq('teacher_id', teacher.id)
 
     if (data) {
-      setSelectedGroupIds(data.map(tg => tg.group_id))
+      const groupIds = data.map(tg => tg.group_id)
+      setSelectedGroupIds(groupIds)
+
+      const uniqueStages = Array.from(new Set(
+        data.map(tg => (tg as any).groups?.stage).filter(Boolean)
+      )) as string[]
+      setSelectedStages(uniqueStages)
     }
     setLoadingGroups(false)
+  }
+
+  const toggleStage = (stage: string) => {
+    if (selectedStages.includes(stage)) {
+      setSelectedStages(selectedStages.filter(s => s !== stage))
+      const groupsInStage = groups.filter(g => g.stage === stage).map(g => g.id)
+      setSelectedGroupIds(selectedGroupIds.filter(id => !groupsInStage.includes(id)))
+    } else {
+      setSelectedStages([...selectedStages, stage])
+    }
   }
 
   const toggleGroup = (groupId: string) => {
@@ -418,27 +459,31 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              المرحلة (اختياري)
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              المراحل الدراسية (اختياري)
             </label>
-            <select
-              value={specialization}
-              onChange={(e) => {
-                setSpecialization(e.target.value)
-                setSelectedGroupIds([])
-              }}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-            >
-              <option value="">-- اختر المرحلة --</option>
-              {stages.map((stage) => (
-                <option key={stage} value={stage}>
-                  {stage}
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+              {stages.map((stage) => {
+                const isSelected = selectedStages.includes(stage)
+                return (
+                  <button
+                    key={stage}
+                    type="button"
+                    onClick={() => toggleStage(stage)}
+                    className={`p-3 rounded-lg border-2 transition-all text-sm font-semibold ${
+                      isSelected
+                        ? 'bg-green-50 border-green-500 text-green-900'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    {stage}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-          {specialization && (
+          {selectedStages.length > 0 && (
             loadingGroups ? (
               <div className="text-center py-4 text-gray-500">جاري تحميل المجموعات...</div>
             ) : filteredGroups.length > 0 ? (
@@ -446,29 +491,39 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   المجموعات التي يدرسها (اختياري)
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                  {filteredGroups.map((group) => {
-                    const isSelected = selectedGroupIds.includes(group.id)
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {selectedStages.map((stage) => {
+                    const stageGroups = groups.filter(g => g.stage === stage)
                     return (
-                      <button
-                        key={group.id}
-                        type="button"
-                        onClick={() => toggleGroup(group.id)}
-                        className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
-                          isSelected
-                            ? 'bg-blue-50 border-blue-500 text-blue-900'
-                            : 'bg-gray-50 border-gray-300 text-gray-700 hover:border-gray-400'
-                        }`}
-                      >
-                        {group.name}
-                      </button>
+                      <div key={stage} className="border border-gray-200 rounded-lg p-4">
+                        <h4 className="text-sm font-bold text-gray-700 mb-3">{stage}</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {stageGroups.map((group) => {
+                            const isSelected = selectedGroupIds.includes(group.id)
+                            return (
+                              <button
+                                key={group.id}
+                                type="button"
+                                onClick={() => toggleGroup(group.id)}
+                                className={`p-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                                  isSelected
+                                    ? 'bg-blue-50 border-blue-500 text-blue-900'
+                                    : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
+                                }`}
+                              >
+                                {group.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                     )
                   })}
                 </div>
               </div>
             ) : (
               <div className="text-center py-4 text-gray-500">
-                لا توجد مجموعات في هذه المرحلة
+                لا توجد مجموعات للمراحل المختارة
               </div>
             )
           )}

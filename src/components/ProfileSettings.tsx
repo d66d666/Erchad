@@ -23,6 +23,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [autoLogoutMinutes, setAutoLogoutMinutes] = useState('disabled')
 
   useEffect(() => {
     fetchProfile()
@@ -63,6 +64,12 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       if (credentials) {
         setCurrentUsername(credentials.username)
         setNewUsername(credentials.username)
+      }
+
+      // Load auto-logout setting
+      const savedTimeout = localStorage.getItem('autoLogoutMinutes')
+      if (savedTimeout) {
+        setAutoLogoutMinutes(savedTimeout)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -111,6 +118,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         await db.teacher_profile.add(newProfile)
         setProfileId(newId)
       }
+
+      // Save auto-logout setting
+      localStorage.setItem('autoLogoutMinutes', autoLogoutMinutes)
 
       alert('تم حفظ البيانات بنجاح')
       onClose()
@@ -323,6 +333,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                     مدة عدم النشاط قبل تسجيل الخروج
                   </label>
                   <select
+                    value={autoLogoutMinutes}
+                    onChange={(e) => setAutoLogoutMinutes(e.target.value)}
                     className="w-full px-4 py-3 bg-white border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right appearance-none cursor-pointer"
                   >
                     <option value="disabled">معطل - عدم تسجيل الخروج التلقائي</option>

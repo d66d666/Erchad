@@ -187,6 +187,38 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (!isLoggedIn) return
+
+    const autoLogoutMinutes = localStorage.getItem('autoLogoutMinutes')
+    if (!autoLogoutMinutes || autoLogoutMinutes === 'disabled') return
+
+    const timeoutMs = parseInt(autoLogoutMinutes) * 60 * 1000
+    let logoutTimer: number
+
+    const resetTimer = () => {
+      if (logoutTimer) clearTimeout(logoutTimer)
+      logoutTimer = setTimeout(() => {
+        handleLogout()
+        alert('تم تسجيل الخروج تلقائياً بسبب عدم النشاط')
+      }, timeoutMs)
+    }
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+    events.forEach(event => {
+      document.addEventListener(event, resetTimer)
+    })
+
+    resetTimer()
+
+    return () => {
+      if (logoutTimer) clearTimeout(logoutTimer)
+      events.forEach(event => {
+        document.removeEventListener(event, resetTimer)
+      })
+    }
+  }, [isLoggedIn])
+
+  useEffect(() => {
     if (currentPage === 'home') {
       fetchTeachersCount()
     }

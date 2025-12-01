@@ -225,7 +225,7 @@ export function SpecialStatusPage({
             <button
               onClick={() => setShowSendToTeacherModal(true)}
               disabled={studentsWithSpecialStatus.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send size={16} />
               <span>إرسال للمعلم</span>
@@ -233,17 +233,17 @@ export function SpecialStatusPage({
             <button
               onClick={handlePrintAll}
               disabled={studentsWithSpecialStatus.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Printer size={16} />
               <span>طباعة الكل</span>
             </button>
-            <label className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm">
               <input
                 type="checkbox"
                 checked={showStatusDetails}
                 onChange={(e) => setShowStatusDetails(e.target.checked)}
-                className="w-4 h-4 rounded cursor-pointer text-rose-500 focus:ring-rose-500"
+                className="w-4 h-4 rounded cursor-pointer text-purple-500 focus:ring-purple-500"
               />
               <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
             </label>
@@ -257,17 +257,17 @@ export function SpecialStatusPage({
         return (
           <div
             key={group.id}
-            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200"
+            className="bg-white rounded-xl shadow-md overflow-hidden border border-purple-100"
           >
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-5 py-3 border-b border-gray-200">
+            <div className="bg-gradient-to-r from-purple-50 to-violet-50 px-5 py-3.5 border-b border-purple-100">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-gray-800">{group.name}</h2>
-                  <p className="text-sm text-gray-500">عدد الطلاب: {count}</p>
+                  <p className="text-sm text-purple-600 font-medium">عدد الطلاب: {count}</p>
                 </div>
                 <button
                   onClick={() => handlePrint(group, groupStudents)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-50 transition-all shadow-sm"
                 >
                   <Printer size={16} />
                   <span>طباعة</span>
@@ -277,32 +277,32 @@ export function SpecialStatusPage({
 
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-purple-50 to-violet-50">
                   <tr>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       الاسم
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       السجل المدني
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       جوال الطالب
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       جوال ولي الأمر
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       الحالة الخاصة
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-purple-100">
                   {groupStudents.map((student) => {
                     const status = specialStatuses.find(
                       (s) => s.id === student.special_status_id
                     )
                     return (
-                      <tr key={student.id} className="hover:bg-rose-50/30 transition-colors">
+                      <tr key={student.id} className="hover:bg-purple-50/50 transition-colors">
                         <td className="px-5 py-3.5 text-sm font-medium text-gray-800">
                           {student.name}
                         </td>
@@ -316,7 +316,7 @@ export function SpecialStatusPage({
                           {student.guardian_phone}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-rose-50 text-rose-700">
+                          <span className="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-700">
                             {showStatusDetails ? (status?.name || '-') : 'لديه حالة خاصة'}
                           </span>
                         </td>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
-import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2 } from 'lucide-react'
+import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface VisitWithStudent extends StudentVisit {
@@ -563,41 +563,62 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
         </div>
 
         {showFilters && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  <Calendar size={16} className="inline ml-1" />
-                  اختر التاريخ
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowFilters(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-blue-600 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Calendar size={24} />
+                    <h3 className="text-xl font-bold">فلتر بالتاريخ</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="hover:bg-blue-700 rounded-full p-2 transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => fetchVisits(dateFilter)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-              >
-                تطبيق الفلتر
-              </button>
-              <button
-                onClick={() => {
-                  setDateFilter('')
-                  fetchVisits()
-                }}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
-              >
-                إعادة تعيين
-              </button>
+
+              <div className="p-6 space-y-6">
+                <p className="text-gray-600 text-center">
+                  اختر التاريخ لعرض زيارات ذلك اليوم
+                </p>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    اختر التاريخ من التقويم:
+                  </label>
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    onChange={(e) => {
+                      setDateFilter(e.target.value)
+                      fetchVisits(e.target.value)
+                      setShowFilters(false)
+                    }}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                  />
+                </div>
+
+                <div className="text-center text-sm text-gray-500">
+                  أو اختر من التواريخ المتاحة
+                </div>
+
+                {dateFilter && (
+                  <button
+                    onClick={() => {
+                      setDateFilter('')
+                      fetchVisits()
+                      setShowFilters(false)
+                    }}
+                    className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                  >
+                    إعادة تعيين الفلتر
+                  </button>
+                )}
+              </div>
             </div>
-            {dateFilter && (
-              <p className="text-sm text-blue-600 font-semibold mt-3">
-                عرض الزيارات في: {new Date(dateFilter).toLocaleDateString('ar-SA')}
-              </p>
-            )}
           </div>
         )}
 

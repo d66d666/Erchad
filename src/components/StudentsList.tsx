@@ -7,6 +7,7 @@ import { AllowClassEntryModal } from './AllowClassEntryModal'
 interface StudentsListProps {
   students: Student[]
   groupName: string
+  groupStage?: string
   specialStatuses: SpecialStatus[]
   onStudentDeleted: () => void
   onEditStudent: (student: Student) => void
@@ -15,6 +16,7 @@ interface StudentsListProps {
 export function StudentsList({
   students,
   groupName,
+  groupStage,
   specialStatuses,
   onStudentDeleted,
   onEditStudent,
@@ -373,11 +375,14 @@ export function StudentsList({
 
   return (
     <div className="space-y-2">
-        <div className={`${colors.header} text-white px-4 py-3 rounded-lg shadow-md mb-4`}>
-          <h3 className="text-lg font-bold flex items-center justify-between">
-            <span>{groupName}</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full text-sm">{students.length} طالب</span>
-          </h3>
+        <div className={`${colors.header} text-white px-6 py-4 rounded-xl shadow-md mb-4`}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold">{groupName}</h3>
+            <span className="bg-white/25 px-4 py-1.5 rounded-full text-sm font-medium">{students.length} طالب</span>
+          </div>
+          {groupStage && (
+            <p className="text-white/90 text-sm mt-1 font-medium">{groupStage}</p>
+          )}
         </div>
         <div className="space-y-2">
           {students.map((student) => {

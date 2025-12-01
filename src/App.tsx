@@ -11,6 +11,7 @@ import { PermissionPage } from './pages/PermissionPage'
 import { AbsencePage } from './pages/AbsencePage'
 import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImport } from './components/ExcelImport'
+import { AddStudentModal } from './components/AddStudentModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import {
   Home,
@@ -32,6 +33,7 @@ import {
   FileSpreadsheet,
   Shield,
   List,
+  Plus,
 } from 'lucide-react'
 
 type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
@@ -51,6 +53,7 @@ function App() {
   const [showExcelImport, setShowExcelImport] = useState(false)
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [printStudent, setPrintStudent] = useState<Student | null>(null)
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false)
 
   // فلاتر
   const [specialStatusFilter, setSpecialStatusFilter] = useState<string>('all')
@@ -449,6 +452,13 @@ function App() {
                   <Search className="text-white" size={28} />
                   <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
                 </div>
+                <button
+                  onClick={() => setShowAddStudentModal(true)}
+                  className="bg-white hover:bg-gray-100 text-teal-600 px-6 py-3 rounded-xl font-bold shadow-md transition-all flex items-center gap-2"
+                >
+                  <Plus size={20} />
+                  <span>إضافة طالب</span>
+                </button>
               </div>
               <input
                 type="text"
@@ -657,6 +667,15 @@ function App() {
             setShowExcelImport(false)
             fetchData()
           }}
+        />
+      )}
+
+      {showAddStudentModal && (
+        <AddStudentModal
+          groups={groups}
+          specialStatuses={specialStatuses}
+          onClose={() => setShowAddStudentModal(false)}
+          onStudentAdded={fetchData}
         />
       )}
 

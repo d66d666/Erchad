@@ -1,25 +1,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { Group, SpecialStatus } from '../types'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface AddStudentModalProps {
-  groups: Group[]
-  specialStatuses: SpecialStatus[]
   onClose: () => void
-  onStudentAdded: () => void
   preselectedGroupId?: string
 }
 
 export function AddStudentModal({
-  groups,
-  specialStatuses,
   onClose,
-  onStudentAdded,
   preselectedGroupId,
 }: AddStudentModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [groups, setGroups] = useState<Group[]>([])
+  const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
 
   const preselectedGroup = preselectedGroupId ? groups.find(g => g.id === preselectedGroupId) : null
 
@@ -34,6 +30,10 @@ export function AddStudentModal({
   })
 
   useEffect(() => {
+    fetchGroupsAndStatuses()
+  }, [])
+
+  useEffect(() => {
     if (preselectedGroupId && preselectedGroup) {
       setFormData(prev => ({
         ...prev,
@@ -42,6 +42,14 @@ export function AddStudentModal({
       }))
     }
   }, [preselectedGroupId, preselectedGroup])
+
+  const fetchGroupsAndStatuses = async () => {
+    const { data: groupsData } = await supabase.from('groups').select('*').order('display_order', { ascending: true })
+    const { data: statusesData } = await supabase.from('special_statuses').select('*')
+
+    if (groupsData) setGroups(groupsData)
+    if (statusesData) setSpecialStatuses(statusesData)
+  }
 
   const stages = Array.from(new Set(groups.map(g => g.stage)))
 
@@ -97,7 +105,7 @@ export function AddStudentModal({
 
       if (insertError) throw insertError
 
-      onStudentAdded()
+      alert('تم إضافة الطالب بنجاح')
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ ما')
@@ -108,45 +116,42 @@ export function AddStudentModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Plus size={28} />
-            <h2 className="text-2xl font-bold">إضافة طالب جديد</h2>
-          </div>
+      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
+          <h2 className="text-xl font-bold">إضافة طالب جديد</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-blue-800 rounded-lg transition-colors"
+            className="p-1 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8">
+        <form onSubmit={handleSubmit} className="p-6">
           {error && (
-            <div className="mb-6 p-4 bg-red-100 border-2 border-red-400 text-red-700 rounded-xl font-medium">
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                اسم الطالب <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                اسم الطالب
               </label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                placeholder="أدخل اسم الطالب الكامل"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                placeholder="الياس"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                السجل المدني <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                السجل المدني
               </label>
               <input
                 type="text"
@@ -154,29 +159,29 @@ export function AddStudentModal({
                 maxLength={10}
                 value={formData.national_id}
                 onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                placeholder="10 أرقام"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                placeholder="12564646"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  رقم جوال الطالب (اختياري)
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                  جوال الطالب
                 </label>
                 <input
                   type="tel"
                   maxLength={10}
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                  placeholder="05xxxxxxxx"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                  placeholder="555555465"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  رقم جوال ولي الأمر <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                  جوال ولي الأمر
                 </label>
                 <input
                   type="tel"
@@ -184,59 +189,53 @@ export function AddStudentModal({
                   maxLength={10}
                   value={formData.guardian_phone}
                   onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                  placeholder="05xxxxxxxx"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                  placeholder="565464644"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  المرحلة <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                  المجموعة
                 </label>
                 <select
                   required
-                  value={formData.grade}
+                  value={formData.group_id}
                   onChange={(e) => {
-                    setFormData({ ...formData, grade: e.target.value, group_id: '' })
+                    const selectedGroup = groups.find(g => g.id === e.target.value)
+                    if (selectedGroup) {
+                      setFormData({ ...formData, group_id: e.target.value, grade: selectedGroup.stage })
+                    }
                   }}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg cursor-pointer"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
                 >
-                  <option value="">اختر المرحلة</option>
-                  {stages.map((stage) => (
-                    <option key={stage} value={stage}>
-                      {stage}
+                  <option value="">-- اختر المجموعة --</option>
+                  {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.stage} - {group.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  المجموعة <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                  الصف
                 </label>
-                <select
-                  required
-                  value={formData.group_id}
-                  onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg cursor-pointer"
-                  disabled={!formData.grade}
-                >
-                  <option value="">اختر المجموعة</option>
-                  {groups
-                    .filter(g => g.stage === formData.grade)
-                    .map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                </select>
+                <input
+                  type="text"
+                  value={formData.grade}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-right text-gray-600"
+                  placeholder="-- اختر الصف --"
+                />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
                 الحالة الخاصة (اختياري)
               </label>
               <select
@@ -244,7 +243,7 @@ export function AddStudentModal({
                 onChange={(e) =>
                   setFormData({ ...formData, special_status_id: e.target.value })
                 }
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg cursor-pointer"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
               >
                 <option value="">بدون حالة خاصة</option>
                 {specialStatuses.map((status) => (
@@ -256,21 +255,20 @@ export function AddStudentModal({
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-lg shadow-md"
-            >
-              <Plus size={24} />
-              {loading ? 'جاري الإضافة...' : 'إضافة الطالب'}
-            </button>
+          <div className="flex gap-3 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-4 px-6 rounded-xl transition-colors text-lg"
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2.5 rounded-lg transition-colors"
             >
               إلغاء
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2.5 rounded-lg transition-colors"
+            >
+              {loading ? 'جاري الحفظ...' : 'حفظ الطالب'}
             </button>
           </div>
         </form>

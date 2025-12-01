@@ -292,8 +292,8 @@ export function GroupsPage() {
     }
   }
 
-  const handleAddStudent = (groupId: string) => {
-    setSelectedGroupId(groupId)
+  const handleAddStudent = (groupId?: string) => {
+    setSelectedGroupId(groupId || null)
     setShowAddStudentModal(true)
     setFormData({
       name: '',
@@ -315,8 +315,20 @@ export function GroupsPage() {
     e.preventDefault()
     setFormError('')
 
-    if (!formData.name || !formData.national_id || !selectedGroupId) {
+    if (!formData.name || !formData.national_id) {
       setFormError('يرجى ملء جميع الحقول المطلوبة')
+      return
+    }
+
+    if (!formData.grade) {
+      setFormError('يرجى اختيار المرحلة')
+      return
+    }
+
+    const groupForStage = groups.find(g => g.stage === formData.grade)
+
+    if (!groupForStage) {
+      setFormError('لا توجد مجموعة لهذه المرحلة. يرجى إضافة مجموعة أولاً.')
       return
     }
 
@@ -327,7 +339,7 @@ export function GroupsPage() {
       await db.students.add({
         id: newId,
         ...formData,
-        group_id: selectedGroupId,
+        group_id: selectedGroupId || groupForStage.id,
         special_status_id: formData.special_status_id || null,
         status: 'نشط',
         visit_count: 0,
@@ -639,15 +651,21 @@ export function GroupsPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    الصف
+                    المرحلة *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.grade}
                     onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="مثال: الأول متوسط"
-                  />
+                    required
+                  >
+                    <option value="">اختر المرحلة</option>
+                    {Array.from(new Set(groups.map(g => g.stage))).map((stage) => (
+                      <option key={stage} value={stage}>
+                        {stage}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

@@ -726,22 +726,24 @@ function App() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">الحالات الخاصة</label>
-                    <div className="relative">
-                      <select
-                        value={specialStatusFilter}
-                        onChange={(e) => setSpecialStatusFilter(e.target.value)}
-                        className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none cursor-pointer"
-                      >
-                        <option value="all">الكل</option>
-                        {specialStatuses.map(status => (
-                          <option key={status.id} value={status.id}>{status.name}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                  {mainMenuItems.specialNeeds && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">الحالات الخاصة</label>
+                      <div className="relative">
+                        <select
+                          value={specialStatusFilter}
+                          onChange={(e) => setSpecialStatusFilter(e.target.value)}
+                          className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none cursor-pointer"
+                        >
+                          <option value="all">الكل</option>
+                          {specialStatuses.map(status => (
+                            <option key={status.id} value={status.id}>{status.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المرحلة الدراسية</label>
@@ -942,15 +944,21 @@ function App() {
                                                         <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
                                                       </div>
                                                       <div className="flex gap-3 text-xs font-semibold">
-                                                        <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
-                                                          الاستقبال: {student.visit_count || 0}
-                                                        </span>
-                                                        <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
-                                                          الاستئذانات: {student.permission_count || 0}
-                                                        </span>
-                                                        <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
-                                                          المخالفات: {student.violation_count || 0}
-                                                        </span>
+                                                        {mainMenuItems.reception && (
+                                                          <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
+                                                            الاستقبال: {student.visit_count || 0}
+                                                          </span>
+                                                        )}
+                                                        {mainMenuItems.permission && (
+                                                          <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
+                                                            الاستئذانات: {student.permission_count || 0}
+                                                          </span>
+                                                        )}
+                                                        {mainMenuItems.violations && (
+                                                          <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
+                                                            المخالفات: {student.violation_count || 0}
+                                                          </span>
+                                                        )}
                                                       </div>
                                                     </div>
                                                     <button className="p-2 hover:bg-white rounded-lg">
@@ -1484,14 +1492,16 @@ function App() {
                     </p>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-xl col-span-2">
-                    <p className="text-sm text-gray-600 mb-1">الحالة الخاصة</p>
-                    <p className="font-bold text-gray-900 text-lg">
-                      {printStudent.special_status_id
-                        ? specialStatuses.find(s => s.id === printStudent.special_status_id)?.name
-                        : 'لا توجد'}
-                    </p>
-                  </div>
+                  {mainMenuItems.specialNeeds && (
+                    <div className="bg-gray-50 p-4 rounded-xl col-span-2">
+                      <p className="text-sm text-gray-600 mb-1">الحالة الخاصة</p>
+                      <p className="font-bold text-gray-900 text-lg">
+                        {printStudent.special_status_id
+                          ? specialStatuses.find(s => s.id === printStudent.special_status_id)?.name
+                          : 'لا توجد'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-6 mt-6">

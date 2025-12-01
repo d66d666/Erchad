@@ -11,6 +11,8 @@ interface StudentsListProps {
   specialStatuses: SpecialStatus[]
   onStudentDeleted: () => void
   onEditStudent: (student: Student) => void
+  showSpecialStatus?: boolean
+  showPermission?: boolean
 }
 
 export function StudentsList({
@@ -20,6 +22,8 @@ export function StudentsList({
   specialStatuses,
   onStudentDeleted,
   onEditStudent,
+  showSpecialStatus = true,
+  showPermission = true,
 }: StudentsListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [loadingDelete, setLoadingDelete] = useState<string | null>(null)
@@ -309,10 +313,10 @@ export function StudentsList({
                   <div class="info-value">${student.guardian_phone}</div>
                 </div>
 
-                <div class="info-item">
+                ${showSpecialStatus ? `<div class="info-item">
                   <div class="info-label">الظروف الخاصة</div>
                   <div class="info-value">${specialStatusName}</div>
-                </div>
+                </div>` : ''}
               </div>
 
             </div>
@@ -424,12 +428,12 @@ export function StudentsList({
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  {student.special_status_id && (
+                  {showSpecialStatus && student.special_status_id && (
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
                       {getSpecialStatusName(student.special_status_id)}
                     </span>
                   )}
-                  {student.status === 'استئذان' && (
+                  {showPermission && student.status === 'استئذان' && (
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                       استئذان
                     </span>

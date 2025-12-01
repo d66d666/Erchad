@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
-import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers } from 'lucide-react'
+import { Users, Printer, UserPlus, X, Plus, ChevronDown, ChevronUp, Layers, Trash2 } from 'lucide-react'
 
 export function GroupsPage() {
   const [students, setStudents] = useState<Student[]>([])
@@ -390,6 +390,19 @@ export function GroupsPage() {
     }
   }
 
+  const handleDeleteAllStudents = async () => {
+    if (confirm('تحذير: هل أنت متأكد من حذف جميع الطلاب؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+      try {
+        await db.students.clear()
+        fetchData()
+        alert('تم حذف جميع الطلاب بنجاح')
+      } catch (error) {
+        console.error('Error deleting all students:', error)
+        alert('حدث خطأ أثناء حذف الطلاب')
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -424,6 +437,13 @@ export function GroupsPage() {
             >
               <Layers size={20} />
               <span>إدارة المجموعات</span>
+            </button>
+            <button
+              onClick={handleDeleteAllStudents}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold hover:from-red-700 hover:to-rose-700 transition-all hover:shadow-lg"
+            >
+              <Trash2 size={20} />
+              <span>حذف جميع الطلاب</span>
             </button>
           </div>
           <label className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 rounded-xl cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-all border-2 border-purple-200">

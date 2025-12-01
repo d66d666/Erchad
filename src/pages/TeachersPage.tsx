@@ -72,24 +72,24 @@ export function TeachersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl shadow-lg p-8 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl shadow-md p-5 text-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-white bg-opacity-20 p-3 rounded-xl">
-              <Users size={32} />
+          <div className="flex items-center gap-3">
+            <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+              <Users size={24} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">المعلمين</h1>
-              <p className="text-blue-100 text-lg mt-1">
+              <h1 className="text-xl font-bold">المعلمين</h1>
+              <p className="text-blue-100 text-sm">
                 إجمالي المعلمين: {teachers.length}
               </p>
             </div>
           </div>
           <button
             onClick={handleAddNew}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all text-sm"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             <span>إضافة معلم</span>
           </button>
         </div>

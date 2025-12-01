@@ -463,16 +463,12 @@ function App() {
       {/* Main Content */}
       <div className="max-w-[1400px] mx-auto px-6 py-6">
         {currentPage === 'home' && (
-          <div className="flex gap-6">
-            {/* Main Area */}
-            <div className="flex-1">
-              {/* Search Box */}
-              <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
+          <div className="space-y-6">
+            {/* Search Box */}
+            <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Search className="text-white" size={28} />
-                  <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
-                </div>
+                <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
+                <Search className="text-white" size={28} />
               </div>
               <input
                 type="text"
@@ -483,166 +479,90 @@ function App() {
               />
             </div>
 
-            {/* Students List */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              {students.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users size={64} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-xl font-bold text-gray-700 mb-2">لا يوجد طلاب</h3>
-                  <p className="text-gray-500">قم بإضافة طلاب من خلال استيراد Excel أو إضافة يدوية</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {students
-                    .filter(s =>
-                      searchTerm === '' ||
-                      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      s.national_id.includes(searchTerm)
-                    )
-                    .map(student => (
-                      <div
-                        key={student.id}
-                        className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="font-bold text-gray-900">{student.name}</p>
-                            <p className="text-sm text-gray-600">{student.national_id}</p>
-                            {student.guardian_phone && (
-                              <p className="text-sm text-gray-500">ولي الأمر: {student.guardian_phone}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {student.guardian_phone && (
-                              <button
-                                onClick={() => {
-                                  const phone = formatPhoneForWhatsApp(student.guardian_phone)
-                                  if (phone) {
-                                    window.open(`https://wa.me/${phone}`, '_blank')
-                                  }
-                                }}
-                                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                                title="إرسال رسالة واتساب لولي الأمر"
-                              >
-                                <MessageCircle size={18} />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => {
-                                setPrintStudent(student)
-                                setShowPrintModal(true)
-                              }}
-                              className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                              title="طباعة بيانات الطالب"
-                            >
-                              <Printer size={18} />
-                            </button>
+            {/* Groups and Students */}
+            {students.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-lg p-16 text-center">
+                <Users size={64} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-bold text-gray-700 mb-2">لا يوجد طلاب</h3>
+                <p className="text-gray-500">قم بإضافة طلاب من خلال استيراد Excel أو إضافة يدوية</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {groups
+                  .sort((a, b) => a.display_order - b.display_order)
+                  .map(group => {
+                    const groupStudents = students
+                      .filter(s => s.group_id === group.id)
+                      .filter(s =>
+                        searchTerm === '' ||
+                        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        s.national_id.includes(searchTerm) ||
+                        s.phone.includes(searchTerm) ||
+                        s.guardian_phone.includes(searchTerm)
+                      )
+
+                    if (groupStudents.length === 0 && searchTerm !== '') return null
+
+                    return (
+                      <div key={group.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-teal-400 to-teal-500 px-6 py-4 flex items-center justify-between">
+                          <h3 className="text-xl font-bold text-white">{group.name}</h3>
+                          <div className="bg-white bg-opacity-30 px-4 py-1 rounded-full">
+                            <span className="text-white font-bold">{groupStudents.length} طالب</span>
                           </div>
                         </div>
+                        <div className="p-6">
+                          {groupStudents.length === 0 ? (
+                            <p className="text-center text-gray-500 py-8">لا يوجد طلاب في هذه المجموعة</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {groupStudents.map((student, idx) => (
+                                <div
+                                  key={student.id}
+                                  className="border border-gray-200 rounded-xl p-4 hover:border-teal-300 hover:shadow-md transition-all"
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <h4 className="text-lg font-bold text-gray-900">{student.name}</h4>
+                                        {student.special_status_id && (
+                                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded">
+                                            حالة خاصة
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                                        <p className="text-gray-600">
+                                          <span className="font-semibold">السجل:</span> {student.national_id}
+                                        </p>
+                                        <p className="text-gray-600">
+                                          <span className="font-semibold">الصف:</span> {student.grade}
+                                        </p>
+                                        <p className="text-gray-600">
+                                          <span className="font-semibold">جوال:</span> {student.phone}
+                                        </p>
+                                        <p className="text-gray-600">
+                                          <span className="font-semibold">ولي أمر:</span> {student.guardian_phone}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <button
+                                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                      title="المزيد"
+                                    >
+                                      <span className="text-2xl text-gray-600">⋮</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Sidebar - Filters */}
-          <aside className="w-80">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Settings className="text-gray-600" size={22} />
-                <h3 className="text-xl font-bold text-gray-800">التصفية</h3>
+                    )
+                  })}
               </div>
-
-              <div className="space-y-4">
-                {/* الحالات الخاصة */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    الحالات الخاصة
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={specialStatusFilter}
-                      onChange={(e) => setSpecialStatusFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-200 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-300 text-center font-bold"
-                    >
-                      <option value="all">الكل</option>
-                      {specialStatuses.map(status => (
-                        <option key={status.id} value={status.id}>
-                          {status.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-                  </div>
-                </div>
-
-                {/* المرحلة الدراسية */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    المرحلة الدراسية
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={stageFilter}
-                      onChange={(e) => setStageFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 text-center font-bold"
-                    >
-                      <option value="all">الكل</option>
-                      {Array.from(new Set(groups.map(g => g.stage))).map(stage => (
-                        <option key={stage} value={stage}>
-                          {stage}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-                  </div>
-                </div>
-
-                {/* المجموعات */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    المجموعات
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={groupFilter}
-                      onChange={(e) => setGroupFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 text-center font-bold"
-                    >
-                      <option value="all">الكل</option>
-                      {groups.map(group => (
-                        <option key={group.id} value={group.id}>
-                          {group.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-                  </div>
-                </div>
-
-                {/* تصفية حسب النشاط */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    تصفية حسب النشاط
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={activityFilter}
-                      onChange={(e) => setActivityFilter(e.target.value)}
-                      className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-bold"
-                    >
-                      <option value="all">الكل</option>
-                      <option value="reception">لديهم استقبال اليوم</option>
-                      <option value="permission">لديهم استئذان اليوم</option>
-                      <option value="violation">لديهم مخالفة اليوم</option>
-                    </select>
-                    <ChevronDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
+            )}
           </div>
         )}
 

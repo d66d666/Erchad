@@ -617,10 +617,10 @@ function App() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-6 gap-3">
+          <div className="flex flex-wrap gap-3 justify-center">
             {/* إجمالي الطلاب */}
             {headerCards.totalStudents && (
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{totalStudents}</div>
                   <Users size={32} className="opacity-80" />
@@ -631,7 +631,7 @@ function App() {
 
             {/* المعلمين */}
             {headerCards.teachers && (
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{totalTeachers}</div>
                   <GraduationCap size={32} className="opacity-80" />
@@ -642,7 +642,7 @@ function App() {
 
             {/* حالات خاصة */}
             {headerCards.reception && (
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{specialStatusCount}</div>
                   <Heart size={32} className="opacity-80" />
@@ -653,7 +653,7 @@ function App() {
 
             {/* استقبال الطلاب */}
             {headerCards.reception && (
-              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{todayReceptionCount}</div>
                   <UserCheck size={32} className="opacity-80" />
@@ -664,7 +664,7 @@ function App() {
 
             {/* استئذانات */}
             {headerCards.permission && (
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{todayPermissionsCount}</div>
                   <LogOut size={32} className="opacity-80" />
@@ -675,7 +675,7 @@ function App() {
 
             {/* المخالفات */}
             {headerCards.violations && (
-              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-md">
+              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{todayViolationsCount}</div>
                   <AlertCircle size={32} className="opacity-80" />

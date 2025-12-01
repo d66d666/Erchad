@@ -294,22 +294,22 @@ export function GroupsManagementPage() {
           </label>
           <div className="flex items-center gap-2">
             <button
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold hover:from-blue-600 hover:to-blue-700 transition-all shadow-md"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
             >
-              <UserPlus size={18} />
+              <UserPlus size={16} />
               <span>إضافة طالب</span>
             </button>
             <button
               onClick={() => setShowManageModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
             >
-              <Layers size={18} />
+              <Layers size={16} />
               <span>إدارة المجموعات</span>
             </button>
             <button
-              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
             >
-              <Printer size={18} />
+              <Printer size={16} />
               <span>طباعة الكل</span>
             </button>
           </div>

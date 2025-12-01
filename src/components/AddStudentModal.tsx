@@ -151,10 +151,11 @@ export function AddStudentModal({
               <input
                 type="text"
                 required
+                maxLength={10}
                 value={formData.national_id}
                 onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                placeholder="أدخل رقم السجل المدني"
+                placeholder="10 أرقام"
               />
             </div>
 
@@ -165,6 +166,7 @@ export function AddStudentModal({
                 </label>
                 <input
                   type="tel"
+                  maxLength={10}
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
@@ -179,6 +181,7 @@ export function AddStudentModal({
                 <input
                   type="tel"
                   required
+                  maxLength={10}
                   value={formData.guardian_phone}
                   onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"

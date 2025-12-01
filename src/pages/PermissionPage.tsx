@@ -596,13 +596,26 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             <Clock size={24} />
             سجل الاستئذانات {dateFilter ? 'المفلترة' : 'اليوم'}
           </h3>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Filter size={16} />
-            فلتر بالتاريخ
-          </button>
+          <div className="flex gap-2">
+            {dateFilter && (
+              <button
+                onClick={() => {
+                  setDateFilter('')
+                  fetchPermissions()
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                إعادة تعيين
+              </button>
+            )}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Filter size={16} />
+              فلتر بالتاريخ
+            </button>
+          </div>
         </div>
 
         {showFilters && (

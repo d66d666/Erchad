@@ -571,13 +571,26 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
             <FileText size={24} />
             سجل الزيارات {dateFilter ? 'المفلترة' : 'الأخيرة'}
           </h3>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Filter size={16} />
-            فلتر بالتاريخ
-          </button>
+          <div className="flex gap-2">
+            {dateFilter && (
+              <button
+                onClick={() => {
+                  setDateFilter('')
+                  fetchVisits()
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                إعادة تعيين
+              </button>
+            )}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Filter size={16} />
+              فلتر بالتاريخ
+            </button>
+          </div>
         </div>
 
         {showFilters && (

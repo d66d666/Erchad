@@ -233,7 +233,17 @@ export function GroupsPage() {
             .header-info { color: #666; font-size: 16px; margin: 5px 0; }
             .header-info strong { color: #333; }
             h1 { text-align: center; color: #2563eb; }
-            .stage { color: #16a34a; font-size: 20px; margin-bottom: 10px; text-align: center; }
+            .stage {
+              color: #16a34a;
+              font-size: 24px;
+              font-weight: bold;
+              margin: 20px 0;
+              text-align: center;
+              padding: 12px 20px;
+              background-color: #f0fdf4;
+              border: 2px solid #16a34a;
+              border-radius: 8px;
+            }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
             th { background-color: #2563eb; color: white; }

@@ -16,7 +16,11 @@ interface PermissionWithStudent extends StudentPermission {
   }
 }
 
-export function PermissionPage() {
+interface PermissionPageProps {
+  onUpdateStats?: () => void
+}
+
+export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   const [students, setStudents] = useState<Student[]>([])
   const [permissions, setPermissions] = useState<PermissionWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -249,6 +253,7 @@ export function PermissionPage() {
       setSelectedStudent(null)
       fetchStudents()
       fetchPermissions(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving permission:', error)
       alert('حدث خطأ أثناء الحفظ')
@@ -350,6 +355,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
       alert('تم حذف الاستئذان بنجاح')
       fetchStudents()
       fetchPermissions(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting permission:', error)
       alert('حدث خطأ أثناء الحذف')

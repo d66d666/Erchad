@@ -15,7 +15,11 @@ interface VisitWithStudent extends StudentVisit {
   }
 }
 
-export function ReceptionPage() {
+interface ReceptionPageProps {
+  onUpdateStats?: () => void
+}
+
+export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [students, setStudents] = useState<Student[]>([])
   const [visits, setVisits] = useState<VisitWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -224,6 +228,7 @@ export function ReceptionPage() {
       setSelectedStudent(null)
       fetchStudents()
       fetchVisits(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving visit:', error)
       alert('حدث خطأ أثناء الحفظ')
@@ -259,6 +264,7 @@ export function ReceptionPage() {
       alert('تم حذف الزيارة بنجاح')
       fetchStudents()
       fetchVisits(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting visit:', error)
       alert('حدث خطأ أثناء الحذف')

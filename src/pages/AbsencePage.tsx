@@ -19,7 +19,11 @@ interface ViolationWithStudent extends StudentViolation {
   }
 }
 
-export function AbsencePage() {
+interface AbsencePageProps {
+  onUpdateStats?: () => void
+}
+
+export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [students, setStudents] = useState<Student[]>([])
   const [violations, setViolations] = useState<ViolationWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -218,6 +222,7 @@ export function AbsencePage() {
       setSelectedStudent(null)
       fetchStudents()
       fetchViolations(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving violation:', error)
       alert('حدث خطأ أثناء الحفظ')
@@ -284,6 +289,7 @@ ${teacherName ? teacherName : 'مسؤول النظام'}`
       alert('تم حذف المخالفة بنجاح')
       fetchStudents()
       fetchViolations(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting violation:', error)
       alert('حدث خطأ أثناء الحذف')

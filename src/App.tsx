@@ -609,11 +609,11 @@ function App() {
 
         {currentPage === 'special-status' && <SpecialStatusPage />}
 
-        {currentPage === 'reception' && <ReceptionPage />}
+        {currentPage === 'reception' && <ReceptionPage onUpdateStats={fetchTodayStats} />}
 
-        {currentPage === 'permission' && <PermissionPage />}
+        {currentPage === 'permission' && <PermissionPage onUpdateStats={fetchTodayStats} />}
 
-        {currentPage === 'absence' && <AbsencePage />}
+        {currentPage === 'absence' && <AbsencePage onUpdateStats={fetchTodayStats} />}
       </div>
 
       {/* Modals */}

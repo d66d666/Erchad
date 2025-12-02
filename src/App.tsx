@@ -1683,7 +1683,7 @@ function App() {
                                                   }`}
                                                 >
                                                   {specialStatus && mainMenuItems.specialStatus && (
-                                                    <div className="absolute top-2 left-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500 text-white shadow-md border-2 border-red-600 z-10">
+                                                    <div className="absolute top-3 left-3 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800 z-10">
                                                       {specialStatus.name}
                                                     </div>
                                                   )}

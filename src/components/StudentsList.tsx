@@ -410,7 +410,7 @@ export function StudentsList({
             className={`${bgColorClass} rounded-xl shadow-sm border hover:shadow-md transition-all relative`}
           >
             {showSpecialStatus && student.special_status_id && (
-              <div className="absolute top-2 left-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500 text-white shadow-md border-2 border-red-600">
+              <div className="absolute top-3 left-3 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800">
                 {getSpecialStatusName(student.special_status_id)}
               </div>
             )}

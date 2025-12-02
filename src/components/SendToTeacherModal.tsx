@@ -26,6 +26,7 @@ export function SendToTeacherModal({
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
   const [selectedStatusId, setSelectedStatusId] = useState('all')
   const [loading, setLoading] = useState(false)
+  const [systemAdminName, setSystemAdminName] = useState('')
 
   useEffect(() => {
     if (isOpen) {
@@ -33,6 +34,7 @@ export function SendToTeacherModal({
       fetchGroups()
       fetchSpecialStatuses()
       fetchTeacherGroups()
+      fetchSystemAdminName()
     }
   }, [isOpen])
 
@@ -74,6 +76,15 @@ export function SendToTeacherModal({
       .order('created_at')
 
     if (data) setTeacherGroups(data)
+  }
+
+  const fetchSystemAdminName = async () => {
+    const { data } = await supabase
+      .from('teacher_profile')
+      .select('name')
+      .maybeSingle()
+
+    if (data?.name) setSystemAdminName(data.name)
   }
 
   useEffect(() => {
@@ -168,7 +179,7 @@ export function SendToTeacherModal({
       }
 
       // إنشاء رسالة واتساب مرتبة حسب الصف والحالة الخاصة والمجموعة
-      let message = `*${selectedStage}*\n\n`
+      let message = `السلام عليكم ورحمة الله وبركاته\n\n*${selectedStage}*\n\n`
 
       // تجميع الطلاب حسب الحالة الخاصة
       const statusGroups = new Map<string, Student[]>()
@@ -212,6 +223,9 @@ export function SendToTeacherModal({
           message += `\n`
         })
       })
+
+      // إضافة التوقيع في نهاية الرسالة
+      message += `\nالاستاذ: ${systemAdminName || 'مسؤول النظام'}`
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)

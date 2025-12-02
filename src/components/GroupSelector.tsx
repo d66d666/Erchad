@@ -69,17 +69,19 @@ export function GroupSelector({
             <div key={stage} className="border border-gray-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleStage(stage)}
-                className="w-full px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold transition-all flex items-center justify-between shadow-sm"
+                className="w-full px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 hover:from-blue-200 hover:to-blue-100 text-gray-800 font-semibold transition-all flex items-center justify-between shadow-sm border border-blue-200"
               >
                 <div className="flex items-center gap-2">
-                  <Layers size={18} className="text-white" />
-                  <span>{stage}</span>
+                  {isExpanded ? (
+                    <ChevronDown size={18} className="text-gray-700" />
+                  ) : (
+                    <ChevronUp size={18} className="text-gray-700 transform rotate-180" />
+                  )}
                 </div>
-                {isExpanded ? (
-                  <ChevronUp size={18} className="text-white" />
-                ) : (
-                  <ChevronDown size={18} className="text-white" />
-                )}
+                <div className="flex items-center gap-2">
+                  <span>{stage}</span>
+                  <Layers size={18} className="text-blue-600" />
+                </div>
               </button>
 
               {isExpanded && (
@@ -88,13 +90,14 @@ export function GroupSelector({
                     <button
                       key={group.id}
                       onClick={() => onSelectGroup(group.id)}
-                      className={`w-full px-4 py-2 rounded-lg text-right font-medium transition-all ${
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-between ${
                         selectedGroupId === group.id
-                          ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                          ? 'bg-gradient-to-r from-teal-100 to-teal-50 text-gray-800 shadow-md border-2 border-teal-300'
+                          : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
                       }`}
                     >
-                      {group.name}
+                      <span className="text-sm text-gray-600">1 طالب</span>
+                      <span>{group.name}</span>
                     </button>
                   ))}
                 </div>

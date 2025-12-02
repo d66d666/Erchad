@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Teacher, Group, TeacherGroup } from '../types'
-import { supabase } from '../lib/supabase'
 import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
 
 interface TeacherWithGroups extends Teacher {

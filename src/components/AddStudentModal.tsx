@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import { Group, SpecialStatus } from '../types'
 import { X } from 'lucide-react'
 

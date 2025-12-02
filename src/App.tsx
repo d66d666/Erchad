@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { db } from './lib/db'
-import { supabase } from './lib/supabase'
 import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
 import { TeachersPage } from './pages/TeachersPage'
@@ -464,14 +463,12 @@ function App() {
 
   const handleExportData = async () => {
     try {
-      const { data: visits } = await supabase.from('student_visits').select('*')
-      const { data: permissions } = await supabase.from('student_permissions').select('*')
-      const { data: violations } = await supabase.from('student_violations').select('*')
-      const { data: teachers } = await supabase.from('teachers').select('*')
-      const { data: teacherGroups } = await supabase.from('teacher_groups').select('*')
-      const { data: teacherProfile } = await supabase.from('teacher_profile').select('*').maybeSingle()
-      const { data: labContact } = await supabase.from('lab_contact').select('*').maybeSingle()
-      const { data: schoolInfo } = await supabase.from('school_info').select('*').maybeSingle()
+      const visits = await db.student_visits.toArray()
+      const permissions = await db.student_permissions.toArray()
+      const violations = await db.student_violations.toArray()
+      const teachers = await db.teachers.toArray()
+      const teacherGroups = await db.teacher_groups.toArray()
+      const teacherProfile = await db.teacher_profile.toCollection().first()
 
       const dataToExport = {
         version: '1.0',
@@ -479,14 +476,12 @@ function App() {
         students,
         groups,
         specialStatuses,
-        studentVisits: visits || [],
-        studentPermissions: permissions || [],
-        studentViolations: violations || [],
-        teachers: teachers || [],
-        teacherGroups: teacherGroups || [],
+        studentVisits: visits,
+        studentPermissions: permissions,
+        studentViolations: violations,
+        teachers: teachers,
+        teacherGroups: teacherGroups,
         teacherProfile: teacherProfile || null,
-        labContact: labContact || null,
-        schoolInfo: schoolInfo || null,
       }
 
       const jsonString = JSON.stringify(dataToExport, null, 2)
@@ -523,60 +518,50 @@ function App() {
 
       if (!confirmImport) return
 
-      await supabase.from('student_visits').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('student_permissions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('student_violations').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('teacher_groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await db.student_visits.clear()
+      await db.student_permissions.clear()
+      await db.student_violations.clear()
+      await db.teacher_groups.clear()
+      await db.students.clear()
+      await db.teachers.clear()
+      await db.groups.clear()
+      await db.special_statuses.clear()
+      await db.teacher_profile.clear()
 
       if (importedData.specialStatuses?.length > 0) {
-        await supabase.from('special_statuses').insert(importedData.specialStatuses)
+        await db.special_statuses.bulkAdd(importedData.specialStatuses)
       }
 
       if (importedData.groups?.length > 0) {
-        await supabase.from('groups').insert(importedData.groups)
+        await db.groups.bulkAdd(importedData.groups)
       }
 
       if (importedData.students?.length > 0) {
-        await supabase.from('students').insert(importedData.students)
+        await db.students.bulkAdd(importedData.students)
       }
 
       if (importedData.teachers?.length > 0) {
-        await supabase.from('teachers').insert(importedData.teachers)
+        await db.teachers.bulkAdd(importedData.teachers)
       }
 
       if (importedData.teacherGroups?.length > 0) {
-        await supabase.from('teacher_groups').insert(importedData.teacherGroups)
+        await db.teacher_groups.bulkAdd(importedData.teacherGroups)
       }
 
       if (importedData.studentVisits?.length > 0) {
-        await supabase.from('student_visits').insert(importedData.studentVisits)
+        await db.student_visits.bulkAdd(importedData.studentVisits)
       }
 
       if (importedData.studentPermissions?.length > 0) {
-        await supabase.from('student_permissions').insert(importedData.studentPermissions)
+        await db.student_permissions.bulkAdd(importedData.studentPermissions)
       }
 
       if (importedData.studentViolations?.length > 0) {
-        await supabase.from('student_violations').insert(importedData.studentViolations)
+        await db.student_violations.bulkAdd(importedData.studentViolations)
       }
 
       if (importedData.teacherProfile) {
-        await supabase.from('teacher_profile').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        await supabase.from('teacher_profile').insert(importedData.teacherProfile)
-      }
-
-      if (importedData.labContact) {
-        await supabase.from('lab_contact').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        await supabase.from('lab_contact').insert(importedData.labContact)
-      }
-
-      if (importedData.schoolInfo) {
-        await supabase.from('school_info').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        await supabase.from('school_info').insert(importedData.schoolInfo)
+        await db.teacher_profile.add(importedData.teacherProfile)
       }
 
       alert('✓ تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة الآن...')

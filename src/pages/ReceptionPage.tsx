@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { db, StudentVisit } from '../lib/db'
-import { supabase } from '../lib/supabase'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'

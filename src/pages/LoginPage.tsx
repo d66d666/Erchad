@@ -36,11 +36,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           alert('🎉 مرحباً وائل!\n\nتم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\n✨ لديك صلاحيات كاملة على النظام')
         }, 100)
 
-        onLogin()
-
-        // تحديث الصفحة بعد تسجيل الدخول
+        // تحديث الصفحة بعد ثانيتين ثم الدخول للصفحة الرئيسية
         setTimeout(() => {
           window.location.reload()
+        }, 2000)
+
+        // الدخول للصفحة الرئيسية بعد التحديث
+        setTimeout(() => {
+          onLogin()
         }, 2000)
 
         return
@@ -58,11 +61,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userId', credentials.id || 'user')
-      onLogin()
 
-      // تحديث الصفحة بعد تسجيل الدخول
+      // تحديث الصفحة بعد ثانيتين ثم الدخول للصفحة الرئيسية
       setTimeout(() => {
         window.location.reload()
+      }, 2000)
+
+      // الدخول للصفحة الرئيسية بعد التحديث
+      setTimeout(() => {
+        onLogin()
       }, 2000)
     } catch (err) {
       console.error('Login error:', err)

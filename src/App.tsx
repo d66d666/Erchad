@@ -1682,7 +1682,7 @@ function App() {
                                                     specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
                                                   }`}
                                                 >
-                                                  {specialStatus && mainMenuItems.specialStatus && (
+                                                  {specialStatus && (
                                                     <div className="absolute top-3 left-3 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800 z-10">
                                                       {specialStatus.name}
                                                     </div>

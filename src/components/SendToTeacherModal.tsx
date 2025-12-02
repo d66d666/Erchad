@@ -136,7 +136,8 @@ export function SendToTeacherModal({
       const statusGroups = new Map<string, Student[]>()
 
       filteredStudents.forEach(student => {
-        const statusName = student.special_status?.name || 'بدون حالة خاصة'
+        const status = specialStatuses.find(s => s.id === student.special_status_id)
+        const statusName = status?.name || 'بدون حالة خاصة'
         if (!statusGroups.has(statusName)) {
           statusGroups.set(statusName, [])
         }

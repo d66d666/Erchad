@@ -1678,10 +1678,15 @@ function App() {
                                               return (
                                                 <div
                                                   key={student.id}
-                                                  className={`border-2 rounded-xl p-4 transition-all ${
+                                                  className={`border-2 rounded-xl p-4 transition-all relative ${
                                                     specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
                                                   }`}
                                                 >
+                                                  {specialStatus && mainMenuItems.specialStatus && (
+                                                    <div className="absolute top-2 left-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500 text-white shadow-md border-2 border-red-600 z-10">
+                                                      {specialStatus.name}
+                                                    </div>
+                                                  )}
                                                   <div className="flex items-start justify-between">
                                                     <div className="flex-1">
                                                       <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>

@@ -8,12 +8,16 @@ interface SendToTeacherModalProps {
   isOpen: boolean
   onClose: () => void
   specialStatusStudents: Student[]
+  selectedStatusId?: string
+  selectedStatusName?: string
 }
 
 export function SendToTeacherModal({
   isOpen,
   onClose,
   specialStatusStudents,
+  selectedStatusId = 'all',
+  selectedStatusName = 'جميع الفئات',
 }: SendToTeacherModalProps) {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
@@ -111,7 +115,7 @@ export function SendToTeacherModal({
       const selectedGroups = allGroups.filter(g => selectedGroupIds.includes(g.id))
 
       message += `━━━━━━━━━━━━━━━━━━\n`
-      message += `*📋 الحالات الخاصة*\n`
+      message += `*📋 ${selectedStatusName}*\n`
       message += `*${selectedStage}*\n`
       message += `━━━━━━━━━━━━━━━━━━\n\n`
 
@@ -176,6 +180,18 @@ export function SendToTeacherModal({
             <p className="text-sm text-blue-800">
               سيتم إرسال بيانات الطلاب ذوي الحالات الخاصة في المجموعة المحددة إلى المعلم عبر واتساب
             </p>
+          </div>
+
+          <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-300">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-purple-900">الفئة المحددة:</span>
+              <span className="text-base font-bold text-purple-700">{selectedStatusName}</span>
+            </div>
+            {selectedStatusId !== 'all' && (
+              <p className="text-xs text-purple-600 mt-1">
+                سيتم إرسال الطلاب المنتمين لهذه الفئة فقط
+              </p>
+            )}
           </div>
 
           <div>

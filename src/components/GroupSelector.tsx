@@ -69,7 +69,7 @@ export function GroupSelector({
             <div key={stage} className="border border-gray-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleStage(stage)}
-                className="w-full px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 hover:from-blue-200 hover:to-blue-100 text-gray-800 font-semibold transition-all flex items-center justify-between shadow-sm border border-blue-200"
+                className="w-full px-4 py-2 bg-gradient-to-r from-green-100 to-green-50 hover:from-green-200 hover:to-green-100 text-gray-800 font-semibold transition-all flex items-center justify-between shadow-sm border border-green-200"
               >
                 <div className="flex items-center gap-2">
                   {isExpanded ? (
@@ -80,7 +80,7 @@ export function GroupSelector({
                 </div>
                 <div className="flex items-center gap-2">
                   <span>{stage}</span>
-                  <Layers size={18} className="text-blue-600" />
+                  <Layers size={18} className="text-green-600" />
                 </div>
               </button>
 
@@ -93,7 +93,7 @@ export function GroupSelector({
                       className={`w-full px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-between ${
                         selectedGroupId === group.id
                           ? 'bg-gradient-to-r from-teal-100 to-teal-50 text-gray-800 shadow-md border-2 border-teal-300'
-                          : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
+                          : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200'
                       }`}
                     >
                       <span className="text-sm text-gray-600">1 طالب</span>

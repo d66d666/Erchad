@@ -101,6 +101,9 @@ function App() {
   const [stageFilter, setStageFilter] = useState<string>('all')
   const [groupFilter, setGroupFilter] = useState<string>('all')
   const [activityFilter, setActivityFilter] = useState<string>('all')
+  const [todayReceptionStudents, setTodayReceptionStudents] = useState<Set<string>>(new Set())
+  const [todayPermissionStudents, setTodayPermissionStudents] = useState<Set<string>>(new Set())
+  const [todayViolationStudents, setTodayViolationStudents] = useState<Set<string>>(new Set())
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
@@ -127,17 +130,17 @@ function App() {
       const [visitsRes, permissionsRes, violationsRes] = await Promise.all([
         supabase
           .from('student_visits')
-          .select('id', { count: 'exact' })
+          .select('id, student_id', { count: 'exact' })
           .gte('visit_date', todayStart)
           .lte('visit_date', todayEnd),
         supabase
           .from('student_permissions')
-          .select('id', { count: 'exact' })
+          .select('id, student_id', { count: 'exact' })
           .gte('permission_date', todayStart)
           .lte('permission_date', todayEnd),
         supabase
           .from('student_violations')
-          .select('id', { count: 'exact' })
+          .select('id, student_id', { count: 'exact' })
           .gte('violation_date', todayStart)
           .lte('violation_date', todayEnd),
       ])
@@ -145,6 +148,11 @@ function App() {
       setTodayReceptionCount(visitsRes.count || 0)
       setTodayPermissionsCount(permissionsRes.count || 0)
       setTodayViolationsCount(violationsRes.count || 0)
+
+      // حفظ IDs الطلاب الذين لديهم نشاط اليوم
+      setTodayReceptionStudents(new Set(visitsRes.data?.map(v => v.student_id) || []))
+      setTodayPermissionStudents(new Set(permissionsRes.data?.map(p => p.student_id) || []))
+      setTodayViolationStudents(new Set(violationsRes.data?.map(v => v.student_id) || []))
     } catch (error) {
       console.error('Error fetching today stats:', error)
     }
@@ -1585,10 +1593,17 @@ function App() {
                             s.guardian_phone.includes(searchTerm)
                           )
                           .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
+                          .filter(s => {
+                            if (activityFilter === 'all') return true
+                            if (activityFilter === 'reception') return todayReceptionStudents.has(s.id)
+                            if (activityFilter === 'permission') return todayPermissionStudents.has(s.id)
+                            if (activityFilter === 'violation') return todayViolationStudents.has(s.id)
+                            return true
+                          })
                         return sum + groupStudents.length
                       }, 0)
 
-                      if (totalStageStudents === 0 && (searchTerm !== '' || specialStatusFilter !== 'all')) return null
+                      if (totalStageStudents === 0 && (searchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
 
                       const isStageExpanded = expandedGroups.has(stage)
                       const colors = stageColors[index % stageColors.length]
@@ -1624,8 +1639,15 @@ function App() {
                                     s.guardian_phone.includes(searchTerm)
                                   )
                                   .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
+                                  .filter(s => {
+                                    if (activityFilter === 'all') return true
+                                    if (activityFilter === 'reception') return todayReceptionStudents.has(s.id)
+                                    if (activityFilter === 'permission') return todayPermissionStudents.has(s.id)
+                                    if (activityFilter === 'violation') return todayViolationStudents.has(s.id)
+                                    return true
+                                  })
 
-                                if (groupStudents.length === 0 && (searchTerm !== '' || specialStatusFilter !== 'all')) return null
+                                if (groupStudents.length === 0 && (searchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
 
                                 const isGroupExpanded = expandedGroups.has(group.id)
 

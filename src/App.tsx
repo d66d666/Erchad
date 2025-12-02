@@ -47,6 +47,7 @@ type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'pe
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isMasterAdmin, setIsMasterAdmin] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
@@ -222,7 +223,12 @@ function App() {
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    const userId = localStorage.getItem('userId')
+    const isMaster = userId === 'master-admin'
+
     setIsLoggedIn(loggedIn)
+    setIsMasterAdmin(isMaster)
+
     if (loggedIn) {
       fetchData()
       fetchTodayStats()
@@ -1240,13 +1246,26 @@ function App() {
           <div className="flex items-center justify-between mb-4">
             {/* Right Side - Title */}
             <div className="flex items-center gap-4">
-              <div className="bg-blue-600 p-3 rounded-2xl">
+              <div className={`${isMasterAdmin ? 'bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 animate-pulse' : 'bg-blue-600'} p-3 rounded-2xl shadow-lg`}>
                 <Users className="text-white" size={32} />
               </div>
               <div className="text-right">
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-gray-800">
+                    {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
+                  </h1>
+                  {isMasterAdmin && (
+                    <div className="relative group">
+                      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg animate-pulse">
+                        <Shield size={16} className="text-yellow-300" />
+                        <span>مصمم النظام</span>
+                      </div>
+                      <div className="absolute top-full left-0 mt-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                        مرحباً وائل 👋 أنت تستخدم حساب المطور الرئيسي
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <p className="text-sm text-gray-500 mt-1">
                   {schoolName || 'قم بإضافة اسم المدرسة من الإعدادات'}
                 </p>
@@ -1342,7 +1361,12 @@ function App() {
                       className="w-full text-right px-4 py-3 hover:bg-red-50 transition-colors flex items-center gap-3"
                     >
                       <LogOut size={18} className="text-red-600" />
-                      <span className="text-sm font-medium text-red-600">تسجيل الخروج</span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-sm font-medium text-red-600">تسجيل الخروج</span>
+                        {isMasterAdmin && (
+                          <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full">Admin</span>
+                        )}
+                      </div>
                     </button>
                   </div>
                 )}

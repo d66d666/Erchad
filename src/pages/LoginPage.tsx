@@ -28,6 +28,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       if (username === 'Wael' && password === '0558890902') {
         localStorage.setItem('isLoggedIn', 'true')
         localStorage.setItem('userId', 'master-admin')
+
+        // رسالة ترحيب خاصة للمطور
+        setTimeout(() => {
+          alert('🎉 مرحباً وائل!\n\nتم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\n✨ لديك صلاحيات كاملة على النظام')
+        }, 100)
+
         onLogin()
         return
       }

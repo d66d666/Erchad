@@ -1668,7 +1668,7 @@ function App() {
                                     </button>
 
                                     {isGroupExpanded && (
-                                      <div className="p-6 pb-56">
+                                      <div className="p-6 pb-48">
                                         {groupStudents.length === 0 ? (
                                           <p className="text-center text-gray-500 py-8">لا يوجد طلاب</p>
                                         ) : (

@@ -36,7 +36,9 @@ export interface StudentViolation {
 export interface TeacherProfile {
   id?: string
   name?: string
+  phone?: string
   school_name?: string
+  system_description?: string
   logo_url?: string
   created_at?: string
 }

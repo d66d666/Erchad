@@ -153,7 +153,6 @@ function App() {
 
   const fetchTodayStats = async () => {
     try {
-      // استخدام تاريخ اليوم المحلي للمستخدم
       const now = new Date()
       const year = now.getFullYear()
       const month = String(now.getMonth() + 1).padStart(2, '0')
@@ -161,32 +160,28 @@ function App() {
       const todayStart = `${year}-${month}-${day}T00:00:00`
       const todayEnd = `${year}-${month}-${day}T23:59:59`
 
-      const [visitsRes, permissionsRes, violationsRes] = await Promise.all([
-        supabase
-          .from('student_visits')
-          .select('id, student_id', { count: 'exact' })
-          .gte('visit_date', todayStart)
-          .lte('visit_date', todayEnd),
-        supabase
-          .from('student_permissions')
-          .select('id, student_id', { count: 'exact' })
-          .gte('permission_date', todayStart)
-          .lte('permission_date', todayEnd),
-        supabase
-          .from('student_violations')
-          .select('id, student_id', { count: 'exact' })
-          .gte('violation_date', todayStart)
-          .lte('violation_date', todayEnd),
+      const [visitsData, permissionsData, violationsData] = await Promise.all([
+        db.student_visits
+          .where('visit_date')
+          .between(todayStart, todayEnd, true, true)
+          .toArray(),
+        db.student_permissions
+          .where('permission_date')
+          .between(todayStart, todayEnd, true, true)
+          .toArray(),
+        db.student_violations
+          .where('violation_date')
+          .between(todayStart, todayEnd, true, true)
+          .toArray(),
       ])
 
-      setTodayReceptionCount(visitsRes.count || 0)
-      setTodayPermissionsCount(permissionsRes.count || 0)
-      setTodayViolationsCount(violationsRes.count || 0)
+      setTodayReceptionCount(visitsData.length)
+      setTodayPermissionsCount(permissionsData.length)
+      setTodayViolationsCount(violationsData.length)
 
-      // حفظ IDs الطلاب الذين لديهم نشاط اليوم
-      setTodayReceptionStudents(new Set(visitsRes.data?.map(v => v.student_id) || []))
-      setTodayPermissionStudents(new Set(permissionsRes.data?.map(p => p.student_id) || []))
-      setTodayViolationStudents(new Set(violationsRes.data?.map(v => v.student_id) || []))
+      setTodayReceptionStudents(new Set(visitsData.map(v => v.student_id)))
+      setTodayPermissionStudents(new Set(permissionsData.map(p => p.student_id)))
+      setTodayViolationStudents(new Set(violationsData.map(v => v.student_id)))
     } catch (error) {
       console.error('Error fetching today stats:', error)
     }
@@ -194,11 +189,8 @@ function App() {
 
   const fetchTeachersCount = async () => {
     try {
-      const { count } = await supabase
-        .from('teachers')
-        .select('*', { count: 'exact', head: true })
-
-      setTotalTeachers(count || 0)
+      const count = await db.teachers.count()
+      setTotalTeachers(count)
     } catch (error) {
       console.error('Error fetching teachers count:', error)
     }
@@ -208,42 +200,27 @@ function App() {
     try {
       setLoading(true)
 
-      const [groupsRes, statusesRes, studentsRes, profileRes] = await Promise.all([
-        supabase.from('groups').select('*').order('stage'),
-        supabase.from('special_statuses').select('*').order('name'),
-        supabase.from('students').select('*').order('name'),
-        supabase.from('teacher_profile').select('*').maybeSingle(),
+      const [groupsData, statusesData, studentsData, profileData] = await Promise.all([
+        db.groups.toArray(),
+        db.special_statuses.toArray(),
+        db.students.toArray(),
+        db.teacher_profile.toCollection().first(),
       ])
 
-      if (groupsRes.data) {
-        await db.groups.clear()
-        for (const group of groupsRes.data) {
-          await db.groups.put(group)
-        }
-        setGroups(groupsRes.data)
-      }
+      setGroups(groupsData)
+      setSpecialStatuses(statusesData)
+      setStudents(studentsData as Student[])
 
-      if (statusesRes.data) {
-        await db.special_statuses.clear()
-        for (const status of statusesRes.data) {
-          await db.special_statuses.put(status)
-        }
-        setSpecialStatuses(statusesRes.data)
-      }
-
-      if (studentsRes.data) {
-        await db.students.clear()
-        for (const student of studentsRes.data) {
-          await db.students.put(student)
-        }
-        setStudents(studentsRes.data as Student[])
-      }
-
-      if (profileRes.data) {
-        setTeacherName(profileRes.data.name || '')
-        setTeacherPhone(profileRes.data.phone || '')
-        setSchoolName(profileRes.data.school_name || '')
-        setSystemDescription(profileRes.data.system_description || '')
+      if (profileData) {
+        setTeacherName(profileData.name || '')
+        setTeacherPhone(profileData.phone || '')
+        setSchoolName(profileData.school_name || '')
+        setSystemDescription(profileData.system_description || '')
+      } else {
+        setTeacherName('')
+        setTeacherPhone('')
+        setSchoolName('')
+        setSystemDescription('')
       }
 
       await fetchTodayStats()

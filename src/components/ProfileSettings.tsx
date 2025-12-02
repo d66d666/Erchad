@@ -319,7 +319,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             <X size={24} />
           </button>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-gray-900">الإعدادات</h2>
+            <h2 className="text-2xl font-bold text-gray-900">إعداد</h2>
             <User className="text-blue-600" size={24} />
           </div>
         </div>

@@ -1725,40 +1725,7 @@ function App() {
                                                         <span className="text-2xl text-gray-600">⋮</span>
                                                       </button>
                                                       {studentMenuOpen === student.id && (
-                                                        <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                                                          <button
-                                                            onClick={() => {
-                                                              setAllowEntryStudent(student)
-                                                              setShowAllowEntryModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm font-medium text-green-700"
-                                                          >
-                                                            <DoorOpen size={16} />
-                                                            <span>سماح بدخول الفصل</span>
-                                                          </button>
-                                                          <button
-                                                            onClick={() => {
-                                                              setPrintStudent(student)
-                                                              setShowPrintModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-blue-50 transition-colors flex items-center gap-3 text-sm font-medium text-blue-700"
-                                                          >
-                                                            <Printer size={16} />
-                                                            <span>طباعة بيانات الطالب</span>
-                                                          </button>
-                                                          <button
-                                                            onClick={() => {
-                                                              setEditingStudent(student)
-                                                              setShowEditModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm font-medium text-gray-700"
-                                                          >
-                                                            <Edit size={16} />
-                                                            <span>تعديل</span>
-                                                          </button>
+                                                        <div className="absolute left-0 bottom-full mb-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
                                                           <button
                                                             onClick={async () => {
                                                               if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
@@ -1784,6 +1751,39 @@ function App() {
                                                           >
                                                             <Trash2 size={16} />
                                                             <span>حذف</span>
+                                                          </button>
+                                                          <button
+                                                            onClick={() => {
+                                                              setEditingStudent(student)
+                                                              setShowEditModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm font-medium text-gray-700"
+                                                          >
+                                                            <Edit size={16} />
+                                                            <span>تعديل</span>
+                                                          </button>
+                                                          <button
+                                                            onClick={() => {
+                                                              setPrintStudent(student)
+                                                              setShowPrintModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-blue-50 transition-colors flex items-center gap-3 text-sm font-medium text-blue-700"
+                                                          >
+                                                            <Printer size={16} />
+                                                            <span>طباعة بيانات الطالب</span>
+                                                          </button>
+                                                          <button
+                                                            onClick={() => {
+                                                              setAllowEntryStudent(student)
+                                                              setShowAllowEntryModal(true)
+                                                              setStudentMenuOpen(null)
+                                                            }}
+                                                            className="w-full text-right px-4 py-2.5 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm font-medium text-green-700"
+                                                          >
+                                                            <DoorOpen size={16} />
+                                                            <span>سماح بدخول الفصل</span>
                                                           </button>
                                                         </div>
                                                       )}

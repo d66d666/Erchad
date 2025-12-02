@@ -1683,7 +1683,7 @@ function App() {
                                                   }`}
                                                 >
                                                   {specialStatus && (
-                                                    <div className="absolute top-3 left-3 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800 z-10">
+                                                    <div className="absolute top-3 left-12 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800 z-10">
                                                       {specialStatus.name}
                                                     </div>
                                                   )}

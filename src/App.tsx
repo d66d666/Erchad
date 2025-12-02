@@ -608,11 +608,17 @@ function App() {
               font-size: 12px;
               color: #6d28d9;
             }
-            .main-title {
+            .meta-info {
               text-align: center;
-              margin: 25px 0 15px 0;
+              font-size: 11px;
+              color: #666;
+              margin-bottom: 15px;
             }
-            .main-title h2 {
+            .stage-title {
+              text-align: center;
+              margin: 20px 0 15px 0;
+            }
+            .stage-title h2 {
               font-size: 20px;
               font-weight: 700;
               color: #7c3aed;
@@ -621,29 +627,25 @@ function App() {
               border-bottom: 2px solid #7c3aed;
               display: inline-block;
             }
-            .meta-info {
+            .group-name-box {
               text-align: center;
-              font-size: 11px;
-              color: #666;
-              margin-bottom: 15px;
+              margin: 15px 0;
             }
-            .group-info {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 15px;
-              padding: 8px 15px;
-              background: #f8f9fa;
-              border-radius: 8px;
-            }
-            .group-stage {
-              font-size: 16px;
+            .group-name {
+              font-size: 18px;
               font-weight: 700;
               color: #7c3aed;
+              display: inline-block;
+              padding: 8px 20px;
+              background: #f3e8ff;
+              border-radius: 8px;
             }
-            .student-count {
+            .student-count-box {
+              text-align: right;
               font-size: 14px;
               font-weight: 600;
+              color: #1f2937;
+              margin-bottom: 12px;
             }
             table {
               width: 100%;
@@ -689,17 +691,20 @@ function App() {
             </div>
           </div>
 
-          <div class="main-title">
-            <h2>${group.name}</h2>
-          </div>
-
           <div class="meta-info">
             <div>طُبع بتاريخ: ${hijriDate} هـ - ${gregorianDate} م</div>
           </div>
 
-          <div class="group-info">
-            <div class="group-stage">${group.stage || 'المرحلة'}</div>
-            <div class="student-count">عدد الطلاب: ${groupStudents.length}</div>
+          <div class="stage-title">
+            <h2>${group.stage || 'المرحلة'}</h2>
+          </div>
+
+          <div class="group-name-box">
+            <div class="group-name">${group.name}</div>
+          </div>
+
+          <div class="student-count-box">
+            عدد الطلاب: ${groupStudents.length}
           </div>
 
           <table>
@@ -973,17 +978,20 @@ function App() {
             </div>
           </div>
 
-          <div class="main-title">
-            <h2>${group.name}</h2>
-          </div>
-
           <div class="meta-info">
             <div>طُبع بتاريخ: ${hijriDate} هـ - ${gregorianDate} م</div>
           </div>
 
-          <div class="group-info">
-            <div class="group-stage">${group.stage || 'المرحلة'}</div>
-            <div class="student-count">عدد الطلاب: ${groupStudents.length}</div>
+          <div class="stage-title">
+            <h2>${group.stage || 'المرحلة'}</h2>
+          </div>
+
+          <div class="group-name-box">
+            <div class="group-name">${group.name}</div>
+          </div>
+
+          <div class="student-count-box">
+            عدد الطلاب: ${groupStudents.length}
           </div>
 
           <table>
@@ -1074,11 +1082,17 @@ function App() {
               font-size: 12px;
               color: #6d28d9;
             }
-            .main-title {
+            .meta-info {
               text-align: center;
-              margin: 25px 0 15px 0;
+              font-size: 11px;
+              color: #666;
+              margin-bottom: 15px;
             }
-            .main-title h2 {
+            .stage-title {
+              text-align: center;
+              margin: 20px 0 15px 0;
+            }
+            .stage-title h2 {
               font-size: 20px;
               font-weight: 700;
               color: #7c3aed;
@@ -1087,30 +1101,25 @@ function App() {
               border-bottom: 2px solid #7c3aed;
               display: inline-block;
             }
-            .meta-info {
+            .group-name-box {
               text-align: center;
-              font-size: 11px;
-              color: #666;
-              margin-bottom: 15px;
+              margin: 15px 0;
             }
-            .group-info {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 15px;
-              padding: 8px 15px;
-              background: #f8f9fa;
-              border-radius: 8px;
-            }
-            .group-stage {
-              font-size: 16px;
+            .group-name {
+              font-size: 18px;
               font-weight: 700;
               color: #7c3aed;
+              display: inline-block;
+              padding: 8px 20px;
+              background: #f3e8ff;
+              border-radius: 8px;
             }
-            .student-count {
+            .student-count-box {
+              text-align: right;
               font-size: 14px;
               font-weight: 600;
-              color: #555;
+              color: #1f2937;
+              margin-bottom: 12px;
             }
             table {
               width: 100%;

@@ -311,7 +311,7 @@ export function SpecialStatusPage({
             ))}
           </select>
 
-          <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm mr-auto">
+          <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm">
             <input
               type="checkbox"
               checked={showStatusDetails}

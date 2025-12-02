@@ -409,6 +409,11 @@ export function StudentsList({
             key={student.id}
             className={`${bgColorClass} rounded-xl shadow-sm border hover:shadow-md transition-all relative`}
           >
+            {showSpecialStatus && student.special_status_id && (
+              <div className="absolute top-2 left-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500 text-white shadow-md border-2 border-red-600">
+                {getSpecialStatusName(student.special_status_id)}
+              </div>
+            )}
             <div className="px-5 py-4">
               <div className="flex items-center justify-between gap-4">
                 <button
@@ -437,11 +442,6 @@ export function StudentsList({
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  {showSpecialStatus && student.special_status_id && (
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                      {getSpecialStatusName(student.special_status_id)}
-                    </span>
-                  )}
                   {showPermission && student.status === 'استئذان' && (
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                       استئذان

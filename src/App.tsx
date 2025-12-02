@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Printer,
   MessageCircle,
+  RotateCcw,
   X,
   Upload,
   FileSpreadsheet,
@@ -1583,6 +1584,22 @@ function App() {
                       </div>
                     </div>
                   )}
+
+                  {/* زر إعادة التعيين */}
+                  <button
+                    onClick={() => {
+                      setSpecialStatusFilter('all')
+                      setStageFilter('all')
+                      setGroupFilter('all')
+                      setActivityFilter('all')
+                      setSearchTerm('')
+                      setExpandedGroups(new Set())
+                    }}
+                    className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-bold hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <RotateCcw size={18} />
+                    <span>إعادة تعيين</span>
+                  </button>
                 </div>
               </div>
             </aside>

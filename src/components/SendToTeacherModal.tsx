@@ -19,6 +19,7 @@ export function SendToTeacherModal({
   const [groups, setGroups] = useState<Group[]>([])
   const [allGroups, setAllGroups] = useState<Group[]>([])
   const [stages, setStages] = useState<string[]>([])
+  const [teacherGroups, setTeacherGroups] = useState<any[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
   const [selectedStage, setSelectedStage] = useState('')
@@ -31,6 +32,7 @@ export function SendToTeacherModal({
       fetchTeachers()
       fetchGroups()
       fetchSpecialStatuses()
+      fetchTeacherGroups()
     }
   }, [isOpen])
 
@@ -65,16 +67,52 @@ export function SendToTeacherModal({
     if (data) setSpecialStatuses(data)
   }
 
+  const fetchTeacherGroups = async () => {
+    const { data } = await supabase
+      .from('teacher_groups')
+      .select('*, groups(*)')
+      .order('created_at')
+
+    if (data) setTeacherGroups(data)
+  }
+
   useEffect(() => {
-    if (selectedStage) {
-      const stageGroups = allGroups.filter(g => g.stage === selectedStage)
+    if (selectedTeacherId) {
+      const teacherGroupIds = teacherGroups
+        .filter(tg => tg.teacher_id === selectedTeacherId)
+        .map(tg => tg.group_id)
+
+      const teacherAssignedGroups = allGroups.filter(g => teacherGroupIds.includes(g.id))
+      const teacherStages = [...new Set(teacherAssignedGroups.map(g => g.stage))]
+      setStages(teacherStages)
+
+      setSelectedStage('')
+      setGroups([])
+      setSelectedGroupIds([])
+    } else {
+      setStages([])
+      setGroups([])
+      setSelectedStage('')
+      setSelectedGroupIds([])
+    }
+  }, [selectedTeacherId, allGroups, teacherGroups])
+
+  useEffect(() => {
+    if (selectedStage && selectedTeacherId) {
+      const teacherGroupIds = teacherGroups
+        .filter(tg => tg.teacher_id === selectedTeacherId)
+        .map(tg => tg.group_id)
+
+      const stageGroups = allGroups.filter(g =>
+        g.stage === selectedStage && teacherGroupIds.includes(g.id)
+      )
       setGroups(stageGroups)
       setSelectedGroupIds([])
     } else {
       setGroups([])
       setSelectedGroupIds([])
     }
-  }, [selectedStage, allGroups])
+  }, [selectedStage, selectedTeacherId, allGroups, teacherGroups])
 
   const toggleGroup = (groupId: string) => {
     if (selectedGroupIds.includes(groupId)) {
@@ -251,7 +289,7 @@ export function SendToTeacherModal({
               <option value="">-- اختر المعلم --</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} - {teacher.specialization}
+                  {teacher.name} - {teacher.specialization || 'غير محدد'}
                 </option>
               ))}
             </select>
@@ -261,31 +299,45 @@ export function SendToTeacherModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               اختر المرحلة <span className="text-red-500">*</span>
             </label>
-            <select
-              value={selectedStage}
-              onChange={(e) => setSelectedStage(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="">-- اختر المرحلة --</option>
-              {stages.map((stage) => (
-                <option key={stage} value={stage}>
-                  {stage}
-                </option>
-              ))}
-            </select>
+            {!selectedTeacherId ? (
+              <div className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-center">
+                <p className="text-sm text-gray-500">اختر المعلم أولاً</p>
+              </div>
+            ) : stages.length === 0 ? (
+              <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 text-center">
+                <p className="text-sm text-yellow-700">لا توجد مراحل مسندة لهذا المعلم</p>
+              </div>
+            ) : (
+              <select
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">-- اختر المرحلة --</option>
+                {stages.map((stage) => (
+                  <option key={stage} value={stage}>
+                    {stage}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               اختر المجموعة <span className="text-red-500">*</span>
             </label>
-            {!selectedStage ? (
+            {!selectedTeacherId ? (
+              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-sm text-gray-500">اختر المعلم أولاً</p>
+              </div>
+            ) : !selectedStage ? (
               <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-center">
                 <p className="text-sm text-gray-500">اختر المرحلة أولاً</p>
               </div>
             ) : groups.length === 0 ? (
-              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-500">لا توجد مجموعات في هذه المرحلة</p>
+              <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-center">
+                <p className="text-sm text-yellow-700">لا توجد مجموعات مسندة لهذا المعلم في هذه المرحلة</p>
               </div>
             ) : (
               <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">

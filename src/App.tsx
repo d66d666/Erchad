@@ -751,6 +751,201 @@ function App() {
     printWindow.document.close()
   }
 
+  const printStudentData = (student: Student) => {
+    const now = new Date()
+    const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
+    const gregorianDate = now.toLocaleDateString('ar-SA')
+    const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+
+    const group = groups.find(g => g.id === student.group_id)
+    const specialStatus = student.special_status_id
+      ? specialStatuses.find(s => s.id === student.special_status_id)?.name
+      : null
+
+    const printWindow = window.open('', '', 'width=1000,height=800')
+    if (!printWindow) return
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+        <head>
+          <title>بيانات الطالب - ${student.name}</title>
+          <meta charset="UTF-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page { size: A4 portrait; margin: 20mm; }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: white;
+              color: #000;
+              font-size: 13px;
+              padding: 30px;
+            }
+            .page-header {
+              display: flex;
+              justify-content: space-between;
+              font-size: 11px;
+              margin-bottom: 15px;
+              padding-bottom: 8px;
+              border-bottom: 1px solid #ddd;
+            }
+            .school-header {
+              text-align: center;
+              margin-bottom: 30px;
+              padding: 20px;
+              border: 2px solid #3b82f6;
+              border-radius: 12px;
+              background: linear-gradient(to bottom, #eff6ff 0%, #dbeafe 100%);
+            }
+            .school-name {
+              font-size: 24px;
+              font-weight: 700;
+              color: #1e40af;
+              margin-bottom: 8px;
+            }
+            .teacher-info {
+              display: flex;
+              justify-content: center;
+              gap: 20px;
+              font-size: 12px;
+              color: #1e40af;
+            }
+            .main-title {
+              text-align: center;
+              margin: 25px 0 20px 0;
+            }
+            .main-title h2 {
+              font-size: 22px;
+              font-weight: 700;
+              color: #1e40af;
+              padding: 10px 20px;
+              border-top: 2px solid #3b82f6;
+              border-bottom: 2px solid #3b82f6;
+              display: inline-block;
+            }
+            .student-name {
+              text-align: center;
+              font-size: 20px;
+              font-weight: 700;
+              color: #1f2937;
+              margin-bottom: 25px;
+              padding: 12px;
+              background: #f3f4f6;
+              border-radius: 8px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+              border: 2px solid #3b82f6;
+            }
+            th, td {
+              padding: 14px 12px;
+              text-align: right;
+              border: 1px solid #cbd5e1;
+              font-size: 14px;
+            }
+            th {
+              background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+              color: white;
+              font-weight: 600;
+              width: 35%;
+            }
+            td {
+              background: #fafafa;
+              font-weight: 600;
+              color: #1f2937;
+            }
+            tr:nth-child(even) td {
+              background: #ffffff;
+            }
+            .special-status {
+              background: #fef3c7 !important;
+              color: #92400e;
+            }
+            .page-footer {
+              margin-top: 40px;
+              padding-top: 15px;
+              border-top: 2px solid #cbd5e1;
+              text-align: center;
+              font-size: 11px;
+              color: #6b7280;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page-header">
+            <div>${time} ${gregorianDate}</div>
+            <div>منسق الشؤون الطلابية</div>
+          </div>
+
+          <div class="school-header">
+            <h1 class="school-name">${schoolName}</h1>
+            <div class="teacher-info">
+              <div>برنامج إدارة الطلاب</div>
+              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+            </div>
+          </div>
+
+          <div class="main-title">
+            <h2>بيانات الطالب</h2>
+          </div>
+
+          <div class="student-name">${student.name}</div>
+
+          <table>
+            <tbody>
+              <tr>
+                <th>رقم الهوية / الإقامة</th>
+                <td>${student.national_id}</td>
+              </tr>
+              <tr>
+                <th>رقم جوال الطالب</th>
+                <td>${student.phone || 'غير محدد'}</td>
+              </tr>
+              <tr>
+                <th>رقم جوال ولي الأمر</th>
+                <td>${student.guardian_phone || 'غير محدد'}</td>
+              </tr>
+              <tr>
+                <th>الصف</th>
+                <td>${student.grade}</td>
+              </tr>
+              <tr>
+                <th>المجموعة</th>
+                <td>${group?.name || 'غير محدد'}</td>
+              </tr>
+              <tr>
+                <th>المرحلة الدراسية</th>
+                <td>${group?.stage || 'غير محدد'}</td>
+              </tr>
+              ${specialStatus ? `
+                <tr>
+                  <th>الحالة الخاصة</th>
+                  <td class="special-status">${specialStatus}</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+
+          <div class="page-footer">
+            <div>طُبع بتاريخ: ${hijriDate} هـ - ${gregorianDate} م</div>
+          </div>
+
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.onafterprint = () => window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
   const printAllGroups = () => {
     const now = new Date()
     const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
@@ -2489,7 +2684,11 @@ function App() {
             <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3">
               <button
                 onClick={() => {
-                  window.print()
+                  if (printStudent) {
+                    printStudentData(printStudent)
+                    setShowPrintModal(false)
+                    setPrintStudent(null)
+                  }
                 }}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
               >

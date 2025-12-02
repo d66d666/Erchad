@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
-import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle } from 'lucide-react'
+import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle, Copy, Check } from 'lucide-react'
 
 interface LoginPageProps {
   onLogin: () => void
@@ -17,6 +17,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [newPassword, setNewPassword] = useState('')
   const [resetStep, setResetStep] = useState<'token' | 'password'>('token')
   const [resetMessage, setResetMessage] = useState('')
+  const [generatedToken, setGeneratedToken] = useState('')
+  const [copiedToken, setCopiedToken] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,7 +83,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         reset_token_expires: expiresAt.toISOString(),
       })
 
-      setResetMessage(`رمز الاستعادة الخاص بك هو: ${token}\n(صالح لمدة ساعة واحدة)`)
+      setGeneratedToken(token)
+      setResetMessage('تم إنشاء رمز الاستعادة بنجاح')
       setResetStep('password')
     } catch (err) {
       console.error('Generate token error:', err)
@@ -132,6 +135,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         setResetToken('')
         setNewPassword('')
         setResetMessage('')
+        setGeneratedToken('')
+        setCopiedToken(false)
       }, 2000)
     } catch (err) {
       console.error('Reset password error:', err)
@@ -193,8 +198,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 )}
 
                 {resetMessage && (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-800 font-medium whitespace-pre-line">{resetMessage}</p>
+                  <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-green-800 font-medium mb-2">{resetMessage}</p>
                   </div>
                 )}
 
@@ -220,6 +225,38 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </form>
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-6">
+                {generatedToken && (
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800 font-medium mb-3 text-center">
+                      رمز الاستعادة الخاص بك (صالح لمدة ساعة واحدة)
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-white border-2 border-blue-300 rounded-lg px-4 py-3 text-center">
+                        <span className="text-2xl font-mono font-bold text-blue-900 tracking-wider select-all">
+                          {generatedToken}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedToken)
+                          setCopiedToken(true)
+                          setTimeout(() => setCopiedToken(false), 2000)
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-all shadow-md flex-shrink-0"
+                        title="نسخ الرمز"
+                      >
+                        {copiedToken ? <Check size={24} /> : <Copy size={24} />}
+                      </button>
+                    </div>
+                    {copiedToken && (
+                      <p className="text-xs text-green-600 font-medium mt-2 text-center">
+                        تم نسخ الرمز بنجاح!
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     رمز الاستعادة
@@ -227,7 +264,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   <input
                     type="text"
                     value={resetToken}
-                    onChange={(e) => setResetToken(e.target.value.toUpperCase())}
+                    onChange={(e) => setResetToken(e.target.value.trim().toUpperCase())}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center text-lg font-mono"
                     placeholder="أدخل الرمز"
                     required

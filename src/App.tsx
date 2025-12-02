@@ -1549,10 +1549,10 @@ function App() {
 
             {/* Main */}
             <div className="flex-1">
-              <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
-                  <Search className="text-white" size={28} />
+              <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-xl shadow-md p-4 mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-bold text-white">استفسار عن طالب</h2>
+                  <Search className="text-white" size={20} />
                 </div>
                 <div className="relative">
                   <input
@@ -1560,9 +1560,9 @@ function App() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
-                    className="w-full px-6 py-4 pr-12 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-white"
+                    className="w-full px-4 py-2.5 pr-10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white"
                   />
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 </div>
               </div>
 
@@ -1661,65 +1661,65 @@ function App() {
                                 const isGroupExpanded = expandedGroups.has(group.id)
 
                                 return (
-                                  <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
+                                  <div key={group.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between`}
+                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-4 py-2 flex items-center justify-between`}
                                     >
-                                      <div className="flex items-center gap-3">
-                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
-                                        <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
+                                      <div className="flex items-center gap-2">
+                                        <h3 className="text-sm font-bold text-white">{group.name}</h3>
+                                        <div className="bg-white bg-opacity-30 px-2.5 py-0.5 rounded-full">
                                           <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
                                         </div>
                                       </div>
                                       <ChevronDown
-                                        size={20}
+                                        size={16}
                                         className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
                                       />
                                     </button>
 
                                     {isGroupExpanded && (
-                                      <div className="p-6 pb-32">
+                                      <div className="p-3 pb-32">
                                         {groupStudents.length === 0 ? (
-                                          <p className="text-center text-gray-500 py-8">لا يوجد طلاب</p>
+                                          <p className="text-center text-gray-500 py-4 text-sm">لا يوجد طلاب</p>
                                         ) : (
-                                          <div className="space-y-3">
+                                          <div className="space-y-2">
                                             {groupStudents.map(student => {
                                               const specialStatus = specialStatuses.find(ss => ss.id === student.special_status_id)
                                               return (
                                                 <div
                                                   key={student.id}
-                                                  className={`border-2 rounded-xl p-4 transition-all relative ${
+                                                  className={`border rounded-lg p-3 transition-all relative ${
                                                     specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
                                                   }`}
                                                 >
                                                   {specialStatus && (
-                                                    <div className="absolute top-3 left-12 px-3 py-1 rounded-md text-sm font-bold bg-purple-200 text-purple-800 z-10">
+                                                    <div className="absolute top-2 left-8 px-2 py-0.5 rounded-md text-xs font-bold bg-purple-200 text-purple-800 z-10">
                                                       {specialStatus.name}
                                                     </div>
                                                   )}
                                                   <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                      <h4 className="text-lg font-bold text-gray-900 mb-2">{student.name}</h4>
-                                                      <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm text-right mb-3">
+                                                      <h4 className="text-base font-bold text-gray-900 mb-1.5">{student.name}</h4>
+                                                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-right mb-2">
                                                         <p className="text-gray-700">السجل: {student.national_id}</p>
                                                         <p className="text-gray-700">الصف: {student.grade}</p>
                                                         <p className="text-gray-700">جوال: {student.phone}</p>
                                                         <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
                                                       </div>
-                                                      <div className="flex gap-3 text-xs font-semibold">
+                                                      <div className="flex gap-2 text-xs font-semibold">
                                                         {mainMenuItems.reception && (
-                                                          <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">
+                                                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
                                                             الاستقبال: {student.visit_count || 0}
                                                           </span>
                                                         )}
                                                         {mainMenuItems.permission && (
-                                                          <span className="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg">
+                                                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md">
                                                             الاستئذانات: {student.permission_count || 0}
                                                           </span>
                                                         )}
                                                         {mainMenuItems.violations && (
-                                                          <span className="bg-red-100 text-red-700 px-3 py-1.5 rounded-lg">
+                                                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-md">
                                                             المخالفات: {student.violation_count || 0}
                                                           </span>
                                                         )}

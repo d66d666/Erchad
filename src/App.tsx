@@ -1427,7 +1427,7 @@ function App() {
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{specialStatusCount}</div>
-                  <Users size={32} className="opacity-80" />
+                  <Heart size={32} className="opacity-80" />
                 </div>
                 <div className="text-sm opacity-90">فئات الطلاب</div>
               </div>

@@ -119,6 +119,38 @@ function App() {
     })
   }
 
+  // دالة ترتيب المراحل الدراسية بشكل صحيح
+  const sortStages = (stages: string[]) => {
+    const stageOrder = [
+      'الصف الأول الابتدائي',
+      'الصف الثاني الابتدائي',
+      'الصف الثالث الابتدائي',
+      'الصف الرابع الابتدائي',
+      'الصف الخامس الابتدائي',
+      'الصف السادس الابتدائي',
+      'الصف الأول المتوسط',
+      'الصف الثاني المتوسط',
+      'الصف الثالث المتوسط',
+      'الأول الثانوي',
+      'الصف الأول الثانوي',
+      'الثاني الثانوي',
+      'الصف الثاني الثانوي',
+      'الثالث الثانوي',
+      'الصف الثالث الثانوي',
+    ]
+
+    return stages.sort((a, b) => {
+      const indexA = stageOrder.indexOf(a)
+      const indexB = stageOrder.indexOf(b)
+
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b, 'ar')
+      if (indexA === -1) return 1
+      if (indexB === -1) return -1
+
+      return indexA - indexB
+    })
+  }
+
   const fetchTodayStats = async () => {
     try {
       // استخدام تاريخ اليوم المحلي للمستخدم
@@ -1537,7 +1569,7 @@ function App() {
                         className="w-full px-4 py-3 bg-blue-50 border-2 border-blue-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none cursor-pointer"
                       >
                         <option value="all">الكل</option>
-                        {Array.from(new Set(groups.map(g => g.stage))).sort().map(stage => (
+                        {sortStages(Array.from(new Set(groups.map(g => g.stage)))).map(stage => (
                           <option key={stage} value={stage}>{stage}</option>
                         ))}
                       </select>
@@ -1638,7 +1670,7 @@ function App() {
                       .filter(g => groupFilter === 'all' || g.id === groupFilter)
                       .sort((a, b) => a.display_order - b.display_order)
 
-                    const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
+                    const stages = sortStages(Array.from(new Set(filteredGroups.map(g => g.stage))))
 
                     const stageColors = [
                       { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800', textColor: 'text-black' },

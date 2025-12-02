@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import { Group, SpecialStatus, Student } from '../types'
 import { Plus, X } from 'lucide-react'
 

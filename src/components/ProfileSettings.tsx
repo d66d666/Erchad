@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown } from 'lucide-react'
 
 interface ProfileSettingsProps {

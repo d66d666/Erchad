@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown, Printer, UserPlus } from 'lucide-react'
 import { db } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Group, Student, SpecialStatus } from '../types'
 import { AddStudentModal } from '../components/AddStudentModal'
 

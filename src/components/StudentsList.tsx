@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import { Student, SpecialStatus, SchoolInfo } from '../types'
 import { Trash2, Edit2, MoreVertical, Printer, DoorOpen } from 'lucide-react'
 import { AllowClassEntryModal } from './AllowClassEntryModal'

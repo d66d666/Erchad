@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { db } from '../lib/db'
+import { supabase } from '../lib/supabase'
 import { Upload, AlertCircle, Users, GraduationCap, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 

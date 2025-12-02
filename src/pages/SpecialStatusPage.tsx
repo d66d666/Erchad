@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
 import { Heart, Printer, FileText, Send, Filter } from 'lucide-react'
 import { SendToTeacherModal } from '../components/SendToTeacherModal'

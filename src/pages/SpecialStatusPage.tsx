@@ -94,7 +94,7 @@ export function SpecialStatusPage({
             .group-info { margin-bottom: 15px; color: #64748b; font-size: 14px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
-            th { background-color: #f8fafc; color: #475569; font-size: 12px; font-weight: 600; }
+            th { background-color: #7c3aed; color: #ffffff; font-size: 12px; font-weight: 600; }
             tr:nth-child(even) { background-color: #fafafa; }
             td { font-size: 13px; color: #334155; }
           </style>
@@ -201,7 +201,7 @@ export function SpecialStatusPage({
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
             th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: right; }
-            th { background-color: #f8fafc; color: #475569; font-size: 12px; font-weight: 600; }
+            th { background-color: #7c3aed; color: #ffffff; font-size: 12px; font-weight: 600; }
             tr:nth-child(even) { background-color: #fafafa; }
             td { font-size: 13px; color: #334155; }
           </style>

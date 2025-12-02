@@ -31,6 +31,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     visits: false,
     permissions: false,
     violations: false,
+    profile: false,
     all: false,
   })
 
@@ -215,6 +216,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         visits: newValue,
         permissions: newValue,
         violations: newValue,
+        profile: newValue,
         all: newValue,
       })
     } else {
@@ -228,7 +230,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const handleResetDatabase = async () => {
     if (!deleteOptions.students && !deleteOptions.teachers && !deleteOptions.specialStatuses &&
-        !deleteOptions.visits && !deleteOptions.permissions && !deleteOptions.violations && !deleteOptions.all) {
+        !deleteOptions.visits && !deleteOptions.permissions && !deleteOptions.violations &&
+        !deleteOptions.profile && !deleteOptions.all) {
       alert('الرجاء اختيار البيانات المراد حذفها')
       return
     }
@@ -279,6 +282,12 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         await db.groups.clear()
       }
 
+      if (deleteOptions.profile || deleteOptions.all) {
+        const { error: profileError } = await supabase.from('teacher_profile').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+        if (profileError) errors.push(profileError)
+        await db.teacher_profile.clear()
+      }
+
       if (errors.length > 0) {
         console.error('Errors during reset:', errors)
         alert('تم حذف بعض البيانات ولكن حدثت بعض الأخطاء. جرب مرة أخرى.')
@@ -296,6 +305,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         visits: false,
         permissions: false,
         violations: false,
+        profile: false,
         all: false,
       })
       onClose()
@@ -599,6 +609,16 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                     type="checkbox"
                     checked={deleteOptions.violations}
                     onChange={() => handleDeleteOptionChange('violations')}
+                    className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  />
+                </label>
+
+                <label className="flex items-center justify-end gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                  <span className="text-sm text-gray-700">معلومات النظام</span>
+                  <input
+                    type="checkbox"
+                    checked={deleteOptions.profile}
+                    onChange={() => handleDeleteOptionChange('profile')}
                     className="w-5 h-5 text-red-600 rounded focus:ring-red-500"
                   />
                 </label>

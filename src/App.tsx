@@ -1588,7 +1588,7 @@ function App() {
                         return sum + groupStudents.length
                       }, 0)
 
-                      if (totalStageStudents === 0 && searchTerm !== '') return null
+                      if (totalStageStudents === 0 && (searchTerm !== '' || specialStatusFilter !== 'all')) return null
 
                       const isStageExpanded = expandedGroups.has(stage)
                       const colors = stageColors[index % stageColors.length]
@@ -1625,7 +1625,7 @@ function App() {
                                   )
                                   .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
 
-                                if (groupStudents.length === 0 && searchTerm !== '') return null
+                                if (groupStudents.length === 0 && (searchTerm !== '' || specialStatusFilter !== 'all')) return null
 
                                 const isGroupExpanded = expandedGroups.has(group.id)
 

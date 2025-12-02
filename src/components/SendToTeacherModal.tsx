@@ -1,37 +1,36 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { X, Send } from 'lucide-react'
-import { Teacher, Group, Student } from '../types'
+import { Teacher, Group, Student, SpecialStatus } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 
 interface SendToTeacherModalProps {
   isOpen: boolean
   onClose: () => void
   allStudents: Student[]
-  selectedStatusId: string
-  selectedStatusName: string
 }
 
 export function SendToTeacherModal({
   isOpen,
   onClose,
   allStudents,
-  selectedStatusId,
-  selectedStatusName,
 }: SendToTeacherModalProps) {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [allGroups, setAllGroups] = useState<Group[]>([])
   const [stages, setStages] = useState<string[]>([])
+  const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
   const [selectedStage, setSelectedStage] = useState('')
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([])
+  const [selectedStatusId, setSelectedStatusId] = useState('all')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       fetchTeachers()
       fetchGroups()
+      fetchSpecialStatuses()
     }
   }, [isOpen])
 
@@ -55,6 +54,15 @@ export function SendToTeacherModal({
       const uniqueStages = [...new Set(data.map(g => g.stage))]
       setStages(uniqueStages)
     }
+  }
+
+  const fetchSpecialStatuses = async () => {
+    const { data } = await supabase
+      .from('special_statuses')
+      .select('*')
+      .order('name')
+
+    if (data) setSpecialStatuses(data)
   }
 
   useEffect(() => {
@@ -212,16 +220,22 @@ export function SendToTeacherModal({
             </p>
           </div>
 
-          <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-300">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-purple-900">الفئة المحددة:</span>
-              <span className="text-base font-bold text-purple-700">{selectedStatusName}</span>
-            </div>
-            {selectedStatusId !== 'all' && (
-              <p className="text-xs text-purple-600 mt-1">
-                سيتم إرسال الطلاب المنتمين لهذه الفئة فقط
-              </p>
-            )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              اختر الفئة <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedStatusId}
+              onChange={(e) => setSelectedStatusId(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-purple-300 bg-purple-50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold text-purple-900"
+            >
+              <option value="all">جميع الفئات</option>
+              {specialStatuses.map((status) => (
+                <option key={status.id} value={status.id}>
+                  {status.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

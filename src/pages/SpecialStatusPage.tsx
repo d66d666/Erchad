@@ -424,10 +424,6 @@ export function SpecialStatusPage({
         isOpen={showSendToTeacherModal}
         onClose={() => setShowSendToTeacherModal(false)}
         allStudents={students}
-        selectedStatusId={selectedStatusId}
-        selectedStatusName={selectedStatusId === 'all'
-          ? 'جميع الفئات'
-          : specialStatuses.find(s => s.id === selectedStatusId)?.name || 'فئة محددة'}
       />
     </div>
   )

@@ -75,7 +75,7 @@ export function SpecialStatusPage({
 
     const selectedStatus = specialStatuses.find(s => s.id === selectedStatusId)
     const titleText = selectedStatusId === 'all'
-      ? 'فئات الطلاب المميزة'
+      ? 'فئات الطلاب'
       : selectedStatus?.name || 'فئة محددة'
 
     const printContent = `
@@ -212,7 +212,7 @@ export function SpecialStatusPage({
             <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
           <div class="stage">${group.stage}</div>
-          <h1>فئات الطلاب المميزة - ${group.name}</h1>
+          <h1>فئات الطلاب - ${group.name}</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
           <table>
@@ -268,7 +268,7 @@ export function SpecialStatusPage({
               <Heart size={20} className="text-purple-600" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">فئات الطلاب المميزة</h1>
+              <h1 className="text-xl font-bold text-gray-900">فئات الطلاب</h1>
               <p className="text-sm text-purple-700 mt-0.5 font-medium">
                 إجمالي الطلاب: {studentsWithSpecialStatus.length}
               </p>

@@ -2112,7 +2112,7 @@ function App() {
                       handleAddSpecialStatus()
                     }
                   }}
-                  placeholder="مثال: ربو، سكري، يتيم..."
+                  placeholder="مثال: ربو، موهوب، سكري، متفوق، عريف الفصل..."
                   className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                 />
                 <button

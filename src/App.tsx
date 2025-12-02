@@ -1641,10 +1641,10 @@ function App() {
                     const stages = Array.from(new Set(filteredGroups.map(g => g.stage)))
 
                     const stageColors = [
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800' },
-                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800', textColor: 'text-black' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800', textColor: 'text-black' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800', textColor: 'text-black' },
+                      { from: 'from-gray-300', to: 'to-gray-400', hoverFrom: 'hover:from-gray-400', hoverTo: 'hover:to-gray-500', group: 'from-green-600', groupTo: 'to-green-700', groupHoverFrom: 'hover:from-green-700', groupHoverTo: 'hover:to-green-800', textColor: 'text-black' },
                     ]
 
                     return stages.map((stage, index) => {
@@ -1684,9 +1684,9 @@ function App() {
                             <div className="flex items-center gap-3">
                               <ChevronDown
                                 size={22}
-                                className={`text-white transition-transform ${isStageExpanded ? 'rotate-180' : ''}`}
+                                className={`${colors.textColor} transition-transform ${isStageExpanded ? 'rotate-180' : ''}`}
                               />
-                              <h2 className="text-lg font-bold text-white">{stage}</h2>
+                              <h2 className={`text-lg font-bold ${colors.textColor}`}>{stage}</h2>
                             </div>
                             <div className="bg-white px-4 py-1.5 rounded-full">
                               <span className="text-gray-800 font-bold text-sm">{totalStageStudents} طالب</span>
@@ -2164,7 +2164,7 @@ function App() {
                       <option value="الصف الأول المتوسط">الصف الأول المتوسط</option>
                       <option value="الصف الثاني المتوسط">الصف الثاني المتوسط</option>
                       <option value="الصف الثالث المتوسط">الصف الثالث المتوسط</option>
-                      <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                      <option value="الأول الثانوي">الأول الثانوي</option>
                       <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
                       <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
                     </select>

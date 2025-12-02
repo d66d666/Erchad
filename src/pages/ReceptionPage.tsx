@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
-import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
+import { UserCheck, Search, FileText, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { formatBothDates } from '../lib/hijriDate'
 
@@ -285,139 +285,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       console.error('Error deleting visit:', error)
       alert('حدث خطأ أثناء الحذف')
     }
-  }
-
-  async function printVisit(visit: VisitWithStudent) {
-    const printWindow = window.open('', '', 'width=800,height=600')
-    if (!printWindow) return
-
-    const visitDate = new Date(visit.visit_date)
-    const hijriDate = visitDate.toLocaleDateString('ar-SA-u-ca-islamic', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).replace(/\u200f/g, '')
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html dir="rtl">
-        <head>
-          <title>تقرير زيارة طالب</title>
-          <meta charset="UTF-8">
-          <style>
-            @page { margin: 2cm; }
-            body { 
-              font-family: 'Arial', sans-serif; 
-              padding: 40px; 
-              margin: 0;
-            }
-            .header { 
-              text-align: center; 
-              margin-bottom: 10px;
-            }
-            .header-line {
-              font-size: 14px;
-              color: #374151;
-              margin: 3px 0;
-            }
-            .title {
-              font-size: 16px;
-              font-weight: bold;
-              text-align: center;
-              margin: 15px 0;
-            }
-            .divider {
-              border-bottom: 2px solid #000;
-              margin: 15px 0 25px 0;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-            }
-            td {
-              padding: 12px;
-              border-bottom: 1px solid #e5e7eb;
-              font-size: 14px;
-            }
-            .label-cell {
-              text-align: right;
-              font-weight: bold;
-              color: #1f2937;
-              width: 30%;
-            }
-            .value-cell {
-              text-align: right;
-              color: #374151;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 40px;
-              font-size: 12px;
-              color: #6b7280;
-            }
-            @media print { 
-              body { padding: 20px; } 
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
-            <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
-            <div class="header-line" style="font-weight: bold;">تقرير زيارة طالب</div>
-          </div>
-          
-          <div class="divider"></div>
-          
-          <table>
-            <tr>
-              <td class="label-cell">نوع الحضور</td>
-              <td class="value-cell">حضر</td>
-            </tr>
-            <tr>
-              <td class="label-cell">التاريخ</td>
-              <td class="value-cell">${hijriDate}</td>
-            </tr>
-            <tr>
-              <td class="label-cell">اسم الطالب</td>
-              <td class="value-cell">${visit.student?.name || ''}</td>
-            </tr>
-            <tr>
-              <td class="label-cell">السجل المدني</td>
-              <td class="value-cell">${visit.student?.national_id || ''}</td>
-            </tr>
-            <tr>
-              <td class="label-cell">سبب الزيارة</td>
-              <td class="value-cell">${visit.reason}</td>
-            </tr>
-            <tr>
-              <td class="label-cell">الإجراء المتخذ</td>
-              <td class="value-cell">${visit.action_taken}</td>
-            </tr>
-            <tr>
-              <td class="label-cell">التحويل إلى</td>
-              <td class="value-cell">${visit.referred_to}</td>
-            </tr>
-            ${visit.notes ? `
-            <tr>
-              <td class="label-cell">ملاحظات</td>
-              <td class="value-cell">${visit.notes}</td>
-            </tr>
-            ` : ''}
-          </table>
-          
-          <div class="footer">
-            تم الإنشاء بتاريخ: ${new Date().toLocaleDateString('ar-SA-u-ca-islamic')}
-          </div>
-          
-          <script>window.print(); window.onafterprint = () => window.close();</script>
-        </body>
-      </html>
-    `)
   }
 
   function sendWhatsApp(visit: VisitWithStudent) {
@@ -789,13 +656,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                   >
                     <Trash2 size={16} />
                     حذف
-                  </button>
-                  <button
-                    onClick={() => printVisit(visit)}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
-                  >
-                    <Printer size={16} />
-                    طباعة
                   </button>
                   <button
                     onClick={() => sendWhatsApp(visit)}

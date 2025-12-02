@@ -1194,7 +1194,7 @@ function App() {
     { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home, show: true },
     { id: 'teachers' as Page, label: 'المعلمين', icon: GraduationCap, show: mainMenuItems.teachers },
     { id: 'groups' as Page, label: 'المجموعات', icon: Users, show: mainMenuItems.groups },
-    { id: 'special-status' as Page, label: 'الحالات الخاصة', icon: Heart, show: mainMenuItems.specialNeeds },
+    { id: 'special-status' as Page, label: 'فئات الطلاب المميزة', icon: Heart, show: mainMenuItems.specialNeeds },
     { id: 'reception' as Page, label: 'استقبال الطلاب', icon: UserCheck, show: mainMenuItems.reception },
     { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut, show: mainMenuItems.permission },
     { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle, show: mainMenuItems.violations },
@@ -1302,7 +1302,7 @@ function App() {
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
                     >
                       <Heart size={18} className="text-pink-600" />
-                      <span className="text-sm font-medium text-gray-700">إدارة الحالات الخاصة</span>
+                      <span className="text-sm font-medium text-gray-700">إدارة فئات الطلاب المميزة</span>
                     </button>
 
                     <button
@@ -1454,7 +1454,7 @@ function App() {
                 <div className="space-y-4">
                   {mainMenuItems.specialNeeds && (
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">الحالات الخاصة</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">فئات الطلاب المميزة</label>
                       <div className="relative">
                         <select
                           value={specialStatusFilter}
@@ -1894,7 +1894,7 @@ function App() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span>الحالات الخاصة</span>
+                  <span>فئات الطلاب المميزة</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -1969,7 +1969,7 @@ function App() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[70vh] overflow-hidden flex flex-col">
             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-3.5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">إدارة الحالات الخاصة</h2>
+              <h2 className="text-lg font-bold text-white">إدارة فئات الطلاب المميزة</h2>
               <button
                 onClick={() => {
                   setShowManageSpecialStatusModal(false)

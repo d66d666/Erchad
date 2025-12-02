@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
-import { Heart, Printer, FileText, Send } from 'lucide-react'
+import { Heart, Printer, FileText, Send, Filter } from 'lucide-react'
 import { SendToTeacherModal } from '../components/SendToTeacherModal'
 
 export function SpecialStatusPage({
@@ -16,6 +16,7 @@ export function SpecialStatusPage({
   const [labPhone, setLabPhone] = useState('')
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showSendToTeacherModal, setShowSendToTeacherModal] = useState(false)
+  const [selectedStatusId, setSelectedStatusId] = useState<string>('all')
 
   useEffect(() => {
     fetchLabContact()
@@ -33,7 +34,8 @@ export function SpecialStatusPage({
   }
 
   const studentsWithSpecialStatus = students.filter(
-    (s) => s.special_status_id !== null
+    (s) => s.special_status_id !== null &&
+    (selectedStatusId === 'all' || s.special_status_id === selectedStatusId)
   )
 
   const groupedByStage = groups.reduce((acc, group) => {
@@ -72,15 +74,20 @@ export function SpecialStatusPage({
     const date = now.toLocaleDateString('ar-SA')
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
 
+    const selectedStatus = specialStatuses.find(s => s.id === selectedStatusId)
+    const titleText = selectedStatusId === 'all'
+      ? 'فئات الطلاب المميزة'
+      : selectedStatus?.name || 'فئة محددة'
+
     const printContent = `
       <html dir="rtl">
         <head>
-          <title>جميع الحالات الخاصة</title>
+          <title>${titleText}</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 20px; }
             .header { text-align: center; margin-bottom: 20px; }
             .header-line { font-size: 14px; color: #374151; margin: 3px 0; }
-            h1 { text-align: center; color: #f43f5e; margin-bottom: 10px; }
+            h1 { text-align: center; color: #7c3aed; margin-bottom: 10px; }
             .meta { text-align: center; color: #666; font-size: 12px; margin-bottom: 30px; }
             .group-section { margin-bottom: 40px; page-break-after: always; }
             .group-title { color: #1e293b; font-size: 20px; margin-bottom: 10px; font-weight: 700; }
@@ -98,10 +105,10 @@ export function SpecialStatusPage({
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
             <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
-          <h1>جميع الحالات الخاصة</h1>
+          <h1>${titleText}</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
-            <strong>إجمالي الطلاب ذوي الحالات الخاصة: ${studentsWithSpecialStatus.length}</strong>
+            <strong>إجمالي الطلاب: ${studentsWithSpecialStatus.length}</strong>
           </p>
           ${stages.map(stage => `
             <div style="margin-bottom: 50px;">
@@ -117,7 +124,7 @@ export function SpecialStatusPage({
                         <th>السجل المدني</th>
                         <th>جوال الطالب</th>
                         <th>جوال ولي الأمر</th>
-                        <th>الحالة الخاصة</th>
+                        <th>الفئة</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -206,7 +213,7 @@ export function SpecialStatusPage({
             <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
           </div>
           <div class="stage">${group.stage}</div>
-          <h1>الحالات الخاصة - ${group.name}</h1>
+          <h1>فئات الطلاب المميزة - ${group.name}</h1>
           <div class="meta">طُبع بتاريخ: ${date} - الساعة: ${time}</div>
           <p><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>
           <table>
@@ -216,7 +223,7 @@ export function SpecialStatusPage({
                 <th>السجل المدني</th>
                 <th>جوال الطالب</th>
                 <th>جوال ولي الأمر</th>
-                <th>الحالة الخاصة</th>
+                <th>الفئة</th>
               </tr>
             </thead>
             <tbody>
@@ -256,13 +263,13 @@ export function SpecialStatusPage({
   return (
     <div className="space-y-4">
       <div className="bg-gradient-to-br from-purple-100 via-violet-100 to-fuchsia-100 rounded-xl shadow-md border border-purple-200 p-5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-200">
               <Heart size={20} className="text-purple-600" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">الحالات الخاصة</h1>
+              <h1 className="text-xl font-bold text-gray-900">فئات الطلاب المميزة</h1>
               <p className="text-sm text-purple-700 mt-0.5 font-medium">
                 إجمالي الطلاب: {studentsWithSpecialStatus.length}
               </p>
@@ -295,6 +302,23 @@ export function SpecialStatusPage({
               <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
             </label>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 mt-4">
+          <Filter size={18} className="text-purple-600" />
+          <span className="text-sm font-medium text-gray-700">فلترة حسب الفئة:</span>
+          <select
+            value={selectedStatusId}
+            onChange={(e) => setSelectedStatusId(e.target.value)}
+            className="px-4 py-2 border border-purple-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-purple-50 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="all">جميع الفئات</option>
+            {specialStatuses.map((status) => (
+              <option key={status.id} value={status.id}>
+                {status.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -345,7 +369,7 @@ export function SpecialStatusPage({
                         جوال ولي الأمر
                       </th>
                       <th className="px-5 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-200">
-                        الحالة الخاصة
+                        الفئة
                       </th>
                     </tr>
                   </thead>
@@ -387,7 +411,11 @@ export function SpecialStatusPage({
       {studentsWithSpecialStatus.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
           <FileText className="mx-auto text-gray-300 mb-3" size={48} />
-          <p className="text-gray-500 text-base">لا يوجد طلاب بحالات خاصة</p>
+          <p className="text-gray-500 text-base">
+            {selectedStatusId === 'all'
+              ? 'لا يوجد طلاب في فئات مميزة'
+              : 'لا يوجد طلاب في هذه الفئة'}
+          </p>
         </div>
       )}
 

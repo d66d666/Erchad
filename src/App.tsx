@@ -351,12 +351,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')
-    setIsLoggedIn(false)
-    setCurrentPage('home')
-    setTeacherName('')
-    setTeacherPhone('')
-    setSchoolName('')
-    setSystemDescription('')
+    window.location.reload()
   }
 
   const handleLogin = () => {

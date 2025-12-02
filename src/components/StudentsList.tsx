@@ -387,7 +387,7 @@ export function StudentsList({
   const colors = groupColors[groupIndex]
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mb-2">
         <div className={`${colors.header} text-white px-6 py-4 rounded-xl shadow-md mb-4`}>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">{groupName}</h3>
@@ -397,7 +397,7 @@ export function StudentsList({
             <p className="text-white/90 text-sm mt-1 font-medium">{groupStage}</p>
           )}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 pb-2">
           {students.map((student) => {
             const hasSpecialStatus = student.special_status_id !== null
             const bgColorClass = hasSpecialStatus

@@ -351,6 +351,10 @@ function App() {
     localStorage.removeItem('userId')
     setIsLoggedIn(false)
     setCurrentPage('home')
+    setTeacherName('')
+    setTeacherPhone('')
+    setSchoolName('')
+    setSystemDescription('')
   }
 
   const handleLogin = () => {

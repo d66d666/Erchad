@@ -1655,8 +1655,8 @@ function App() {
                               />
                               <h2 className="text-lg font-bold text-white">{stage}</h2>
                             </div>
-                            <div className="bg-white bg-opacity-30 px-4 py-1.5 rounded-full">
-                              <span className="text-white font-bold text-sm">{totalStageStudents} طالب</span>
+                            <div className="bg-white px-4 py-1.5 rounded-full">
+                              <span className="text-gray-800 font-bold text-sm">{totalStageStudents} طالب</span>
                             </div>
                           </button>
 
@@ -1693,8 +1693,8 @@ function App() {
                                     >
                                       <div className="flex items-center gap-2">
                                         <h3 className="text-sm font-bold text-white">{group.name}</h3>
-                                        <div className="bg-white bg-opacity-30 px-2.5 py-0.5 rounded-full">
-                                          <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
+                                        <div className="bg-white px-2.5 py-0.5 rounded-full">
+                                          <span className="text-gray-800 font-bold text-xs">{groupStudents.length} طالب</span>
                                         </div>
                                       </div>
                                       <ChevronDown

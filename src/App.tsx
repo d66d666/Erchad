@@ -1574,6 +1574,16 @@ function App() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-md p-6 border-r-4 border-teal-500">
+                    <div className="flex items-center gap-3">
+                      <GraduationCap className="text-teal-600" size={32} />
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">المراحل الدراسية</h2>
+                        <p className="text-gray-600 text-sm">عرض جميع الطلاب حسب المرحلة والصف</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {(() => {
                     const filteredGroups = groups
                       .filter(g => stageFilter === 'all' || g.stage === stageFilter)

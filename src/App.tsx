@@ -1595,9 +1595,9 @@ function App() {
                       setSearchTerm('')
                       setExpandedGroups(new Set())
                     }}
-                    className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-bold hover:from-gray-600 hover:to-gray-700 transition-all flex items-center justify-center gap-2 shadow-md"
+                    className="w-full mt-4 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 border border-gray-300"
                   >
-                    <RotateCcw size={18} />
+                    <RotateCcw size={16} />
                     <span>إعادة تعيين</span>
                   </button>
                 </div>

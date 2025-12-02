@@ -423,7 +423,7 @@ export function SpecialStatusPage({
       <SendToTeacherModal
         isOpen={showSendToTeacherModal}
         onClose={() => setShowSendToTeacherModal(false)}
-        specialStatusStudents={studentsWithSpecialStatus}
+        allStudents={students}
         selectedStatusId={selectedStatusId}
         selectedStatusName={selectedStatusId === 'all'
           ? 'جميع الفئات'

@@ -7,17 +7,17 @@ import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 interface SendToTeacherModalProps {
   isOpen: boolean
   onClose: () => void
-  specialStatusStudents: Student[]
-  selectedStatusId?: string
-  selectedStatusName?: string
+  allStudents: Student[]
+  selectedStatusId: string
+  selectedStatusName: string
 }
 
 export function SendToTeacherModal({
   isOpen,
   onClose,
-  specialStatusStudents,
-  selectedStatusId = 'all',
-  selectedStatusName = 'جميع الفئات',
+  allStudents,
+  selectedStatusId,
+  selectedStatusName,
 }: SendToTeacherModalProps) {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [groups, setGroups] = useState<Group[]>([])
@@ -76,7 +76,6 @@ export function SendToTeacherModal({
     }
   }
 
-
   const handleSend = async () => {
     if (!selectedTeacherId) {
       alert('الرجاء اختيار المعلم')
@@ -99,47 +98,73 @@ export function SendToTeacherModal({
       const teacher = teachers.find(t => t.id === selectedTeacherId)
       if (!teacher) return
 
-      // فلتر الطلاب حسب المجموعات المختارة
-      const filteredStudents = specialStatusStudents.filter(
+      // فلتر الطلاب حسب الفئة والمجموعات
+      let filteredStudents = allStudents.filter(
         student => selectedGroupIds.includes(student.group_id)
       )
 
+      // تطبيق فلتر الفئة
+      if (selectedStatusId !== 'all') {
+        filteredStudents = filteredStudents.filter(
+          student => student.special_status_id === selectedStatusId
+        )
+      } else {
+        // إذا كانت "جميع الفئات"، عرض فقط الطلاب ذوي الحالات الخاصة
+        filteredStudents = filteredStudents.filter(
+          student => student.special_status_id !== null
+        )
+      }
+
       if (filteredStudents.length === 0) {
-        alert('لا يوجد طلاب ذوي حالات خاصة في المجموعات المختارة')
+        alert('لا يوجد طلاب في الفئة والمجموعات المختارة')
         setLoading(false)
         return
       }
 
-      // إنشاء رسالة واتساب
-      let message = ''
-      const selectedGroups = allGroups.filter(g => selectedGroupIds.includes(g.id))
+      // إنشاء رسالة واتساب مرتبة حسب الصف والحالة الخاصة والمجموعة
+      let message = `*${selectedStage}*\n\n`
 
-      message += `━━━━━━━━━━━━━━━━━━\n`
-      message += `*📋 ${selectedStatusName}*\n`
-      message += `*${selectedStage}*\n`
-      message += `━━━━━━━━━━━━━━━━━━\n\n`
+      // تجميع الطلاب حسب الحالة الخاصة
+      const statusGroups = new Map<string, Student[]>()
 
-      // تجميع الطلاب حسب المجموعة
-      selectedGroups.forEach((group, groupIndex) => {
-        const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
-        if (groupStudents.length > 0) {
-          message += `📚 *${group.name}*\n`
-          message += `عدد الطلاب: ${groupStudents.length}\n`
-          message += `─────────────────\n`
-          groupStudents.forEach((student, index) => {
-            message += `${index + 1}. *${student.name}*\n`
-            message += `   • الحالة: ${student.special_status?.name || '-'}\n`
-            message += `   • جوال الطالب: ${student.phone || '-'}\n`
-            message += `   • جوال ولي الأمر: ${student.guardian_phone || '-'}\n`
-            if (index < groupStudents.length - 1) message += `\n`
-          })
-          if (groupIndex < selectedGroups.filter(g => filteredStudents.filter(s => s.group_id === g.id).length > 0).length - 1) {
-            message += `\n\n`
-          }
+      filteredStudents.forEach(student => {
+        const statusName = student.special_status?.name || 'بدون حالة خاصة'
+        if (!statusGroups.has(statusName)) {
+          statusGroups.set(statusName, [])
         }
+        statusGroups.get(statusName)!.push(student)
       })
 
-      message += `\n\n━━━━━━━━━━━━━━━━━━`
+      // ترتيب الحالات أبجدياً
+      const sortedStatuses = Array.from(statusGroups.keys()).sort()
+
+      // طباعة كل حالة مع مجموعاتها
+      sortedStatuses.forEach(statusName => {
+        const statusStudents = statusGroups.get(statusName)!
+
+        message += `*${statusName}*\n`
+
+        // تجميع حسب المجموعة
+        const groupMap = new Map<string, Student[]>()
+        statusStudents.forEach(student => {
+          const groupName = allGroups.find(g => g.id === student.group_id)?.name || 'غير محدد'
+          if (!groupMap.has(groupName)) {
+            groupMap.set(groupName, [])
+          }
+          groupMap.get(groupName)!.push(student)
+        })
+
+        // طباعة كل مجموعة
+        Array.from(groupMap.keys()).sort().forEach(groupName => {
+          const groupStudents = groupMap.get(groupName)!
+          message += `  *${groupName}*\n`
+          message += `عدد الطلاب: ${groupStudents.length}\n`
+          groupStudents.forEach((student, index) => {
+            message += `${index + 1}. *${student.name}*\n`
+          })
+          message += `\n`
+        })
+      })
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)
@@ -158,6 +183,11 @@ export function SendToTeacherModal({
   }
 
   if (!isOpen) return null
+
+  // حساب الطلاب المفلترين حسب الفئة المحددة
+  const relevantStudents = selectedStatusId === 'all'
+    ? allStudents.filter(s => s.special_status_id !== null)
+    : allStudents.filter(s => s.special_status_id === selectedStatusId)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -246,7 +276,12 @@ export function SendToTeacherModal({
               <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
                 {groups.map((group) => {
                   const isSelected = selectedGroupIds.includes(group.id)
-                  const studentsCount = specialStatusStudents.filter(s => s.group_id === group.id).length
+
+                  // حساب عدد الطلاب حسب الفئة المختارة
+                  const studentsCount = relevantStudents.filter(
+                    s => s.group_id === group.id
+                  ).length
+
                   return (
                     <label
                       key={group.id}
@@ -285,7 +320,6 @@ export function SendToTeacherModal({
               </p>
             )}
           </div>
-
 
           <div className="flex gap-3 pt-4">
             <button

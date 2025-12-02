@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Student, Group, SpecialStatus } from '../types'
-import { Heart, Printer, FileText, Send, Filter } from 'lucide-react'
+import { Star, Printer, FileText, Send, Filter } from 'lucide-react'
 import { SendToTeacherModal } from '../components/SendToTeacherModal'
 
 export function SpecialStatusPage({
@@ -266,7 +266,7 @@ export function SpecialStatusPage({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-200">
-              <Heart size={20} className="text-purple-600" />
+              <Star size={20} className="text-purple-600" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">فئات الطلاب</h1>

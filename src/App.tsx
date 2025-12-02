@@ -16,7 +16,7 @@ import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import {
   Home,
   Users,
-  Heart,
+  Star,
   AlertCircle,
   UserCheck,
   LogOut,
@@ -1226,7 +1226,7 @@ function App() {
     { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home, show: true },
     { id: 'teachers' as Page, label: 'المعلمين', icon: GraduationCap, show: mainMenuItems.teachers },
     { id: 'groups' as Page, label: 'المجموعات', icon: Users, show: mainMenuItems.groups },
-    { id: 'special-status' as Page, label: 'فئات الطلاب', icon: Heart, show: mainMenuItems.specialNeeds },
+    { id: 'special-status' as Page, label: 'فئات الطلاب', icon: Star, show: mainMenuItems.specialNeeds },
     { id: 'reception' as Page, label: 'استقبال الطلاب', icon: UserCheck, show: mainMenuItems.reception },
     { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut, show: mainMenuItems.permission },
     { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle, show: mainMenuItems.violations },
@@ -1352,7 +1352,7 @@ function App() {
                       }}
                       className="w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3"
                     >
-                      <Heart size={18} className="text-pink-600" />
+                      <Star size={18} className="text-pink-600" />
                       <span className="text-sm font-medium text-gray-700">إدارة فئات الطلاب</span>
                     </button>
 
@@ -1427,7 +1427,7 @@ function App() {
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{specialStatusCount}</div>
-                  <Heart size={32} className="opacity-80" />
+                  <Star size={32} className="opacity-80" />
                 </div>
                 <div className="text-sm opacity-90">فئات الطلاب</div>
               </div>
@@ -2362,7 +2362,7 @@ function App() {
 
                     <label className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-gray-200/50 cursor-pointer hover:border-purple-300 transition-colors backdrop-blur-sm">
                       <div className="flex items-center gap-2">
-                        <Heart size={16} className="text-pink-600" />
+                        <Star size={16} className="text-pink-600" />
                         <span className="text-xs font-medium text-gray-800">الطلاب الخاصة</span>
                       </div>
                       <input

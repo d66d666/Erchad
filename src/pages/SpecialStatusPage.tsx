@@ -110,10 +110,10 @@ export function SpecialStatusPage({
           <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
             <strong>إجمالي الطلاب: ${studentsWithSpecialStatus.length}</strong>
           </p>
-          ${stages.map(stage => `
+          ${stages.filter(stage => groupedByStage[stage].length > 0).map(stage => `
             <div style="margin-bottom: 50px;">
               <h2 style="color: #7c3aed; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #7c3aed; padding-bottom: 10px;">${stage}</h2>
-              ${groupedByStage[stage].map(({ group, students: groupStudents }) => `
+              ${groupedByStage[stage].filter(({ students }) => students.length > 0).map(({ group, students: groupStudents }) => `
                 <div class="group-section">
                   <h3 class="group-title">${group.name}</h3>
                   <p class="group-info"><strong>عدد الطلاب:</strong> ${groupStudents.length}</p>

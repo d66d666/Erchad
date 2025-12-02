@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { db, StudentVisit } from '../lib/db'
-import { Student, SpecialStatus } from '../types'
+import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { formatBothDates } from '../lib/hijriDate'
-import { FiltersPanel } from '../components/FiltersPanel'
 
 interface VisitWithStudent extends StudentVisit {
   student?: {
@@ -28,11 +27,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [visitSearchTerm, setVisitSearchTerm] = useState('')
-  const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
-  const [studentFilter, setStudentFilter] = useState<{
-    type: 'status' | 'special_status' | null
-    value: string
-  } | null>(null)
   const [formData, setFormData] = useState({
     reason: '',
     action_taken: '',
@@ -49,7 +43,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     fetchStudents()
     fetchVisits()
     fetchTeacherProfile()
-    fetchSpecialStatuses()
   }, [])
 
   useEffect(() => {
@@ -73,17 +66,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     }
     if (profile?.system_description) {
       setSystemDescription(profile.system_description)
-    }
-  }
-
-  async function fetchSpecialStatuses() {
-    const { data } = await supabase
-      .from('special_statuses')
-      .select('*')
-      .order('name')
-
-    if (data) {
-      setSpecialStatuses(data)
     }
   }
 
@@ -474,31 +456,12 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     window.open(whatsappUrl, '_blank')
   }
 
-  const filteredStudents = students.filter(s => {
-    const matchesSearch = s.name.includes(searchTerm) || s.national_id.includes(searchTerm)
-
-    if (!matchesSearch) return false
-
-    if (!studentFilter) return true
-
-    if (studentFilter.type === 'status') {
-      return s.status === studentFilter.value
-    }
-
-    if (studentFilter.type === 'special_status') {
-      if (studentFilter.value === 'none') {
-        return !s.special_status_id
-      }
-      return s.special_status_id === studentFilter.value
-    }
-
-    return true
-  })
+  const filteredStudents = students.filter(s =>
+    s.name.includes(searchTerm) || s.national_id.includes(searchTerm)
+  )
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-6">
       <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-lg p-6 border border-blue-100">
         <div className="flex items-center gap-3 mb-6">
           <div className="bg-blue-600 p-3 rounded-lg shadow-md">
@@ -862,18 +825,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
             ))}
           </div>
         )}
-      </div>
-        </div>
-
-        <div className="lg:col-span-1">
-          <FiltersPanel
-            specialStatuses={specialStatuses}
-            filter={studentFilter}
-            onFilterChange={setStudentFilter}
-            showPermission={true}
-            showSpecialStatus={true}
-          />
-        </div>
       </div>
     </div>
   )

@@ -1452,6 +1452,25 @@ function App() {
                 </div>
 
                 <div className="space-y-4">
+                  {mainMenuItems.specialNeeds && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">فئات الطلاب المميزة</label>
+                      <div className="relative">
+                        <select
+                          value={specialStatusFilter}
+                          onChange={(e) => setSpecialStatusFilter(e.target.value)}
+                          className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none cursor-pointer"
+                        >
+                          <option value="all">الكل</option>
+                          {specialStatuses.map(status => (
+                            <option key={status.id} value={status.id}>{status.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المرحلة الدراسية</label>
                     <div className="relative">
@@ -1489,6 +1508,24 @@ function App() {
                     </div>
                   </div>
 
+                  {(mainMenuItems.reception || mainMenuItems.permission || mainMenuItems.violations) && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">تصفية حسب النشاط</label>
+                      <div className="relative">
+                        <select
+                          value={activityFilter}
+                          onChange={(e) => setActivityFilter(e.target.value)}
+                          className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none cursor-pointer"
+                        >
+                          <option value="all">الكل</option>
+                          {mainMenuItems.reception && <option value="reception">لديهم استقبال اليوم</option>}
+                          {mainMenuItems.permission && <option value="permission">لديهم استئذان اليوم</option>}
+                          {mainMenuItems.violations && <option value="violation">لديهم مخالفة اليوم</option>}
+                        </select>
+                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>
@@ -1547,6 +1584,7 @@ function App() {
                             s.phone.includes(searchTerm) ||
                             s.guardian_phone.includes(searchTerm)
                           )
+                          .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
                         return sum + groupStudents.length
                       }, 0)
 
@@ -1585,6 +1623,7 @@ function App() {
                                     s.phone.includes(searchTerm) ||
                                     s.guardian_phone.includes(searchTerm)
                                   )
+                                  .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
 
                                 if (groupStudents.length === 0 && searchTerm !== '') return null
 

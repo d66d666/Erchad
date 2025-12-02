@@ -2733,6 +2733,23 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="mt-12 py-6 border-t border-gray-200">
+        <div className="text-center">
+          <p className="text-gray-600 font-medium mb-2">
+            تصميم وتطوير الأستاذ وائل الفيفي
+          </p>
+          <a
+            href="https://wa.me/966558890902"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-600 hover:text-green-700 font-semibold transition-colors inline-flex items-center gap-2"
+          >
+            <span>0558890902</span>
+          </a>
+        </div>
+      </footer>
     </div>
   )
 }

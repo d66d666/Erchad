@@ -61,6 +61,8 @@ export function SpecialStatusPage({
 
   const stages = Object.keys(groupedByStage).sort()
 
+  const totalStudents = studentsWithSpecialStatus.length
+
   const handlePrintAll = async () => {
     const { data: teacherProfile } = await supabase
       .from('teacher_profile')

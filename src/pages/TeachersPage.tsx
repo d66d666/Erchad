@@ -152,20 +152,18 @@ export function TeachersPage() {
             {filteredTeachers.map((teacher) => (
             <div
               key={teacher.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border border-gray-200 overflow-hidden"
+              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 overflow-hidden"
             >
-              <div className="bg-gradient-to-r from-blue-500 to-blue-400 p-4">
-                <h3 className="text-xl font-bold text-white">{teacher.name}</h3>
+              <div className="bg-gradient-to-r from-blue-500 to-blue-400 p-3">
+                <h3 className="text-lg font-bold text-white">{teacher.name}</h3>
               </div>
 
-              <div className="p-6 space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 flex items-center justify-center text-blue-600 flex-shrink-0">
-                    <span className="text-lg">📱</span>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">رقم الجوال</p>
-                    <p className="text-sm font-semibold text-gray-800">{teacher.phone}</p>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📱</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500">رقم الجوال</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">{teacher.phone}</p>
                   </div>
                 </div>
 
@@ -173,15 +171,15 @@ export function TeachersPage() {
                   const stages = Array.from(new Set(teacher.groups!.map(g => g.stage)))
                   return (
                     <>
-                      <div className="flex items-start gap-3">
-                        <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-500 mb-1.5">المراحل</p>
-                          <div className="flex flex-wrap gap-1.5">
+                      <div className="flex items-start gap-2">
+                        <BookOpen className="text-blue-600 mt-0.5 flex-shrink-0" size={16} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 mb-1">المراحل</p>
+                          <div className="flex flex-wrap gap-1">
                             {stages.map((stage) => (
                               <span
                                 key={stage}
-                                className="px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded"
+                                className="px-1.5 py-0.5 bg-green-50 text-green-700 text-xs font-medium rounded"
                               >
                                 {stage}
                               </span>
@@ -190,19 +188,19 @@ export function TeachersPage() {
                         </div>
                       </div>
 
-                      <div className="pt-3 border-t border-gray-100">
-                        <p className="text-xs text-gray-500 mb-2">المجموعات</p>
-                        <div className="space-y-2">
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-xs text-gray-500 mb-1.5">المجموعات</p>
+                        <div className="space-y-1.5">
                           {stages.map((stage) => {
                             const stageGroups = teacher.groups!.filter(g => g.stage === stage)
                             return (
                               <div key={stage}>
-                                <p className="text-xs font-semibold text-gray-600 mb-1">{stage}</p>
-                                <div className="flex flex-wrap gap-1.5">
+                                <p className="text-xs font-semibold text-gray-600 mb-0.5">{stage}</p>
+                                <div className="flex flex-wrap gap-1">
                                   {stageGroups.map((group) => (
                                     <span
                                       key={group.id}
-                                      className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded"
+                                      className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded"
                                     >
                                       {group.name}
                                     </span>
@@ -217,19 +215,19 @@ export function TeachersPage() {
                   )
                 })()}
 
-                <div className="flex gap-2 pt-4 border-t border-gray-100">
+                <div className="flex gap-2 pt-2 border-t border-gray-100">
                   <button
                     onClick={() => handleEdit(teacher)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-medium hover:bg-blue-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
                   >
-                    <Edit2 size={16} />
+                    <Edit2 size={14} />
                     <span>تعديل</span>
                   </button>
                   <button
                     onClick={() => handleDelete(teacher.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                     <span>حذف</span>
                   </button>
                 </div>

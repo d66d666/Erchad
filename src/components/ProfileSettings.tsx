@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
-import { supabase } from '../lib/supabase'
 import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown } from 'lucide-react'
 
 interface ProfileSettingsProps {
@@ -41,42 +40,28 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const fetchProfile = async () => {
     try {
-      // جلب البروفايل من Supabase أولاً
-      const { data: supabaseProfile } = await supabase
-        .from('teacher_profile')
-        .select('*')
-        .maybeSingle()
+      const profile = await db.teacher_profile.toCollection().first()
 
-      // مزامنة مع IndexedDB
-      if (supabaseProfile) {
-        await db.teacher_profile.clear()
-        await db.teacher_profile.put(supabaseProfile)
-
-        setProfileId(supabaseProfile.id || '')
-        setTeacherName(supabaseProfile.name || '')
-        setTeacherPhone(supabaseProfile.phone || '')
-        setSchoolName(supabaseProfile.school_name || '')
-        setSystemDescription(supabaseProfile.system_description || '')
+      if (profile) {
+        setProfileId(profile.id || '')
+        setTeacherName(profile.name || '')
+        setTeacherPhone(profile.phone || '')
+        setSchoolName(profile.school_name || '')
+        setSystemDescription(profile.system_description || '')
       } else {
-        // لو ما في بيانات في Supabase، نترك الحقول فاضية
         setTeacherName('')
         setTeacherPhone('')
         setSchoolName('')
+        setSystemDescription('')
       }
 
-      // Fetch current username from Supabase
-      const { data: credentials } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .limit(1)
-        .maybeSingle()
+      const credentials = await db.login_credentials.toCollection().first()
 
       if (credentials) {
         setCurrentUsername(credentials.username)
         setNewUsername(credentials.username)
       }
 
-      // Load auto-logout setting
       const savedTimeout = localStorage.getItem('autoLogoutMinutes')
       if (savedTimeout) {
         setAutoLogoutMinutes(savedTimeout)
@@ -99,18 +84,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       }
 
       if (profileId) {
-        // تحديث في Supabase
-        const { error: updateError } = await supabase
-          .from('teacher_profile')
-          .update(profileData)
-          .eq('id', profileId)
-
-        if (updateError) throw updateError
-
-        // تحديث في IndexedDB
         await db.teacher_profile.update(profileId, profileData)
       } else {
-        // إنشاء جديد في Supabase
         const newId = crypto.randomUUID()
         const newProfile = {
           id: newId,
@@ -118,18 +93,10 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
           created_at: new Date().toISOString(),
         }
 
-        const { error: insertError } = await supabase
-          .from('teacher_profile')
-          .insert(newProfile)
-
-        if (insertError) throw insertError
-
-        // إضافة في IndexedDB
         await db.teacher_profile.add(newProfile)
         setProfileId(newId)
       }
 
-      // Save auto-logout setting
       localStorage.setItem('autoLogoutMinutes', autoLogoutMinutes)
 
       alert('تم حفظ البيانات بنجاح')
@@ -160,35 +127,14 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setPasswordLoading(true)
 
     try {
-      // Get credentials from Supabase
-      const { data: credentials } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .eq('username', currentUsername)
-        .maybeSingle()
+      const localCreds = await db.login_credentials.where('username').equals(currentUsername).first()
 
-      if (credentials && credentials.id) {
-        // Update in Supabase
-        const { error: updateError } = await supabase
-          .from('login_credentials')
-          .update({
-            username: newUsername,
-            password_hash: newPassword,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', credentials.id)
-
-        if (updateError) throw updateError
-
-        // Update in IndexedDB
-        const localCreds = await db.login_credentials.where('username').equals(currentUsername).first()
-        if (localCreds && localCreds.id) {
-          await db.login_credentials.update(localCreds.id, {
-            username: newUsername,
-            password_hash: newPassword,
-            updated_at: new Date().toISOString()
-          })
-        }
+      if (localCreds && localCreds.id) {
+        await db.login_credentials.update(localCreds.id, {
+          username: newUsername,
+          password_hash: newPassword,
+          updated_at: new Date().toISOString()
+        })
 
         alert('تم تغيير بيانات الدخول بنجاح!')
         setCurrentUsername(newUsername)
@@ -238,62 +184,37 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
     setResetLoading(true)
     try {
-      const errors = []
-
       if (deleteOptions.violations || deleteOptions.all) {
-        const { error: violationsError } = await supabase.from('student_violations').delete().gt('created_at', '1900-01-01')
-        if (violationsError) errors.push(violationsError)
         await db.student_violations.clear()
       }
 
       if (deleteOptions.permissions || deleteOptions.all) {
-        const { error: permissionsError } = await supabase.from('student_permissions').delete().gt('created_at', '1900-01-01')
-        if (permissionsError) errors.push(permissionsError)
         await db.student_permissions.clear()
       }
 
       if (deleteOptions.visits || deleteOptions.all) {
-        const { error: visitsError } = await supabase.from('student_visits').delete().gt('created_at', '1900-01-01')
-        if (visitsError) errors.push(visitsError)
         await db.student_visits.clear()
       }
 
       if (deleteOptions.students || deleteOptions.all) {
-        const { error: studentsError } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        if (studentsError) errors.push(studentsError)
         await db.students.clear()
       }
 
       if (deleteOptions.teachers || deleteOptions.all) {
-        const { error: teachersError } = await supabase.from('teachers').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        if (teachersError) errors.push(teachersError)
+        await db.teacher_groups.clear()
         await db.teachers.clear()
       }
 
       if (deleteOptions.specialStatuses || deleteOptions.all) {
-        const { error: statusesError } = await supabase.from('special_statuses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        if (statusesError) errors.push(statusesError)
         await db.special_statuses.clear()
       }
 
       if (deleteOptions.all) {
-        const { error: groupsError } = await supabase.from('groups').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        if (groupsError) errors.push(groupsError)
         await db.groups.clear()
       }
 
       if (deleteOptions.profile || deleteOptions.all) {
-        const { error: profileError } = await supabase.from('teacher_profile').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-        if (profileError) errors.push(profileError)
         await db.teacher_profile.clear()
-      }
-
-      if (errors.length > 0) {
-        console.error('Errors during reset:', errors)
-        alert('تم حذف بعض البيانات ولكن حدثت بعض الأخطاء. جرب مرة أخرى.')
-        setShowResetConfirm(false)
-        window.location.reload()
-        return
       }
 
       alert('تم حذف البيانات المحددة بنجاح!')

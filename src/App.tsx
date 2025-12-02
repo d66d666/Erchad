@@ -1496,25 +1496,27 @@ function App() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المجموعات</label>
-                    <div className="relative">
-                      <select
-                        value={groupFilter}
-                        onChange={(e) => setGroupFilter(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-gray-400 appearance-none cursor-pointer"
-                      >
-                        <option value="all">الكل</option>
-                        {groups
-                          .filter(g => stageFilter === 'all' || g.stage === stageFilter)
-                          .sort((a, b) => a.display_order - b.display_order)
-                          .map(group => (
-                            <option key={group.id} value={group.id}>{group.name}</option>
-                          ))}
-                      </select>
-                      <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                  {stageFilter !== 'all' && (
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المجموعات</label>
+                      <div className="relative">
+                        <select
+                          value={groupFilter}
+                          onChange={(e) => setGroupFilter(e.target.value)}
+                          className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-gray-400 appearance-none cursor-pointer"
+                        >
+                          <option value="all">الكل</option>
+                          {groups
+                            .filter(g => stageFilter === 'all' || g.stage === stageFilter)
+                            .sort((a, b) => a.display_order - b.display_order)
+                            .map(group => (
+                              <option key={group.id} value={group.id}>{group.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {(mainMenuItems.reception || mainMenuItems.permission || mainMenuItems.violations) && (
                     <div>

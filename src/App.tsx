@@ -1665,16 +1665,18 @@ function App() {
                                   <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
                                     <button
                                       onClick={() => toggleGroup(group.id)}
-                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-center gap-3`}
+                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between`}
                                     >
-                                      <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
-                                        <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
-                                      </div>
-                                      <h3 className="text-base font-bold text-white">{group.name}</h3>
                                       <ChevronDown
                                         size={20}
                                         className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
                                       />
+                                      <div className="flex items-center gap-3">
+                                        <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
+                                          <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
+                                        </div>
+                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
+                                      </div>
                                     </button>
 
                                     {isGroupExpanded && (

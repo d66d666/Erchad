@@ -1349,7 +1349,7 @@ function App() {
 
               <button
                 onClick={() => setShowProfileSettings(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition-all flex items-center gap-2"
               >
                 <UserIcon size={20} />
                 <span>{teacherName || 'الملف الشخصي'}</span>

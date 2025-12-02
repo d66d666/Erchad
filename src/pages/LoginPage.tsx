@@ -37,6 +37,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         }, 100)
 
         onLogin()
+
+        // تحديث الصفحة بعد تسجيل الدخول
+        setTimeout(() => {
+          window.location.reload()
+        }, 200)
+
         return
       }
 
@@ -53,6 +59,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userId', credentials.id || 'user')
       onLogin()
+
+      // تحديث الصفحة بعد تسجيل الدخول
+      setTimeout(() => {
+        window.location.reload()
+      }, 200)
     } catch (err) {
       console.error('Login error:', err)
       setError('حدث خطأ أثناء تسجيل الدخول')

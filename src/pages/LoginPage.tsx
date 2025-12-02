@@ -41,7 +41,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         // تحديث الصفحة بعد تسجيل الدخول
         setTimeout(() => {
           window.location.reload()
-        }, 200)
+        }, 2000)
 
         return
       }
@@ -63,7 +63,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       // تحديث الصفحة بعد تسجيل الدخول
       setTimeout(() => {
         window.location.reload()
-      }, 200)
+      }, 2000)
     } catch (err) {
       console.error('Login error:', err)
       setError('حدث خطأ أثناء تسجيل الدخول')

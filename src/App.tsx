@@ -1381,14 +1381,14 @@ function App() {
               </div>
             )}
 
-            {/* حالات خاصة */}
+            {/* فئات الطلاب */}
             {headerCards.reception && (
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-md w-48">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-3xl font-bold">{specialStatusCount}</div>
-                  <Heart size={32} className="opacity-80" />
+                  <Users size={32} className="opacity-80" />
                 </div>
-                <div className="text-sm opacity-90">حالات خاصة</div>
+                <div className="text-sm opacity-90">فئات الطلاب</div>
               </div>
             )}
 
@@ -2232,8 +2232,8 @@ function App() {
 
                     <label className="flex items-center justify-between p-2 bg-white/80 rounded-lg border border-gray-200/50 cursor-pointer hover:border-cyan-300 transition-colors backdrop-blur-sm">
                       <div className="flex items-center gap-2">
-                        <Heart size={16} className="text-pink-600" />
-                        <span className="text-xs font-medium text-gray-800">حالات خاصة</span>
+                        <Users size={16} className="text-purple-600" />
+                        <span className="text-xs font-medium text-gray-800">فئات الطلاب</span>
                       </div>
                       <input
                         type="checkbox"

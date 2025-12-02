@@ -350,7 +350,25 @@ function App() {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')
     setIsLoggedIn(false)
+    setIsMasterAdmin(false)
     setCurrentPage('home')
+
+    // مسح جميع البيانات من الـ state
+    setStudents([])
+    setGroups([])
+    setSpecialStatuses([])
+    setTeachers([])
+    setTeacherName('')
+    setTeacherPhone('')
+    setSchoolName('')
+    setSystemDescription('')
+    setTodayReceptionCount(0)
+    setTodayPermissionsCount(0)
+    setTodayViolationsCount(0)
+    setTotalTeachers(0)
+    setSearchTerm('')
+    setShowProfileSettings(false)
+    setShowSettingsMenu(false)
   }
 
   const handleLogin = () => {

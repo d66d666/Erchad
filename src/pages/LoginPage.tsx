@@ -301,7 +301,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => setShowPasswordReset(false)}
+                    onClick={() => {
+                      setShowForgotPassword(false)
+                      setError('')
+                      setResetMessage('')
+                      setResetToken('')
+                      setNewPassword('')
+                      setGeneratedToken('')
+                      setResetStep('token')
+                    }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition-all"
                   >
                     إلغاء

@@ -1452,25 +1452,6 @@ function App() {
                 </div>
 
                 <div className="space-y-4">
-                  {mainMenuItems.specialNeeds && (
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">فئات الطلاب المميزة</label>
-                      <div className="relative">
-                        <select
-                          value={specialStatusFilter}
-                          onChange={(e) => setSpecialStatusFilter(e.target.value)}
-                          className="w-full px-4 py-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none cursor-pointer"
-                        >
-                          <option value="all">الكل</option>
-                          {specialStatuses.map(status => (
-                            <option key={status.id} value={status.id}>{status.name}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
-                      </div>
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 text-right">المرحلة الدراسية</label>
                     <div className="relative">
@@ -1508,24 +1489,6 @@ function App() {
                     </div>
                   </div>
 
-                  {(mainMenuItems.reception || mainMenuItems.permission || mainMenuItems.violations) && (
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2 text-right">تصفية حسب النشاط</label>
-                      <div className="relative">
-                        <select
-                          value={activityFilter}
-                          onChange={(e) => setActivityFilter(e.target.value)}
-                          className="w-full px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-purple-400 appearance-none cursor-pointer"
-                        >
-                          <option value="all">الكل</option>
-                          {mainMenuItems.reception && <option value="reception">لديهم استقبال اليوم</option>}
-                          {mainMenuItems.permission && <option value="permission">لديهم استئذان اليوم</option>}
-                          {mainMenuItems.violations && <option value="violation">لديهم مخالفة اليوم</option>}
-                        </select>
-                        <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </aside>
@@ -1534,15 +1497,6 @@ function App() {
             <div className="flex-1">
               <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => printAllGroups()}
-                      className="bg-white hover:bg-gray-100 text-teal-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-md transition-all"
-                    >
-                      <Printer size={18} />
-                      طباعة الكل
-                    </button>
-                  </div>
                   <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
                   <Search className="text-white" size={28} />
                 </div>
@@ -1593,7 +1547,6 @@ function App() {
                             s.phone.includes(searchTerm) ||
                             s.guardian_phone.includes(searchTerm)
                           )
-                          .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
                         return sum + groupStudents.length
                       }, 0)
 
@@ -1632,7 +1585,6 @@ function App() {
                                     s.phone.includes(searchTerm) ||
                                     s.guardian_phone.includes(searchTerm)
                                   )
-                                  .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
 
                                 if (groupStudents.length === 0 && searchTerm !== '') return null
 
@@ -1640,32 +1592,19 @@ function App() {
 
                                 return (
                                   <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
-                                    <div className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between`}>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          printGroup(group, groupStudents)
-                                        }}
-                                        className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
-                                      >
-                                        <Printer size={16} />
-                                        طباعة
-                                      </button>
-                                      <button
-                                        onClick={() => toggleGroup(group.id)}
-                                        className="flex-1 flex items-center justify-center gap-3"
-                                      >
-                                        <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
-                                          <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
-                                        </div>
-                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
-                                        <ChevronDown
-                                          size={20}
-                                          className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
-                                        />
-                                      </button>
-                                      <div className="w-20"></div>
-                                    </div>
+                                    <button
+                                      onClick={() => toggleGroup(group.id)}
+                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-center gap-3`}
+                                    >
+                                      <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
+                                        <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
+                                      </div>
+                                      <h3 className="text-base font-bold text-white">{group.name}</h3>
+                                      <ChevronDown
+                                        size={20}
+                                        className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
+                                      />
+                                    </button>
 
                                     {isGroupExpanded && (
                                       <div className="p-6">

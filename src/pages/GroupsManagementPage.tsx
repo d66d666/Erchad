@@ -875,7 +875,7 @@ export function GroupsManagementPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="p-4 pb-6 space-y-4">
+                  <div className="p-4 pb-4 space-y-4">
                     {stageGroups
                       .sort((a, b) => (a.display_order || 999) - (b.display_order || 999))
                       .map((group, index) => {

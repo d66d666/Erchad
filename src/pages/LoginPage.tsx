@@ -298,13 +298,22 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 rounded-lg transition-all shadow-md disabled:opacity-50"
-                >
-                  {loading ? 'جاري التغيير...' : 'تغيير كلمة المرور'}
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(false)}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 rounded-lg transition-all shadow-md disabled:opacity-50"
+                  >
+                    {loading ? 'جاري التغيير...' : 'تغيير كلمة المرور'}
+                  </button>
+                </div>
               </form>
             )}
           </div>

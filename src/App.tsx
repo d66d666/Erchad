@@ -1250,25 +1250,31 @@ function App() {
                 <Users className="text-white" size={32} />
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
-                  </h1>
-                  {isMasterAdmin && (
-                    <div className="relative group">
-                      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg animate-pulse">
-                        <Shield size={16} className="text-yellow-300" />
+                {isMasterAdmin ? (
+                  <>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+                        مرحباً وائل 👋
+                      </h1>
+                      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg">
+                        <Shield size={14} className="text-yellow-300" />
                         <span>مصمم النظام</span>
                       </div>
-                      <div className="absolute top-full left-0 mt-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                        مرحباً وائل 👋 أنت تستخدم حساب المطور الرئيسي
-                      </div>
                     </div>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  {schoolName || 'قم بإضافة اسم المدرسة من الإعدادات'}
-                </p>
+                    <p className="text-sm text-gray-600 font-medium">
+                      {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      {systemDescription || 'نظام إدارة شاملة لبيانات الطلاب'}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {schoolName || 'قم بإضافة اسم المدرسة من الإعدادات'}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 

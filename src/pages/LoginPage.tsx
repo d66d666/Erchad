@@ -226,13 +226,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             ) : (
               <form onSubmit={handleResetPassword} className="space-y-6">
                 {generatedToken && (
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3">
-                    <p className="text-xs text-blue-800 font-medium mb-2 text-center">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                    <p className="text-[10px] text-blue-700 mb-1.5 text-center">
                       رمز الاستعادة الخاص بك (صالح لمدة ساعة واحدة)
                     </p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-white border-2 border-blue-300 rounded-lg px-3 py-2 text-center">
-                        <span className="text-lg font-mono font-bold text-blue-900 tracking-wide select-all">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex-1 bg-white border border-blue-300 rounded px-2 py-1.5 text-center">
+                        <span className="text-sm font-mono font-bold text-blue-900 select-all">
                           {generatedToken}
                         </span>
                       </div>
@@ -243,15 +243,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                           setCopiedToken(true)
                           setTimeout(() => setCopiedToken(false), 2000)
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all shadow-sm flex-shrink-0"
-                        title="نسخ الرمز"
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded transition-all flex-shrink-0"
+                        title="نسخ"
                       >
-                        {copiedToken ? <Check size={18} /> : <Copy size={18} />}
+                        {copiedToken ? <Check size={16} /> : <Copy size={16} />}
                       </button>
                     </div>
                     {copiedToken && (
-                      <p className="text-xs text-green-600 font-medium mt-1.5 text-center">
-                        تم نسخ الرمز!
+                      <p className="text-[10px] text-green-600 mt-1 text-center">
+                        تم النسخ!
                       </p>
                     )}
                   </div>

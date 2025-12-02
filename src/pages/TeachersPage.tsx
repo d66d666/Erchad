@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { Teacher, Group, TeacherGroup } from '../types'
 import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
 

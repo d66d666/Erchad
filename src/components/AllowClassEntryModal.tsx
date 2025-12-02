@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import { X, Send, DoorOpen } from 'lucide-react'
 import { Teacher, Student } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'

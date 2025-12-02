@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { db } from '../lib/db'
 import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle } from 'lucide-react'
 
@@ -33,22 +32,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         return
       }
 
-      const { data, error: fetchError } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .eq('username', username)
-        .eq('password_hash', password)
-        .maybeSingle()
+      const credentials = await db.login_credentials
+        .where('username').equals(username)
+        .and(cred => cred.password_hash === password)
+        .first()
 
-      if (fetchError) throw fetchError
-
-      if (!data) {
+      if (!credentials) {
         setError('اسم المستخدم أو كلمة المرور غير صحيحة')
         return
       }
 
       localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userId', data.id)
+      localStorage.setItem('userId', credentials.id || 'user')
       onLogin()
     } catch (err) {
       console.error('Login error:', err)
@@ -68,37 +63,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 1)
 
-      // Get credentials from Supabase
-      const { data: credentials } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .eq('username', username)
-        .maybeSingle()
+      const credentials = await db.login_credentials.where('username').equals(username).first()
 
       if (!credentials || !credentials.id) {
         setError('اسم المستخدم غير موجود')
         return
       }
 
-      // Update in Supabase
-      const { error: updateError } = await supabase
-        .from('login_credentials')
-        .update({
-          reset_token: token,
-          reset_token_expires: expiresAt.toISOString(),
-        })
-        .eq('id', credentials.id)
-
-      if (updateError) throw updateError
-
-      // Update in IndexedDB
-      const localCreds = await db.login_credentials.where('username').equals(username).first()
-      if (localCreds && localCreds.id) {
-        await db.login_credentials.update(localCreds.id, {
-          reset_token: token,
-          reset_token_expires: expiresAt.toISOString(),
-        })
-      }
+      await db.login_credentials.update(credentials.id, {
+        reset_token: token,
+        reset_token_expires: expiresAt.toISOString(),
+      })
 
       setResetMessage(`رمز الاستعادة الخاص بك هو: ${token}\n(صالح لمدة ساعة واحدة)`)
       setResetStep('password')
@@ -117,13 +92,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
-      // Get credentials from Supabase
-      const { data: credentials } = await supabase
-        .from('login_credentials')
-        .select('*')
-        .eq('username', username)
-        .eq('reset_token', resetToken)
-        .maybeSingle()
+      const credentials = await db.login_credentials
+        .where('username').equals(username)
+        .and(cred => cred.reset_token === resetToken)
+        .first()
 
       if (!credentials) {
         setError('الرمز غير صحيح')
@@ -139,29 +111,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       }
 
       if (credentials.id) {
-        // Update in Supabase
-        const { error: updateError } = await supabase
-          .from('login_credentials')
-          .update({
-            password_hash: newPassword,
-            reset_token: null,
-            reset_token_expires: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', credentials.id)
-
-        if (updateError) throw updateError
-
-        // Update in IndexedDB
-        const localCreds = await db.login_credentials.where('username').equals(username).first()
-        if (localCreds && localCreds.id) {
-          await db.login_credentials.update(localCreds.id, {
-            password_hash: newPassword,
-            reset_token: null,
-            reset_token_expires: null,
-            updated_at: new Date().toISOString()
-          })
-        }
+        await db.login_credentials.update(credentials.id, {
+          password_hash: newPassword,
+          reset_token: null,
+          reset_token_expires: null,
+          updated_at: new Date().toISOString()
+        })
       }
 
       setResetMessage('تم تغيير كلمة المرور بنجاح!')

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
-import { supabase } from '../lib/supabase'
 import { X, Trash2, Plus } from 'lucide-react'
 
 interface ManageModalProps {

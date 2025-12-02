@@ -754,7 +754,7 @@ function App() {
               ${groupStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
-                  : 'لايوجد حالة خاصة'
+                  : ''
                 return `
                   <tr>
                     <td>${index + 1}</td>
@@ -1041,7 +1041,7 @@ function App() {
               ${groupStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
-                  : 'لايوجد حالة خاصة'
+                  : ''
                 return `
                   <tr>
                     <td>${index + 1}</td>

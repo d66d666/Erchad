@@ -295,7 +295,7 @@ export function GroupsManagementPage() {
               ${groupStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
-                  : 'لايوجد حالة خاصة'
+                  : ''
                 return `
                   <tr>
                     <td>${index + 1}</td>
@@ -399,7 +399,7 @@ export function GroupsManagementPage() {
               ${groupStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
-                  : 'لايوجد حالة خاصة'
+                  : ''
                 return `
                   <tr>
                     <td>${index + 1}</td>

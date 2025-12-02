@@ -338,11 +338,23 @@ export function GroupsManagementPage() {
     const printWindow = window.open('', '', 'width=1000,height=800')
     if (!printWindow) return
 
-    const allGroupsHTML = groups.map((group, groupIndex) => {
+    // ترتيب المجموعات حسب المرحلة أولاً ثم حسب display_order
+    const sortedGroups = [...groups].sort((a, b) => {
+      const stageOrderA = stageOrder[a.stage] || 999
+      const stageOrderB = stageOrder[b.stage] || 999
+
+      if (stageOrderA !== stageOrderB) {
+        return stageOrderA - stageOrderB
+      }
+
+      return (a.display_order || 999) - (b.display_order || 999)
+    })
+
+    const allGroupsHTML = sortedGroups.map((group, groupIndex) => {
       const groupStudents = students.filter(s => s.group_id === group.id)
 
       return `
-        <div class="page-section" style="${groupIndex < groups.length - 1 ? 'page-break-after: always;' : ''}">
+        <div class="page-section" style="${groupIndex < sortedGroups.length - 1 ? 'page-break-after: always;' : ''}">
           <div class="page-header">
             <div>${time} ${gregorianDate}</div>
             <div>منسق الشؤون الطلابية</div>
@@ -403,7 +415,7 @@ export function GroupsManagementPage() {
           </table>
 
           <div class="page-footer">
-            <div>${groupIndex + 1}/${groups.length}</div>
+            <div>${groupIndex + 1}/${sortedGroups.length}</div>
             <div>about:blank</div>
           </div>
         </div>
@@ -732,10 +744,19 @@ export function GroupsManagementPage() {
   }
 
   const stageOrder: Record<string, number> = {
-    'الصف الاول الثانوي': 1,
-    'الصف الأول الثانوي': 1,
-    'الصف الثاني الثانوي': 2,
-    'الصف الثالث الثانوي': 3,
+    'الصف الأول الابتدائي': 1,
+    'الصف الثاني الابتدائي': 2,
+    'الصف الثالث الابتدائي': 3,
+    'الصف الرابع الابتدائي': 4,
+    'الصف الخامس الابتدائي': 5,
+    'الصف السادس الابتدائي': 6,
+    'الصف الأول المتوسط': 7,
+    'الصف الثاني المتوسط': 8,
+    'الصف الثالث المتوسط': 9,
+    'الصف الاول الثانوي': 10,
+    'الصف الأول الثانوي': 10,
+    'الصف الثاني الثانوي': 11,
+    'الصف الثالث الثانوي': 12,
   }
 
   const groupedByStage = groups.reduce((acc, group) => {

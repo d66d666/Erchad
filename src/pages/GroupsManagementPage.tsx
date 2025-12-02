@@ -128,7 +128,7 @@ export function GroupsManagementPage() {
     }
   }
 
-  const printGroup = (group: Group, groupStudents: Student[]) => {
+  const printGroup = (group: Group, groupStudents: Student[], includeStatus: boolean = showStatusDetails) => {
     const now = new Date()
     const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
     const gregorianDate = now.toLocaleDateString('ar-SA')
@@ -284,11 +284,11 @@ export function GroupsManagementPage() {
             <thead>
               <tr>
                 <th style="width: 5%">التسلسل</th>
-                <th style="width: 28%">اسم الطالب</th>
-                <th style="width: 22%">السجل المدني</th>
-                <th style="width: 15%">جوال الطالب</th>
-                <th style="width: 15%">جوال ولي الأمر</th>
-                <th style="width: 15%">الحالة الخاصة</th>
+                <th style="width: ${includeStatus ? '28%' : '33%'}">اسم الطالب</th>
+                <th style="width: ${includeStatus ? '22%' : '27%'}">السجل المدني</th>
+                <th style="width: ${includeStatus ? '15%' : '20%'}">جوال الطالب</th>
+                <th style="width: ${includeStatus ? '15%' : '20%'}">جوال ولي الأمر</th>
+                ${includeStatus ? '<th style="width: 15%">الحالة الخاصة</th>' : ''}
               </tr>
             </thead>
             <tbody>
@@ -303,7 +303,7 @@ export function GroupsManagementPage() {
                     <td>${student.national_id}</td>
                     <td class="phone-cell">${student.phone}</td>
                     <td class="phone-cell">${student.guardian_phone}</td>
-                    <td>${specialStatus}</td>
+                    ${includeStatus ? `<td>${specialStatus}</td>` : ''}
                   </tr>
                 `
               }).join('')}
@@ -329,7 +329,7 @@ export function GroupsManagementPage() {
     printWindow.document.close()
   }
 
-  const printAllGroups = () => {
+  const printAllGroups = (includeStatus: boolean = showStatusDetails) => {
     const now = new Date()
     const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
     const gregorianDate = now.toLocaleDateString('ar-SA')
@@ -388,11 +388,11 @@ export function GroupsManagementPage() {
             <thead>
               <tr>
                 <th style="width: 5%">التسلسل</th>
-                <th style="width: 28%">اسم الطالب</th>
-                <th style="width: 22%">السجل المدني</th>
-                <th style="width: 15%">جوال الطالب</th>
-                <th style="width: 15%">جوال ولي الأمر</th>
-                <th style="width: 15%">الحالة الخاصة</th>
+                <th style="width: ${includeStatus ? '28%' : '33%'}">اسم الطالب</th>
+                <th style="width: ${includeStatus ? '22%' : '27%'}">السجل المدني</th>
+                <th style="width: ${includeStatus ? '15%' : '20%'}">جوال الطالب</th>
+                <th style="width: ${includeStatus ? '15%' : '20%'}">جوال ولي الأمر</th>
+                ${includeStatus ? '<th style="width: 15%">الحالة الخاصة</th>' : ''}
               </tr>
             </thead>
             <tbody>
@@ -407,7 +407,7 @@ export function GroupsManagementPage() {
                     <td>${student.national_id}</td>
                     <td class="phone-cell">${student.phone}</td>
                     <td class="phone-cell">${student.guardian_phone}</td>
-                    <td>${specialStatus}</td>
+                    ${includeStatus ? `<td>${specialStatus}</td>` : ''}
                   </tr>
                 `
               }).join('')}
@@ -835,7 +835,7 @@ export function GroupsManagementPage() {
               <span>إدارة المجموعات</span>
             </button>
             <button
-              onClick={() => printAllGroups()}
+              onClick={() => printAllGroups(showStatusDetails)}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
             >
               <Printer size={16} />
@@ -935,7 +935,7 @@ export function GroupsManagementPage() {
                                         <span>إضافة طالب</span>
                                       </button>
                                       <button
-                                        onClick={() => printGroup(group, groupStudents)}
+                                        onClick={() => printGroup(group, groupStudents, showStatusDetails)}
                                         className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
                                       >
                                         <Printer size={16} />

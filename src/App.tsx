@@ -710,11 +710,11 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th style="width: 5%">الرقم</th>
-                <th style="width: 23%">السجل المدني</th>
-                <th style="width: 17%">جوال ولي الأمر</th>
-                <th style="width: 17%">جوال الطالب</th>
-                <th style="width: 23%">اسم الطالب</th>
+                <th style="width: 5%">التسلسل</th>
+                <th style="width: 28%">اسم الطالب</th>
+                <th style="width: 22%">السجل المدني</th>
+                <th style="width: 15%">جوال الطالب</th>
+                <th style="width: 15%">جوال ولي الأمر</th>
                 <th style="width: 15%">الحالة الخاصة</th>
               </tr>
             </thead>
@@ -726,10 +726,10 @@ function App() {
                 return `
                   <tr>
                     <td>${index + 1}</td>
-                    <td>${student.national_id}</td>
-                    <td class="phone-cell">${student.guardian_phone}</td>
-                    <td class="phone-cell">${student.phone}</td>
                     <td><strong>${student.name}</strong></td>
+                    <td>${student.national_id}</td>
+                    <td class="phone-cell">${student.phone}</td>
+                    <td class="phone-cell">${student.guardian_phone}</td>
                     <td>${specialStatus}</td>
                   </tr>
                 `
@@ -997,11 +997,11 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th style="width: 5%">الرقم</th>
-                <th style="width: 23%">السجل المدني</th>
-                <th style="width: 17%">جوال ولي الأمر</th>
-                <th style="width: 17%">جوال الطالب</th>
-                <th style="width: 23%">اسم الطالب</th>
+                <th style="width: 5%">التسلسل</th>
+                <th style="width: 28%">اسم الطالب</th>
+                <th style="width: 22%">السجل المدني</th>
+                <th style="width: 15%">جوال الطالب</th>
+                <th style="width: 15%">جوال ولي الأمر</th>
                 <th style="width: 15%">الحالة الخاصة</th>
               </tr>
             </thead>
@@ -1013,10 +1013,10 @@ function App() {
                 return `
                   <tr>
                     <td>${index + 1}</td>
-                    <td>${student.national_id}</td>
-                    <td class="phone-cell">${student.guardian_phone}</td>
-                    <td class="phone-cell">${student.phone}</td>
                     <td><strong>${student.name}</strong></td>
+                    <td>${student.national_id}</td>
+                    <td class="phone-cell">${student.phone}</td>
+                    <td class="phone-cell">${student.guardian_phone}</td>
                     <td>${specialStatus}</td>
                   </tr>
                 `

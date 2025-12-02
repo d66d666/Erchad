@@ -311,8 +311,16 @@ function App() {
       })
 
       setExpandedGroups(matchingGroups)
+    } else if (stageFilter === 'all' && groupFilter === 'all') {
+      // عندما يكون الفلتر "الكل"، افتح جميع المراحل والمجموعات
+      const allGroups = new Set<string>()
+      groups.forEach(group => {
+        allGroups.add(group.stage || '')
+        allGroups.add(group.id)
+      })
+      setExpandedGroups(allGroups)
     }
-  }, [searchTerm, students, groups])
+  }, [searchTerm, students, groups, stageFilter, groupFilter])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')

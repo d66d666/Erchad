@@ -317,6 +317,21 @@ function App() {
       })
 
       setExpandedGroups(matchingGroups)
+    } else if (stageFilter !== 'all' || groupFilter !== 'all') {
+      // إذا تم اختيار مرحلة أو مجموعة من الفلاتر، افتحها تلقائياً
+      const matchingGroups = new Set<string>()
+
+      groups.forEach(group => {
+        const stageMatches = stageFilter === 'all' || group.stage === stageFilter
+        const groupMatches = groupFilter === 'all' || group.id === groupFilter
+
+        if (stageMatches && groupMatches) {
+          matchingGroups.add(group.stage || '')
+          matchingGroups.add(group.id)
+        }
+      })
+
+      setExpandedGroups(matchingGroups)
     } else {
       setExpandedGroups(new Set())
     }

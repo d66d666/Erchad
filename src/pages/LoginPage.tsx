@@ -137,14 +137,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   if (showForgotPassword) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-8 text-center">
-            <div className="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-              <Lock className="text-emerald-600" size={40} />
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-gray-100">
+          <div className="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-500 p-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-20">
+              <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white rounded-full"></div>
+              <div className="absolute bottom-4 left-4 w-20 h-20 border-2 border-white rounded-full"></div>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">استعادة كلمة المرور</h1>
-            <p className="text-emerald-50">نظام الإرشاد الطلابي</p>
+
+            <div className="relative z-10">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Lock className="text-blue-600" size={48} />
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">استعادة كلمة المرور</h1>
+              <p className="text-white/90 text-lg font-medium">نظام إدارة الطلاب</p>
+            </div>
           </div>
 
           <div className="p-8">
@@ -259,28 +271,49 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-500 to-blue-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-8 text-center">
-          <div className="bg-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-            <GraduationCap className="text-cyan-600" size={40} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* خلفية متحركة */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse delay-700"></div>
+      </div>
+
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-gray-100">
+        {/* القسم العلوي */}
+        <div className="bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-500 p-10 text-center relative overflow-hidden">
+          {/* زخرفة خلفية */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-20">
+            <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white rounded-full"></div>
+            <div className="absolute bottom-4 left-4 w-20 h-20 border-2 border-white rounded-full"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border border-white rounded-full"></div>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">نظام الإرشاد الطلابي</h1>
-          <p className="text-cyan-50">تسجيل الدخول</p>
+
+          <div className="relative z-10">
+            <div className="bg-white/95 backdrop-blur-sm rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <GraduationCap className="text-blue-600" size={48} />
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">مرحباً بك</h1>
+            <p className="text-white/90 text-lg font-medium">في نظام إدارة الطلاب</p>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-white/70 rounded-full"></div>
+              <div className="w-2 h-2 bg-white/40 rounded-full"></div>
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleLogin} className="p-8 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
               اسم المستخدم
             </label>
-            <div className="relative">
-              <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <div className="relative group">
+              <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pr-12 pl-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                className="w-full pr-12 pl-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
                 placeholder="أدخل اسم المستخدم"
                 required
               />
@@ -288,23 +321,23 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
               كلمة المرور
             </label>
-            <div className="relative">
-              <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <div className="relative group">
+              <Lock className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pr-12 pl-12 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                className="w-full pr-12 pl-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
                 placeholder="أدخل كلمة المرور"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -312,16 +345,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </div>
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-start gap-2">
+            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3 animate-shake">
               <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
-              <p className="text-sm text-red-800">{error}</p>
+              <p className="text-sm text-red-800 font-medium">{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-500 hover:from-blue-700 hover:via-cyan-700 hover:to-teal-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
@@ -329,7 +362,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           <button
             type="button"
             onClick={() => setShowForgotPassword(true)}
-            className="w-full text-cyan-600 hover:text-cyan-800 font-medium py-2"
+            className="w-full text-blue-600 hover:text-blue-800 font-medium py-2 transition-colors"
           >
             نسيت كلمة المرور؟
           </button>

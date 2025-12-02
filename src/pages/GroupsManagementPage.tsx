@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown, Printer, UserPlus } from 'lucide-react'
 import { db } from '../lib/db'
 import { supabase } from '../lib/supabase'
-import { Group, Student } from '../types'
+import { Group, Student, SpecialStatus } from '../types'
 import { AddStudentModal } from '../components/AddStudentModal'
 
 export function GroupsManagementPage() {
   const [groups, setGroups] = useState<Group[]>([])
   const [students, setStudents] = useState<Student[]>([])
+  const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
+  const [teacherName, setTeacherName] = useState('')
+  const [schoolName, setSchoolName] = useState('')
   const [newStage, setNewStage] = useState('')
   const [newGroupName, setNewGroupName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,6 +30,8 @@ export function GroupsManagementPage() {
     fetchGroups()
     fetchStudentCounts()
     fetchStudents()
+    fetchSpecialStatuses()
+    fetchTeacherProfile()
   }, [])
 
   useEffect(() => {
@@ -100,6 +105,457 @@ export function GroupsManagementPage() {
     })
 
     setStudentCounts(counts)
+  }
+
+  const fetchSpecialStatuses = async () => {
+    const { data } = await supabase
+      .from('special_statuses')
+      .select('*')
+      .order('name')
+
+    if (data) setSpecialStatuses(data)
+  }
+
+  const fetchTeacherProfile = async () => {
+    const { data } = await supabase
+      .from('teacher_profile')
+      .select('*')
+      .maybeSingle()
+
+    if (data) {
+      setTeacherName(data.name || '')
+      setSchoolName(data.school_name || '')
+    }
+  }
+
+  const printGroup = (group: Group, groupStudents: Student[]) => {
+    const now = new Date()
+    const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
+    const gregorianDate = now.toLocaleDateString('ar-SA')
+    const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+
+    const printWindow = window.open('', '', 'width=1000,height=800')
+    if (!printWindow) return
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+        <head>
+          <title>طباعة ${group.name}</title>
+          <meta charset="UTF-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page { size: A4 portrait; margin: 20mm; }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: white;
+              color: #000;
+              font-size: 13px;
+            }
+            .page-header {
+              display: flex;
+              justify-content: space-between;
+              font-size: 11px;
+              margin-bottom: 15px;
+              padding-bottom: 8px;
+              border-bottom: 1px solid #ddd;
+            }
+            .school-header {
+              text-align: center;
+              margin-bottom: 20px;
+              padding: 20px;
+              border: 2px solid #7c3aed;
+              border-radius: 12px;
+              background: linear-gradient(to bottom, #faf5ff 0%, #f3e8ff 100%);
+            }
+            .school-name {
+              font-size: 22px;
+              font-weight: 700;
+              color: #6d28d9;
+              margin-bottom: 8px;
+            }
+            .teacher-info {
+              display: flex;
+              justify-content: center;
+              gap: 20px;
+              font-size: 12px;
+              color: #6d28d9;
+            }
+            .main-title {
+              text-align: center;
+              margin: 25px 0 15px 0;
+            }
+            .main-title h2 {
+              font-size: 20px;
+              font-weight: 700;
+              color: #7c3aed;
+              padding: 10px 20px;
+              border-top: 2px solid #7c3aed;
+              border-bottom: 2px solid #7c3aed;
+              display: inline-block;
+            }
+            .meta-info {
+              text-align: center;
+              font-size: 11px;
+              color: #666;
+              margin-bottom: 15px;
+            }
+            .group-info {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 15px;
+              padding: 8px 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+            }
+            .group-stage {
+              font-size: 16px;
+              font-weight: 700;
+              color: #7c3aed;
+            }
+            .student-count {
+              font-size: 14px;
+              font-weight: 600;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              border: 2px solid #7c3aed;
+            }
+            th, td {
+              padding: 10px 8px;
+              text-align: center;
+              border: 1px solid #cbd5e1;
+              font-size: 12px;
+            }
+            th {
+              background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+              color: white;
+              font-weight: 600;
+            }
+            td { background: #fafafa; }
+            tr:nth-child(even) td { background: #ffffff; }
+            .phone-cell { direction: ltr; text-align: center; }
+            .page-footer {
+              margin-top: 30px;
+              padding-top: 15px;
+              border-top: 1px solid #ddd;
+              display: flex;
+              justify-content: space-between;
+              font-size: 10px;
+              color: #999;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page-header">
+            <div>${time} ${gregorianDate}</div>
+            <div>منسق الشؤون الطلابية</div>
+          </div>
+
+          <div class="school-header">
+            <h1 class="school-name">${schoolName}</h1>
+            <div class="teacher-info">
+              <div>برنامج إدارة الطلاب</div>
+              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+            </div>
+          </div>
+
+          <div class="main-title">
+            <h2>${group.name}</h2>
+          </div>
+
+          <div class="meta-info">
+            <div>طُبع بتاريخ: ${hijriDate} هـ - ${gregorianDate} م</div>
+          </div>
+
+          <div class="group-info">
+            <div class="group-stage">${group.stage || 'المرحلة'}</div>
+            <div class="student-count">عدد الطلاب: ${groupStudents.length}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 5%">الرقم</th>
+                <th style="width: 23%">السجل المدني</th>
+                <th style="width: 17%">جوال ولي الأمر</th>
+                <th style="width: 17%">جوال الطالب</th>
+                <th style="width: 23%">اسم الطالب</th>
+                <th style="width: 15%">الحالة الخاصة</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${groupStudents.map((student, index) => {
+                const specialStatus = student.special_status_id
+                  ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
+                  : 'لايوجد حالة خاصة'
+                return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${student.national_id}</td>
+                    <td class="phone-cell">${student.guardian_phone}</td>
+                    <td class="phone-cell">${student.phone}</td>
+                    <td><strong>${student.name}</strong></td>
+                    <td>${specialStatus}</td>
+                  </tr>
+                `
+              }).join('')}
+            </tbody>
+          </table>
+
+          <div class="page-footer">
+            <div>1/1</div>
+            <div>about:blank</div>
+          </div>
+
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.onafterprint = () => window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
+  const printAllGroups = () => {
+    const now = new Date()
+    const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
+    const gregorianDate = now.toLocaleDateString('ar-SA')
+    const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+
+    const printWindow = window.open('', '', 'width=1000,height=800')
+    if (!printWindow) return
+
+    const allGroupsHTML = groups.map((group, groupIndex) => {
+      const groupStudents = students.filter(s => s.group_id === group.id)
+
+      return `
+        <div class="page-section" style="${groupIndex < groups.length - 1 ? 'page-break-after: always;' : ''}">
+          <div class="page-header">
+            <div>${time} ${gregorianDate}</div>
+            <div>منسق الشؤون الطلابية</div>
+          </div>
+
+          <div class="school-header">
+            <h1 class="school-name">${schoolName}</h1>
+            <div class="teacher-info">
+              <div>برنامج إدارة الطلاب</div>
+              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+            </div>
+          </div>
+
+          <div class="main-title">
+            <h2>${group.name}</h2>
+          </div>
+
+          <div class="meta-info">
+            <div>طُبع بتاريخ: ${hijriDate} هـ - ${gregorianDate} م</div>
+          </div>
+
+          <div class="group-info">
+            <div class="group-stage">${group.stage || 'المرحلة'}</div>
+            <div class="student-count">عدد الطلاب: ${groupStudents.length}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 5%">الرقم</th>
+                <th style="width: 23%">السجل المدني</th>
+                <th style="width: 17%">جوال ولي الأمر</th>
+                <th style="width: 17%">جوال الطالب</th>
+                <th style="width: 23%">اسم الطالب</th>
+                <th style="width: 15%">الحالة الخاصة</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${groupStudents.map((student, index) => {
+                const specialStatus = student.special_status_id
+                  ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
+                  : 'لايوجد حالة خاصة'
+                return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${student.national_id}</td>
+                    <td class="phone-cell">${student.guardian_phone}</td>
+                    <td class="phone-cell">${student.phone}</td>
+                    <td><strong>${student.name}</strong></td>
+                    <td>${specialStatus}</td>
+                  </tr>
+                `
+              }).join('')}
+            </tbody>
+          </table>
+
+          <div class="page-footer">
+            <div>${groupIndex + 1}/${groups.length}</div>
+            <div>about:blank</div>
+          </div>
+        </div>
+      `
+    }).join('')
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+        <head>
+          <title>طباعة جميع المجموعات</title>
+          <meta charset="UTF-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page { size: A4 portrait; margin: 20mm; }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background: white;
+              color: #000;
+              font-size: 13px;
+              line-height: 1.4;
+            }
+            .page-section {
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+            }
+            .page-header {
+              display: flex;
+              justify-content: space-between;
+              font-size: 11px;
+              margin-bottom: 15px;
+              padding-bottom: 8px;
+              border-bottom: 1px solid #ddd;
+            }
+            .school-header {
+              text-align: center;
+              margin-bottom: 20px;
+              padding: 20px;
+              border: 2px solid #7c3aed;
+              border-radius: 12px;
+              background: linear-gradient(to bottom, #faf5ff 0%, #f3e8ff 100%);
+            }
+            .school-name {
+              font-size: 22px;
+              font-weight: 700;
+              color: #6d28d9;
+              margin-bottom: 8px;
+            }
+            .teacher-info {
+              display: flex;
+              justify-content: center;
+              gap: 20px;
+              font-size: 12px;
+              color: #6d28d9;
+            }
+            .main-title {
+              text-align: center;
+              margin: 25px 0 15px 0;
+            }
+            .main-title h2 {
+              font-size: 20px;
+              font-weight: 700;
+              color: #7c3aed;
+              padding: 10px 20px;
+              border-top: 2px solid #7c3aed;
+              border-bottom: 2px solid #7c3aed;
+              display: inline-block;
+            }
+            .meta-info {
+              text-align: center;
+              font-size: 11px;
+              color: #666;
+              margin-bottom: 15px;
+            }
+            .group-info {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 15px;
+              padding: 8px 15px;
+              background: #f8f9fa;
+              border-radius: 8px;
+            }
+            .group-stage {
+              font-size: 16px;
+              font-weight: 700;
+              color: #7c3aed;
+            }
+            .student-count {
+              font-size: 14px;
+              font-weight: 600;
+              color: #555;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+              border: 2px solid #7c3aed;
+            }
+            th, td {
+              padding: 10px 8px;
+              text-align: center;
+              border: 1px solid #cbd5e1;
+              font-size: 12px;
+            }
+            th {
+              background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+              color: white;
+              font-weight: 600;
+            }
+            td {
+              background: #fafafa;
+            }
+            tr:nth-child(even) td {
+              background: #ffffff;
+            }
+            td strong {
+              font-weight: 600;
+            }
+            .phone-cell {
+              direction: ltr;
+              text-align: center;
+            }
+            .page-footer {
+              margin-top: auto;
+              padding-top: 15px;
+              border-top: 1px solid #ddd;
+              display: flex;
+              justify-content: space-between;
+              font-size: 10px;
+              color: #999;
+            }
+            @media print {
+              body { background: white; }
+              .page-section {
+                page-break-after: always;
+                min-height: auto;
+              }
+              .page-section:last-child {
+                page-break-after: auto;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${allGroupsHTML}
+
+          <script>
+            window.onload = () => {
+              setTimeout(() => {
+                window.print();
+                window.onafterprint = () => window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
   }
 
   const handleAddGroup = async (e: React.FormEvent) => {
@@ -349,7 +805,7 @@ export function GroupsManagementPage() {
               <span>إدارة المجموعات</span>
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => printAllGroups()}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all shadow-sm"
             >
               <Printer size={16} />
@@ -449,7 +905,7 @@ export function GroupsManagementPage() {
                                         <span>إضافة طالب</span>
                                       </button>
                                       <button
-                                        onClick={() => window.print()}
+                                        onClick={() => printGroup(group, groupStudents)}
                                         className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
                                       >
                                         <Printer size={16} />

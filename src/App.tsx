@@ -1330,6 +1330,15 @@ function App() {
             <div className="flex-1">
               <div className="bg-gradient-to-r from-teal-400 to-teal-500 rounded-2xl shadow-lg p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => printAllGroups()}
+                      className="bg-white hover:bg-gray-100 text-teal-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-md transition-all"
+                    >
+                      <Printer size={18} />
+                      طباعة الكل
+                    </button>
+                  </div>
                   <h2 className="text-2xl font-bold text-white">استفسار عن طالب</h2>
                   <Search className="text-white" size={28} />
                 </div>
@@ -1427,21 +1436,32 @@ function App() {
 
                                 return (
                                   <div key={group.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-gray-200">
-                                    <button
-                                      onClick={() => toggleGroup(group.id)}
-                                      className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between ${colors.groupHoverFrom} ${colors.groupHoverTo} transition-all`}
-                                    >
-                                      <div className="flex items-center gap-3">
+                                    <div className={`w-full bg-gradient-to-r ${colors.group} ${colors.groupTo} px-5 py-3 flex items-center justify-between`}>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          printGroup(group, groupStudents)
+                                        }}
+                                        className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
+                                      >
+                                        <Printer size={16} />
+                                        طباعة
+                                      </button>
+                                      <button
+                                        onClick={() => toggleGroup(group.id)}
+                                        className="flex-1 flex items-center justify-center gap-3"
+                                      >
+                                        <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
+                                          <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
+                                        </div>
+                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
                                         <ChevronDown
                                           size={20}
                                           className={`text-white transition-transform ${isGroupExpanded ? 'rotate-180' : ''}`}
                                         />
-                                        <h3 className="text-base font-bold text-white">{group.name}</h3>
-                                      </div>
-                                      <div className="bg-white bg-opacity-30 px-3.5 py-1.5 rounded-full">
-                                        <span className="text-white font-bold text-xs">{groupStudents.length} طالب</span>
-                                      </div>
-                                    </button>
+                                      </button>
+                                      <div className="w-20"></div>
+                                    </div>
 
                                     {isGroupExpanded && (
                                       <div className="p-6">

@@ -863,14 +863,14 @@ export function GroupsManagementPage() {
                   className={`w-full bg-gradient-to-r ${colors.bg} px-6 py-4 flex items-center justify-between hover:opacity-90 transition-all`}
                 >
                   <div className="flex items-center gap-3">
-                    <Layers size={20} className="text-black" />
-                    <h3 className="text-lg font-bold text-black text-right">{stage}</h3>
+                    <Layers size={20} className="text-white" />
+                    <h3 className="text-lg font-bold text-white text-right">{stage}</h3>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-black/90 font-medium">
+                    <span className="text-sm text-white/90 font-medium">
                       {totalStudents} طالب في {stageGroups.length} مجموعة
                     </span>
-                    {isExpanded ? <ChevronUp className="text-black" size={24} /> : <ChevronDown className="text-black" size={24} />}
+                    {isExpanded ? <ChevronUp className="text-white" size={24} /> : <ChevronDown className="text-white" size={24} />}
                   </div>
                 </button>
 

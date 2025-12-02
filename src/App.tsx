@@ -317,14 +317,8 @@ function App() {
       })
 
       setExpandedGroups(matchingGroups)
-    } else if (stageFilter === 'all' && groupFilter === 'all') {
-      // عندما يكون الفلتر "الكل"، افتح جميع المراحل والمجموعات
-      const allGroups = new Set<string>()
-      groups.forEach(group => {
-        allGroups.add(group.stage || '')
-        allGroups.add(group.id)
-      })
-      setExpandedGroups(allGroups)
+    } else {
+      setExpandedGroups(new Set())
     }
   }, [searchTerm, students, groups, stageFilter, groupFilter])
 
@@ -1667,7 +1661,7 @@ function App() {
                           </button>
 
                           {isStageExpanded && (
-                            <div className="space-y-3 pr-3">
+                            <div className="space-y-3 pr-3 mt-3">
                               {stageGroups.map(group => {
                                 const groupStudents = students
                                   .filter(s => s.group_id === group.id)

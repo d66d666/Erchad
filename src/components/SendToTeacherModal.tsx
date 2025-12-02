@@ -225,7 +225,7 @@ export function SendToTeacherModal({
       })
 
       // إضافة التوقيع في نهاية الرسالة
-      message += `\nالاستاذ: ${systemAdminName || 'مسؤول النظام'}`
+      message += `\n${systemAdminName || 'مسؤول النظام'}`
 
       // فتح واتساب
       const encodedMessage = encodeURIComponent(message)

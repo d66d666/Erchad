@@ -464,7 +464,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     <div className="space-y-6">
       <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-lg p-6 border border-blue-100">
         <div className="flex items-center gap-3 mb-6">
-          <div className="bg-blue-600 p-3 rounded-lg shadow-md">
+          <div className="bg-green-600 p-3 rounded-lg shadow-md">
             <UserCheck size={28} className="text-white" />
           </div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">استقبال الطلاب</h2>
@@ -517,7 +517,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                       {student.national_id} - {student.group?.name}
                     </div>
                     <div className="flex gap-3 text-xs font-semibold">
-                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
                         الاستقبال: {student.visit_count || 0}
                       </span>
                       <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
@@ -536,9 +536,9 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
           {selectedStudent && (
             <>
-              <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-5 border-2 border-blue-300 shadow-md">
-                <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-5 border-2 border-green-300 shadow-md">
+                <h3 className="font-bold text-green-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
                   الطالب المحدد:
                 </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -665,7 +665,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
             )}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-colors"
             >
               <Filter size={16} />
               فلتر بالتاريخ
@@ -699,7 +699,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
         {showFilters && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowFilters(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-              <div className="bg-blue-600 text-white p-6 rounded-t-2xl">
+              <div className="bg-green-600 text-white p-6 rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Calendar size={24} />
@@ -707,7 +707,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                   </div>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="hover:bg-blue-700 rounded-full p-2 transition-colors"
+                    className="hover:bg-green-700 rounded-full p-2 transition-colors"
                   >
                     <X size={24} />
                   </button>
@@ -775,7 +775,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     <h4 className="font-bold text-blue-900">{visit.student?.name}</h4>
                   </div>
                   <p className="text-xs text-blue-600 font-medium mt-1 mr-5">

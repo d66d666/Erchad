@@ -292,19 +292,10 @@ export function SpecialStatusPage({
               <Printer size={16} />
               <span>طباعة الكل</span>
             </button>
-            <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm">
-              <input
-                type="checkbox"
-                checked={showStatusDetails}
-                onChange={(e) => setShowStatusDetails(e.target.checked)}
-                className="w-4 h-4 rounded cursor-pointer text-purple-500 focus:ring-purple-500"
-              />
-              <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
-            </label>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex items-center gap-3 mt-4">
           <Filter size={18} className="text-purple-600" />
           <span className="text-sm font-medium text-gray-700">فلترة حسب الفئة:</span>
           <select
@@ -319,6 +310,16 @@ export function SpecialStatusPage({
               </option>
             ))}
           </select>
+
+          <label className="flex items-center gap-2 bg-white border border-purple-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-purple-50 transition-all shadow-sm mr-auto">
+            <input
+              type="checkbox"
+              checked={showStatusDetails}
+              onChange={(e) => setShowStatusDetails(e.target.checked)}
+              className="w-4 h-4 rounded cursor-pointer text-purple-500 focus:ring-purple-500"
+            />
+            <span className="text-gray-700 text-sm font-medium">إظهار تفاصيل الحالة</span>
+          </label>
         </div>
       </div>
 

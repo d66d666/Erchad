@@ -51,6 +51,13 @@ export interface LoginCredentials {
   updated_at?: string
 }
 
+export interface TeacherGroup {
+  id?: string
+  teacher_id: string
+  group_id: string
+  created_at?: string
+}
+
 export class StudentsDatabase extends Dexie {
   groups!: Table<Group>
   students!: Table<Student>
@@ -61,6 +68,7 @@ export class StudentsDatabase extends Dexie {
   teacher_profile!: Table<TeacherProfile>
   login_credentials!: Table<LoginCredentials>
   teachers!: Table<Teacher>
+  teacher_groups!: Table<TeacherGroup>
 
   constructor() {
     super('StudentsDatabase')
@@ -80,6 +88,10 @@ export class StudentsDatabase extends Dexie {
           group.display_order = 999
         }
       })
+    })
+
+    this.version(6).stores({
+      teacher_groups: 'id, teacher_id, group_id'
     })
   }
 }

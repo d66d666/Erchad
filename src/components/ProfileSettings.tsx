@@ -40,8 +40,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const fetchProfile = async () => {
     try {
-      const userId = localStorage.getItem('userId') || ''
-      const profile = await db.teacher_profile.where('user_id').equals(userId).first()
+      const profile = await db.teacher_profile.toCollection().first()
 
       if (profile) {
         setProfileId(profile.id || '')
@@ -77,9 +76,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setLoading(true)
 
     try {
-      const userId = localStorage.getItem('userId') || ''
       const profileData = {
-        user_id: userId,
         name: teacherName,
         phone: teacherPhone,
         school_name: schoolName,

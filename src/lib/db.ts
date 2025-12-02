@@ -35,7 +35,6 @@ export interface StudentViolation {
 
 export interface TeacherProfile {
   id?: string
-  user_id: string
   name?: string
   phone?: string
   school_name?: string
@@ -82,7 +81,7 @@ export class StudentsDatabase extends Dexie {
       student_visits: 'id, student_id, visit_date',
       student_permissions: 'id, student_id, permission_date',
       student_violations: 'id, student_id, violation_date',
-      teacher_profile: 'id, user_id',
+      teacher_profile: 'id',
       login_credentials: 'id, username',
       teachers: 'id, phone, name'
     }).upgrade(trans => {
@@ -95,20 +94,6 @@ export class StudentsDatabase extends Dexie {
 
     this.version(6).stores({
       teacher_groups: 'id, teacher_id, group_id'
-    })
-
-    this.version(7).stores({
-      teacher_profile: 'id, user_id'
-    }).upgrade(async (trans) => {
-      const profiles = await trans.table('teacher_profile').toArray()
-      await trans.table('teacher_profile').clear()
-
-      for (const profile of profiles) {
-        if (!profile.user_id) {
-          profile.user_id = 'admin'
-        }
-        await trans.table('teacher_profile').add(profile)
-      }
     })
   }
 }

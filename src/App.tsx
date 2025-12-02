@@ -199,13 +199,11 @@ function App() {
     try {
       setLoading(true)
 
-      const userId = localStorage.getItem('userId') || ''
-
       const [groupsData, statusesData, studentsData, profileData] = await Promise.all([
         db.groups.toArray(),
         db.special_statuses.toArray(),
         db.students.toArray(),
-        db.teacher_profile.where('user_id').equals(userId).first(),
+        db.teacher_profile.toCollection().first(),
       ])
 
       setGroups(groupsData)
@@ -351,7 +349,8 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')
-    window.location.reload()
+    setIsLoggedIn(false)
+    setCurrentPage('home')
   }
 
   const handleLogin = () => {
@@ -464,13 +463,12 @@ function App() {
 
   const handleExportData = async () => {
     try {
-      const userId = localStorage.getItem('userId') || ''
       const visits = await db.student_visits.toArray()
       const permissions = await db.student_permissions.toArray()
       const violations = await db.student_violations.toArray()
       const teachers = await db.teachers.toArray()
       const teacherGroups = await db.teacher_groups.toArray()
-      const teacherProfile = await db.teacher_profile.where('user_id').equals(userId).first()
+      const teacherProfile = await db.teacher_profile.toCollection().first()
 
       const dataToExport = {
         version: '1.0',
@@ -563,12 +561,7 @@ function App() {
       }
 
       if (importedData.teacherProfile) {
-        const userId = localStorage.getItem('userId') || ''
-        const profileToImport = {
-          ...importedData.teacherProfile,
-          user_id: importedData.teacherProfile.user_id || userId,
-        }
-        await db.teacher_profile.add(profileToImport)
+        await db.teacher_profile.add(importedData.teacherProfile)
       }
 
       alert('✓ تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة الآن...')

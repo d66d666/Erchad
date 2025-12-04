@@ -13,6 +13,8 @@ import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
+import ActivateLicenseModal from './components/ActivateLicenseModal'
+import { isSubscriptionActive } from './lib/licenseKey'
 import {
   Home,
   Users,
@@ -80,6 +82,9 @@ function App() {
   const [allowEntryStudent, setAllowEntryStudent] = useState<Student | null>(null)
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
   const [teachers, setTeachers] = useState<any[]>([])
+  const [showActivateLicense, setShowActivateLicense] = useState(false)
+  const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
+  const [schoolId, setSchoolId] = useState('')
 
   const [headerCards, setHeaderCards] = useState({
     totalStudents: true,
@@ -149,6 +154,30 @@ function App() {
 
       return indexA - indexB
     })
+  }
+
+  const checkSubscription = async () => {
+    try {
+      const profile = await db.teacher_profile.toCollection().first()
+      const schoolIdValue = profile?.school_name || 'SCHOOL_DEFAULT'
+      setSchoolId(schoolIdValue)
+
+      const subscription = await db.subscription
+        .where('school_id')
+        .equals(schoolIdValue)
+        .first()
+
+      if (!subscription) {
+        setIsSubscriptionExpired(true)
+        return
+      }
+
+      const isActive = isSubscriptionActive(subscription.end_date)
+      setIsSubscriptionExpired(!isActive)
+    } catch (error) {
+      console.error('Error checking subscription:', error)
+      setIsSubscriptionExpired(true)
+    }
   }
 
   const fetchTodayStats = async () => {
@@ -240,6 +269,7 @@ function App() {
     setIsMasterAdmin(isMaster)
 
     if (loggedIn) {
+      checkSubscription()
       fetchData()
       fetchTodayStats()
       fetchTeachersCount()
@@ -1249,6 +1279,53 @@ function App() {
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
           <p className="text-xl text-gray-600 font-semibold">جاري التحميل...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (isLoggedIn && isSubscriptionExpired) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center p-6" dir="rtl">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-orange-600 rounded-full mb-6">
+            <AlertCircle className="w-12 h-12 text-white" />
+          </div>
+
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">انتهى الاشتراك</h1>
+
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            انتهت صلاحية اشتراكك في النظام. يرجى إدخال رمز تفعيل جديد للمتابعة.
+          </p>
+
+          <button
+            onClick={() => setShowActivateLicense(true)}
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg mb-4"
+          >
+            تفعيل الاشتراك
+          </button>
+
+          <button
+            onClick={() => {
+              localStorage.removeItem('isLoggedIn')
+              localStorage.removeItem('userId')
+              window.location.reload()
+            }}
+            className="w-full text-gray-600 hover:text-gray-800 font-semibold transition-colors"
+          >
+            تسجيل الخروج
+          </button>
+        </div>
+
+        <ActivateLicenseModal
+          isOpen={showActivateLicense}
+          onClose={() => setShowActivateLicense(false)}
+          schoolId={schoolId}
+          onSuccess={() => {
+            setIsSubscriptionExpired(false)
+            setShowActivateLicense(false)
+            window.location.reload()
+          }}
+        />
       </div>
     )
   }

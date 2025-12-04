@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
-import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown } from 'lucide-react'
+import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown, Calendar } from 'lucide-react'
+import { formatSubscriptionDate, getDaysRemaining, isSubscriptionActive } from '../lib/licenseKey'
 
 interface ProfileSettingsProps {
   onClose: () => void
@@ -33,6 +34,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     profile: false,
     all: false,
   })
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string>('')
+  const [subscriptionStartDate, setSubscriptionStartDate] = useState<string>('')
 
   useEffect(() => {
     fetchProfile()
@@ -65,6 +68,17 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       const savedTimeout = localStorage.getItem('autoLogoutMinutes')
       if (savedTimeout) {
         setAutoLogoutMinutes(savedTimeout)
+      }
+
+      const schoolIdFromProfile = profile?.school_name || 'SCHOOL_DEFAULT'
+      const subscription = await db.subscription
+        .where('school_id')
+        .equals(schoolIdFromProfile)
+        .first()
+
+      if (subscription) {
+        setSubscriptionStartDate(subscription.start_date)
+        setSubscriptionEndDate(subscription.end_date)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -256,6 +270,79 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         </div>
 
         <form onSubmit={handleSave} className="p-6 space-y-6">
+          {subscriptionEndDate && (
+            <div className={`${
+              isSubscriptionActive(subscriptionEndDate)
+                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200'
+                : 'bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200'
+            } rounded-lg p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${
+                    isSubscriptionActive(subscriptionEndDate)
+                      ? 'bg-green-600'
+                      : 'bg-red-600'
+                  }`}>
+                    <Calendar className="text-white" size={24} />
+                  </div>
+                  <h3 className={`text-xl font-bold ${
+                    isSubscriptionActive(subscriptionEndDate)
+                      ? 'text-green-900'
+                      : 'text-red-900'
+                  }`}>
+                    حالة الاشتراك
+                  </h3>
+                </div>
+                <div className={`px-4 py-2 rounded-full font-bold ${
+                  isSubscriptionActive(subscriptionEndDate)
+                    ? 'bg-green-600 text-white'
+                    : 'bg-red-600 text-white'
+                }`}>
+                  {isSubscriptionActive(subscriptionEndDate) ? '✓ نشط' : '✗ منتهي'}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 text-right">
+                    تاريخ بداية الاشتراك
+                  </label>
+                  <div className="text-lg font-bold text-gray-800 text-right">
+                    {formatSubscriptionDate(subscriptionStartDate)}
+                  </div>
+                </div>
+
+                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 text-right">
+                    تاريخ انتهاء الاشتراك
+                  </label>
+                  <div className="text-lg font-bold text-gray-800 text-right">
+                    {formatSubscriptionDate(subscriptionEndDate)}
+                  </div>
+                </div>
+
+                {isSubscriptionActive(subscriptionEndDate) && (
+                  <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+                    <p className="text-sm text-green-800 text-center font-semibold">
+                      {getDaysRemaining(subscriptionEndDate) > 0
+                        ? `باقي ${getDaysRemaining(subscriptionEndDate)} يوم على انتهاء الاشتراك`
+                        : 'ينتهي الاشتراك اليوم'
+                      }
+                    </p>
+                  </div>
+                )}
+
+                {!isSubscriptionActive(subscriptionEndDate) && (
+                  <div className="bg-red-100 border border-red-300 rounded-lg p-4">
+                    <p className="text-sm text-red-800 text-center font-semibold">
+                      انتهى الاشتراك - يرجى التواصل مع المطور للتجديد
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="bg-blue-50 rounded-lg p-6 space-y-4">
             <h3 className="text-xl font-bold text-gray-900 mb-4 text-right">
               معلومات النظام

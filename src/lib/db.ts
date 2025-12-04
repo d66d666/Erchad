@@ -71,6 +71,27 @@ export interface RenewalCode {
   used_at?: string | null
 }
 
+export interface Subscription {
+  id?: string
+  school_id: string
+  start_date: string
+  end_date: string
+  is_active: boolean
+  last_key_used?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ActivationHistory {
+  id?: string
+  license_key: string
+  key_id: string
+  activation_date: string
+  start_date: string
+  end_date: string
+  created_at?: string
+}
+
 export class StudentsDatabase extends Dexie {
   groups!: Table<Group>
   students!: Table<Student>
@@ -83,6 +104,8 @@ export class StudentsDatabase extends Dexie {
   teachers!: Table<Teacher>
   teacher_groups!: Table<TeacherGroup>
   renewal_codes!: Table<RenewalCode>
+  subscription!: Table<Subscription>
+  activation_history!: Table<ActivationHistory>
 
   constructor() {
     super('StudentsDatabase')
@@ -114,6 +137,11 @@ export class StudentsDatabase extends Dexie {
 
     this.version(8).stores({
       renewal_codes: 'id, code, username, used'
+    })
+
+    this.version(9).stores({
+      subscription: 'id, school_id, is_active',
+      activation_history: 'id, key_id, activation_date'
     })
   }
 }

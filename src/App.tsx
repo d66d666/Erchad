@@ -239,11 +239,13 @@ function App() {
     try {
       setLoading(true)
 
+      const userId = localStorage.getItem('userId')
+
       const [groupsData, statusesData, studentsData, profileData] = await Promise.all([
         db.groups.toArray(),
         db.special_statuses.toArray(),
         db.students.toArray(),
-        db.teacher_profile.toCollection().first(),
+        userId ? db.teacher_profile.where('id').equals(userId).first() : Promise.resolve(null),
       ])
 
       setGroups(groupsData)

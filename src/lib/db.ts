@@ -164,76 +164,26 @@ db.on('ready', async () => {
     })
   }
 
-  // إضافة حساب Ahmed التجريبي منتهي الاشتراك
-  const ahmedExists = await db.login_credentials.where('username').equals('ahmed').count()
-  if (ahmedExists === 0) {
-    const ahmedId = crypto.randomUUID()
+  // إضافة حساب a التجريبي باشتراك فعّال
+  const aExists = await db.login_credentials.where('username').equals('a').count()
+  if (aExists === 0) {
+    const aId = crypto.randomUUID()
     await db.login_credentials.add({
-      id: ahmedId,
-      username: 'ahmed',
-      password_hash: '12345',
+      id: aId,
+      username: 'a',
+      password_hash: 'a',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
 
-    // إضافة ملف شخصي
-    await db.teacher_profile.add({
-      id: ahmedId,
-      name: 'Ahmed',
-      phone: '',
-      school_name: 'مدرسة أحمد التجريبية',
-      system_description: 'نظام إدارة الطلاب',
-      created_at: new Date().toISOString()
-    })
-
-    // إضافة اشتراك منتهي (انتهى قبل شهر)
-    const endDate = new Date()
-    endDate.setMonth(endDate.getMonth() - 1)
-
-    const startDate = new Date(endDate)
-    startDate.setMonth(startDate.getMonth() - 12)
-
-    await db.subscription.add({
-      id: crypto.randomUUID(),
-      school_id: ahmedId,
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      is_active: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-  }
-
-  // إضافة حساب Ali التجريبي باشتراك فعّال
-  const aliExists = await db.login_credentials.where('username').equals('ali').count()
-  if (aliExists === 0) {
-    const aliId = crypto.randomUUID()
-    await db.login_credentials.add({
-      id: aliId,
-      username: 'ali',
-      password_hash: '12345',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-
-    // إضافة ملف شخصي
-    await db.teacher_profile.add({
-      id: aliId,
-      name: 'Ali',
-      phone: '0512345678',
-      school_name: 'مدرسة علي النموذجية',
-      system_description: 'نظام إدارة الطلاب',
-      created_at: new Date().toISOString()
-    })
-
-    // إضافة اشتراك فعّال (ينتهي بعد 11 شهر)
+    // إضافة اشتراك فعّال (ينتهي بعد شهر)
     const startDate = new Date()
     const endDate = new Date()
-    endDate.setMonth(endDate.getMonth() + 11)
+    endDate.setMonth(endDate.getMonth() + 1)
 
     await db.subscription.add({
       id: crypto.randomUUID(),
-      school_id: aliId,
+      school_id: aId,
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString(),
       is_active: true,

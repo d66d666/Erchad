@@ -55,16 +55,6 @@ export function AccountsManagementPage() {
         updated_at: new Date().toISOString()
       })
 
-      // إنشاء ملف شخصي للمستخدم الجديد
-      await db.teacher_profile.add({
-        id: accountId,
-        name: formData.teacherName,
-        phone: formData.phone,
-        school_name: formData.schoolName,
-        system_description: 'نظام إدارة الطلاب',
-        created_at: new Date().toISOString()
-      })
-
       // إنشاء سجل اشتراك
       const startDate = new Date()
       const endDate = new Date(expiryDate)
@@ -384,8 +374,16 @@ export function AccountsManagementPage() {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">إضافة حساب جديد</h2>
 
             <form onSubmit={handleAddAccount} className="space-y-5">
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-3 mb-4 flex items-start gap-2">
+                <AlertCircle className="text-purple-600 flex-shrink-0 mt-0.5" size={18} />
+                <div className="text-sm text-purple-800">
+                  <p className="font-bold mb-1">ملاحظة مهمة:</p>
+                  <p>المعلومات التالية (اسم المدرسة، اسم المعلم، رقم الجوال) هي فقط لمرجعيتك كمطور ولن تظهر للمشترك. المشترك سيدخل معلوماته بنفسه في الملف الشخصي.</p>
+                </div>
+              </div>
+
               <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة</h3>
+                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة (للمرجعية فقط)</h3>
 
                 <div className="space-y-4">
                   <div>

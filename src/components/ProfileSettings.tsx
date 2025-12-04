@@ -68,8 +68,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         }
       }
 
-      // جلب الملف الشخصي
-      const profile = await db.teacher_profile.get(userId)
+      // جلب الملف الشخصي الخاص بالمستخدم الحالي
+      const profile = await db.teacher_profile.where('id').equals(userId).first()
 
       if (profile) {
         setProfileId(profile.id || '')
@@ -78,6 +78,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setSchoolName(profile.school_name || '')
         setSystemDescription(profile.system_description || '')
       } else {
+        // لا يوجد ملف شخصي، نترك الحقول فارغة
+        setProfileId('')
         setTeacherName('')
         setTeacherPhone('')
         setSchoolName('')
@@ -115,6 +117,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         return
       }
 
+      const userId = localStorage.getItem('userId')
+      if (!userId) return
+
       const profileData = {
         name: teacherName,
         phone: teacherPhone,
@@ -122,18 +127,21 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         system_description: systemDescription,
       }
 
-      if (profileId) {
-        await db.teacher_profile.update(profileId, profileData)
+      const existingProfile = await db.teacher_profile.where('id').equals(userId).first()
+
+      if (existingProfile) {
+        // تحديث الملف الشخصي الموجود
+        await db.teacher_profile.update(userId, profileData)
       } else {
-        const newId = crypto.randomUUID()
+        // إنشاء ملف شخصي جديد للمستخدم
         const newProfile = {
-          id: newId,
+          id: userId,
           ...profileData,
           created_at: new Date().toISOString(),
         }
 
         await db.teacher_profile.add(newProfile)
-        setProfileId(newId)
+        setProfileId(userId)
       }
 
       alert('تم حفظ البيانات بنجاح')

@@ -151,42 +151,16 @@ export class StudentsDatabase extends Dexie {
 
 export const db = new StudentsDatabase()
 
-// Initialize default login credentials
+// Initialize default login credentials only if database is completely empty
 db.on('ready', async () => {
   const count = await db.login_credentials.count()
+
+  // فقط إذا كانت قاعدة البيانات فارغة تماماً
   if (count === 0) {
     await db.login_credentials.add({
       id: crypto.randomUUID(),
       username: 'admin',
       password_hash: 'admin123',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-  }
-
-  // إضافة حساب a التجريبي باشتراك فعّال
-  const aExists = await db.login_credentials.where('username').equals('a').count()
-  if (aExists === 0) {
-    const aId = crypto.randomUUID()
-    await db.login_credentials.add({
-      id: aId,
-      username: 'a',
-      password_hash: 'a',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-
-    // إضافة اشتراك فعّال (ينتهي بعد شهر)
-    const startDate = new Date()
-    const endDate = new Date()
-    endDate.setMonth(endDate.getMonth() + 1)
-
-    await db.subscription.add({
-      id: crypto.randomUUID(),
-      school_id: aId,
-      start_date: startDate.toISOString(),
-      end_date: endDate.toISOString(),
-      is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })

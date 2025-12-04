@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Send } from 'lucide-react'
 import { Teacher, Group, Student, SpecialStatus } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { db } from '../lib/db'
 
 interface SendToTeacherModalProps {
   isOpen: boolean

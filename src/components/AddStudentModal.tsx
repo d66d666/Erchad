@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Group, SpecialStatus } from '../types'
 import { X } from 'lucide-react'
+import { db } from '../lib/db'
 
 interface AddStudentModalProps {
   onClose: () => void

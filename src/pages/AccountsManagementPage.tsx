@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { db, LoginCredentials } from '../lib/db'
-import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X } from 'lucide-react'
+import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X, Download, Copy, Check } from 'lucide-react'
 
 export function AccountsManagementPage() {
   const [accounts, setAccounts] = useState<LoginCredentials[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingAccount, setEditingAccount] = useState<LoginCredentials | null>(null)
+  const [showConfigModal, setShowConfigModal] = useState(false)
+  const [selectedAccount, setSelectedAccount] = useState<LoginCredentials | null>(null)
+  const [copied, setCopied] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -114,6 +117,43 @@ export function AccountsManagementPage() {
     return `${days} يوم متبقي`
   }
 
+  const handleExportConfig = (account: LoginCredentials) => {
+    setSelectedAccount(account)
+    setShowConfigModal(true)
+  }
+
+  const copyAccountInfo = () => {
+    if (!selectedAccount) return
+
+    const text = `معلومات الدخول:\n\nاسم المستخدم: ${selectedAccount.username}\nكلمة المرور: ${selectedAccount.password_hash}\n\nتاريخ انتهاء الصلاحية: ${selectedAccount.expiry_date ? new Date(selectedAccount.expiry_date).toLocaleDateString('ar-SA') : 'غير محدد'}\n\nيرجى حفظ هذه المعلومات في مكان آمن`
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  const downloadConfigFile = () => {
+    if (!selectedAccount) return
+
+    const config = {
+      username: selectedAccount.username,
+      password: selectedAccount.password_hash,
+      expiry_date: selectedAccount.expiry_date,
+      created_at: selectedAccount.created_at
+    }
+
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `account-${selectedAccount.username}-config.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -213,6 +253,13 @@ export function AccountsManagementPage() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleExportConfig(account)}
+                              className="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-lg transition-colors"
+                              title="تصدير التكوين"
+                            >
+                              <Download size={18} />
+                            </button>
                             <button
                               onClick={() => setEditingAccount(account)}
                               className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
@@ -316,6 +363,108 @@ export function AccountsManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showConfigModal && selectedAccount && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">تكوين الحساب</h2>
+              <button
+                onClick={() => {
+                  setShowConfigModal(false)
+                  setSelectedAccount(null)
+                  setCopied(false)
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">معلومات الحساب</h3>
+
+              <div className="space-y-3">
+                <div className="bg-white rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">اسم المستخدم</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedAccount.username}</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">كلمة المرور</p>
+                  <p className="text-lg font-bold text-gray-900 font-mono">{selectedAccount.password_hash}</p>
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">تاريخ انتهاء الصلاحية</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {selectedAccount.expiry_date
+                      ? new Date(selectedAccount.expiry_date).toLocaleDateString('ar-SA')
+                      : 'غير محدد'}
+                  </p>
+                  {selectedAccount.expiry_date && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {getStatusText(getDaysRemaining(selectedAccount.expiry_date))}
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">تاريخ الإنشاء</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {selectedAccount.created_at
+                      ? new Date(selectedAccount.created_at).toLocaleDateString('ar-SA')
+                      : '-'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6 flex items-start gap-3">
+              <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
+              <div className="text-sm text-yellow-800">
+                <p className="font-bold mb-1">تنبيه أمني مهم:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>احفظ هذه المعلومات في مكان آمن</li>
+                  <li>لا تشارك معلومات الدخول عبر وسائل غير آمنة</li>
+                  <li>الحساب سيتوقف تلقائياً عند انتهاء الصلاحية</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={copyAccountInfo}
+                className={`flex-1 ${
+                  copied
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                } text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2`}
+              >
+                {copied ? (
+                  <>
+                    <Check size={20} />
+                    تم النسخ!
+                  </>
+                ) : (
+                  <>
+                    <Copy size={20} />
+                    نسخ المعلومات
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={downloadConfigFile}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Download size={20} />
+                تحميل ملف التكوين
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -70,15 +70,17 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setAutoLogoutMinutes(savedTimeout)
       }
 
-      const schoolIdFromProfile = profile?.school_name || 'SCHOOL_DEFAULT'
-      const subscription = await db.subscription
-        .where('school_id')
-        .equals(schoolIdFromProfile)
-        .first()
+      const userId = localStorage.getItem('userId')
+      if (userId) {
+        const subscription = await db.subscription
+          .where('school_id')
+          .equals(userId)
+          .first()
 
-      if (subscription) {
-        setSubscriptionStartDate(subscription.start_date)
-        setSubscriptionEndDate(subscription.end_date)
+        if (subscription) {
+          setSubscriptionStartDate(subscription.start_date)
+          setSubscriptionEndDate(subscription.end_date)
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error)

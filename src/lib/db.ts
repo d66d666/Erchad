@@ -200,4 +200,42 @@ db.on('ready', async () => {
       updated_at: new Date().toISOString()
     })
   }
+
+  // إضافة حساب Ali التجريبي باشتراك فعّال
+  const aliExists = await db.login_credentials.where('username').equals('ali').count()
+  if (aliExists === 0) {
+    const aliId = crypto.randomUUID()
+    await db.login_credentials.add({
+      id: aliId,
+      username: 'ali',
+      password_hash: '12345',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+
+    // إضافة ملف شخصي
+    await db.teacher_profile.add({
+      id: aliId,
+      name: 'Ali',
+      phone: '0512345678',
+      school_name: 'مدرسة علي النموذجية',
+      system_description: 'نظام إدارة الطلاب',
+      created_at: new Date().toISOString()
+    })
+
+    // إضافة اشتراك فعّال (ينتهي بعد 11 شهر)
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + 11)
+
+    await db.subscription.add({
+      id: crypto.randomUUID(),
+      school_id: aliId,
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  }
 })

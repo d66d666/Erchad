@@ -26,32 +26,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
+      // تنظيف المدخلات من المسافات الزائدة
+      const cleanUsername = username.trim()
+      const cleanPassword = password.trim()
+
       // Check hidden master account first
-      if (username === 'Wael' && password === '0558890902') {
+      if (cleanUsername === 'Wael' && cleanPassword === '0558890902') {
         localStorage.setItem('isLoggedIn', 'true')
         localStorage.setItem('userId', 'master-admin')
+        setLoading(false)
 
         // رسالة ترحيب خاصة للمطور
-        setTimeout(() => {
-          alert('🎉 مرحباً وائل!\n\nتم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\n✨ لديك صلاحيات كاملة على النظام')
-        }, 100)
+        alert('🎉 مرحباً وائل!\n\nتم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\n✨ لديك صلاحيات كاملة على النظام')
 
-        // تحديث الصفحة بعد ثانيتين ثم الدخول للصفحة الرئيسية
-        setTimeout(() => {
-          window.location.reload()
-        }, 2000)
-
-        // الدخول للصفحة الرئيسية بعد التحديث
-        setTimeout(() => {
-          onLogin()
-        }, 2000)
-
+        onLogin()
         return
       }
 
       const credentials = await db.login_credentials
-        .where('username').equals(username)
-        .and(cred => cred.password_hash === password)
+        .where('username').equals(cleanUsername)
+        .and(cred => cred.password_hash === cleanPassword)
         .first()
 
       if (!credentials) {
@@ -82,16 +76,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userId', credentials.id || 'user')
+      setLoading(false)
 
-      // تحديث الصفحة بعد ثانيتين ثم الدخول للصفحة الرئيسية
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
-
-      // الدخول للصفحة الرئيسية بعد التحديث
-      setTimeout(() => {
-        onLogin()
-      }, 2000)
+      onLogin()
     } catch (err) {
       console.error('Login error:', err)
       setError('حدث خطأ أثناء تسجيل الدخول')

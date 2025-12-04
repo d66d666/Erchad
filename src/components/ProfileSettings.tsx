@@ -275,19 +275,19 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
           {subscriptionEndDate && (
             <div className={`${
               isSubscriptionActive(subscriptionEndDate)
-                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200'
-                : 'bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200'
-            } rounded-lg p-6`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
+                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200'
+                : 'bg-gradient-to-br from-red-50 to-orange-50 border border-red-200'
+            } rounded-lg p-3`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg ${
                     isSubscriptionActive(subscriptionEndDate)
                       ? 'bg-green-600'
                       : 'bg-red-600'
                   }`}>
-                    <Calendar className="text-white" size={24} />
+                    <Calendar className="text-white" size={16} />
                   </div>
-                  <h3 className={`text-xl font-bold ${
+                  <h3 className={`text-base font-bold ${
                     isSubscriptionActive(subscriptionEndDate)
                       ? 'text-green-900'
                       : 'text-red-900'
@@ -295,7 +295,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                     حالة الاشتراك
                   </h3>
                 </div>
-                <div className={`px-4 py-2 rounded-full font-bold ${
+                <div className={`px-3 py-1 rounded-full text-xs font-bold ${
                   isSubscriptionActive(subscriptionEndDate)
                     ? 'bg-green-600 text-white'
                     : 'bg-red-600 text-white'
@@ -304,28 +304,28 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4">
-                  <label className="block text-sm font-medium text-gray-600 mb-1 text-right">
+              <div className="space-y-2">
+                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-0.5 text-right">
                     تاريخ بداية الاشتراك
                   </label>
-                  <div className="text-lg font-bold text-gray-800 text-right">
+                  <div className="text-sm font-bold text-gray-800 text-right">
                     {formatSubscriptionDate(subscriptionStartDate)}
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4">
-                  <label className="block text-sm font-medium text-gray-600 mb-1 text-right">
+                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-0.5 text-right">
                     تاريخ انتهاء الاشتراك
                   </label>
-                  <div className="text-lg font-bold text-gray-800 text-right">
+                  <div className="text-sm font-bold text-gray-800 text-right">
                     {formatSubscriptionDate(subscriptionEndDate)}
                   </div>
                 </div>
 
                 {isSubscriptionActive(subscriptionEndDate) && (
-                  <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-                    <p className="text-sm text-green-800 text-center font-semibold">
+                  <div className="bg-green-100 border border-green-300 rounded-lg p-2">
+                    <p className="text-xs text-green-800 text-center font-semibold">
                       {getDaysRemaining(subscriptionEndDate) > 0
                         ? `باقي ${getDaysRemaining(subscriptionEndDate)} يوم على انتهاء الاشتراك`
                         : 'ينتهي الاشتراك اليوم'
@@ -335,8 +335,8 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                 )}
 
                 {!isSubscriptionActive(subscriptionEndDate) && (
-                  <div className="bg-red-100 border border-red-300 rounded-lg p-4">
-                    <p className="text-sm text-red-800 text-center font-semibold">
+                  <div className="bg-red-100 border border-red-300 rounded-lg p-2">
+                    <p className="text-xs text-red-800 text-center font-semibold">
                       انتهى الاشتراك - يرجى التواصل مع المطور للتجديد
                     </p>
                   </div>

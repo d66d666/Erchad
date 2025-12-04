@@ -372,10 +372,15 @@ function App() {
   }
 
   const handleLogin = () => {
+    const userId = localStorage.getItem('userId')
+    const isMaster = userId === 'master-admin'
+
     setIsLoggedIn(true)
+    setIsMasterAdmin(isMaster)
     fetchData()
     fetchTodayStats()
     fetchTeachersCount()
+    fetchTeachers()
   }
 
 

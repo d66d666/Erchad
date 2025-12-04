@@ -30,6 +30,7 @@ export function SendToTeacherModal({
 
   useEffect(() => {
     if (isOpen) {
+      console.log('Modal opened, fetching data...')
       fetchTeachers()
       fetchGroups()
       fetchSpecialStatuses()
@@ -57,6 +58,7 @@ export function SendToTeacherModal({
 
   const fetchTeacherGroups = async () => {
     const data = await db.teacher_groups.orderBy('created_at').toArray()
+    console.log('Fetched teacher groups from DB:', data)
     setTeacherGroups(data)
   }
 
@@ -74,8 +76,16 @@ export function SendToTeacherModal({
         .filter(tg => tg.teacher_id === selectedTeacherId)
         .map(tg => tg.group_id)
 
+      console.log('Selected Teacher ID:', selectedTeacherId)
+      console.log('All Teacher Groups:', teacherGroups)
+      console.log('Teacher Group IDs:', teacherGroupIds)
+
       const teacherAssignedGroups = allGroups.filter(g => teacherGroupIds.includes(g.id))
+      console.log('Teacher Assigned Groups:', teacherAssignedGroups)
+
       const teacherStages = [...new Set(teacherAssignedGroups.map(g => g.stage))]
+      console.log('Teacher Stages:', teacherStages)
+
       setStages(teacherStages)
 
       setSelectedStage('')

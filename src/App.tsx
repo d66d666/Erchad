@@ -1515,7 +1515,7 @@ function App() {
                 className="text-gray-700 hover:text-gray-900 px-5 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 hover:bg-gray-100/50"
               >
                 <ChevronDown size={18} className="text-gray-500" />
-                <span>الملف الشخصي</span>
+                <span>{teacherName || 'الملف الشخصي'}</span>
                 <UserIcon size={20} />
               </button>
             </div>

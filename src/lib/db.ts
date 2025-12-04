@@ -160,4 +160,44 @@ db.on('ready', async () => {
       updated_at: new Date().toISOString()
     })
   }
+
+  // إضافة حساب Ahmed التجريبي منتهي الاشتراك
+  const ahmedExists = await db.login_credentials.where('username').equals('ahmed').count()
+  if (ahmedExists === 0) {
+    const ahmedId = crypto.randomUUID()
+    await db.login_credentials.add({
+      id: ahmedId,
+      username: 'ahmed',
+      password_hash: '12345',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+
+    // إضافة ملف شخصي
+    await db.teacher_profile.add({
+      id: ahmedId,
+      name: 'Ahmed',
+      phone: '',
+      school_name: 'مدرسة أحمد التجريبية',
+      system_description: 'نظام إدارة الطلاب',
+      created_at: new Date().toISOString()
+    })
+
+    // إضافة اشتراك منتهي (انتهى قبل شهر)
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() - 1)
+
+    const startDate = new Date(endDate)
+    startDate.setMonth(startDate.getMonth() - 12)
+
+    await db.subscription.add({
+      id: crypto.randomUUID(),
+      school_id: ahmedId,
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+      is_active: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+  }
 })

@@ -47,6 +47,9 @@ export interface LoginCredentials {
   id?: string
   username: string
   password_hash: string
+  school_name?: string
+  teacher_name?: string
+  phone?: string
   expiry_date?: string | null // تاريخ انتهاء الصلاحية
   reset_token?: string | null
   reset_token_expires?: string | null

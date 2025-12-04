@@ -15,6 +15,9 @@ export function AccountsManagementPage() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
+    schoolName: '',
+    teacherName: '',
+    phone: '',
     expiryMonths: '1'
   })
 
@@ -38,17 +41,44 @@ export function AccountsManagementPage() {
 
     try {
       const expiryDate = calculateExpiryDate(parseInt(formData.expiryMonths))
+      const accountId = crypto.randomUUID()
 
       await db.login_credentials.add({
-        id: crypto.randomUUID(),
+        id: accountId,
         username: formData.username,
         password_hash: formData.password,
+        school_name: formData.schoolName,
+        teacher_name: formData.teacherName,
+        phone: formData.phone,
         expiry_date: expiryDate,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
 
-      setFormData({ username: '', password: '', expiryMonths: '1' })
+      // إنشاء ملف شخصي للمستخدم الجديد
+      await db.teacher_profile.add({
+        id: accountId,
+        name: formData.teacherName,
+        phone: formData.phone,
+        school_name: formData.schoolName,
+        system_description: 'نظام إدارة الطلاب',
+        created_at: new Date().toISOString()
+      })
+
+      // إنشاء سجل اشتراك
+      const startDate = new Date()
+      const endDate = new Date(expiryDate)
+
+      await db.subscription.add({
+        id: crypto.randomUUID(),
+        school_id: accountId,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        is_active: true,
+        created_at: new Date().toISOString()
+      })
+
+      setFormData({ username: '', password: '', schoolName: '', teacherName: '', phone: '', expiryMonths: '1' })
       setShowAddModal(false)
       loadAccounts()
       alert('تم إضافة الحساب بنجاح!')
@@ -242,9 +272,11 @@ export function AccountsManagementPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">اسم المستخدم</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">المدرسة</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">المعلم المسؤول</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">رقم الجوال</th>
                   <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">تاريخ الانتهاء</th>
                   <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">الحالة</th>
-                  <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">تاريخ الإنشاء</th>
                   <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">الإجراءات</th>
                 </tr>
               </thead>
@@ -259,6 +291,15 @@ export function AccountsManagementPage() {
                         <div className="font-medium text-gray-900">{account.username}</div>
                       </td>
                       <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">{account.school_name || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600">{account.teacher_name || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600 font-mono">{account.phone || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4">
                         {account.expiry_date ? (
                           <div className="text-sm text-gray-600">
                             {new Date(account.expiry_date).toLocaleDateString('ar-SA')}
@@ -271,11 +312,6 @@ export function AccountsManagementPage() {
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(daysRemaining)}`}>
                           {getStatusText(daysRemaining)}
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600">
-                          {account.created_at ? new Date(account.created_at).toLocaleDateString('ar-SA') : '-'}
-                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {isEditing ? (
@@ -344,58 +380,113 @@ export function AccountsManagementPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">إضافة حساب جديد</h2>
 
             <form onSubmit={handleAddAccount} className="space-y-5">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  اسم المستخدم
-                </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="أدخل اسم المستخدم"
-                  required
-                />
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
+                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      اسم المدرسة
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.schoolName}
+                      onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      اسم المعلم المسؤول
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.teacherName}
+                      onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="أدخل اسم المعلم المسؤول"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      رقم الجوال
+                    </label>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="05xxxxxxxx"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  كلمة المرور
-                </label>
-                <input
-                  type="text"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="أدخل كلمة المرور"
-                  required
-                />
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-green-900 mb-3">معلومات الدخول</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      اسم المستخدم
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="أدخل اسم المستخدم"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      كلمة المرور
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="أدخل كلمة المرور"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      مدة الاشتراك
+                    </label>
+                    <select
+                      value={formData.expiryMonths}
+                      onChange={(e) => setFormData({ ...formData, expiryMonths: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="1">شهر واحد</option>
+                      <option value="2">شهرين</option>
+                      <option value="3">3 أشهر</option>
+                      <option value="6">6 أشهر</option>
+                      <option value="12">سنة كاملة</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  مدة الصلاحية
-                </label>
-                <select
-                  value={formData.expiryMonths}
-                  onChange={(e) => setFormData({ ...formData, expiryMonths: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="1">شهر واحد</option>
-                  <option value="2">شهرين</option>
-                  <option value="3">3 أشهر</option>
-                  <option value="6">6 أشهر</option>
-                  <option value="12">سنة كاملة</option>
-                </select>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm text-yellow-800">
                 <p className="font-bold mb-1">الصلاحية ستنتهي في:</p>
-                <p>{new Date(calculateExpiryDate(parseInt(formData.expiryMonths))).toLocaleDateString('ar-SA')}</p>
+                <p className="text-lg font-bold">{new Date(calculateExpiryDate(parseInt(formData.expiryMonths))).toLocaleDateString('ar-SA')}</p>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -403,7 +494,7 @@ export function AccountsManagementPage() {
                   type="button"
                   onClick={() => {
                     setShowAddModal(false)
-                    setFormData({ username: '', password: '', expiryMonths: '1' })
+                    setFormData({ username: '', password: '', schoolName: '', teacherName: '', phone: '', expiryMonths: '1' })
                   }}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all"
                 >
@@ -438,41 +529,64 @@ export function AccountsManagementPage() {
               </button>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">معلومات الحساب</h3>
+            <div className="space-y-4 mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة</h3>
 
-              <div className="space-y-3">
-                <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">اسم المستخدم</p>
-                  <p className="text-lg font-bold text-gray-900">{selectedAccount.username}</p>
+                <div className="space-y-3">
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">اسم المدرسة</p>
+                    <p className="text-base font-bold text-gray-900">{selectedAccount.school_name || '-'}</p>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">المعلم المسؤول</p>
+                    <p className="text-base font-bold text-gray-900">{selectedAccount.teacher_name || '-'}</p>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">رقم الجوال</p>
+                    <p className="text-base font-bold text-gray-900 font-mono">{selectedAccount.phone || '-'}</p>
+                  </div>
                 </div>
+              </div>
 
-                <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">كلمة المرور</p>
-                  <p className="text-lg font-bold text-gray-900 font-mono">{selectedAccount.password_hash}</p>
-                </div>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-green-900 mb-3">معلومات الدخول</h3>
 
-                <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">تاريخ انتهاء الصلاحية</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {selectedAccount.expiry_date
-                      ? new Date(selectedAccount.expiry_date).toLocaleDateString('ar-SA')
-                      : 'غير محدد'}
-                  </p>
-                  {selectedAccount.expiry_date && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      {getStatusText(getDaysRemaining(selectedAccount.expiry_date))}
+                <div className="space-y-3">
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">اسم المستخدم</p>
+                    <p className="text-base font-bold text-gray-900">{selectedAccount.username}</p>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">كلمة المرور</p>
+                    <p className="text-base font-bold text-gray-900 font-mono">{selectedAccount.password_hash}</p>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">تاريخ انتهاء الاشتراك</p>
+                    <p className="text-base font-bold text-gray-900">
+                      {selectedAccount.expiry_date
+                        ? new Date(selectedAccount.expiry_date).toLocaleDateString('ar-SA')
+                        : 'غير محدد'}
                     </p>
-                  )}
-                </div>
+                    {selectedAccount.expiry_date && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {getStatusText(getDaysRemaining(selectedAccount.expiry_date))}
+                      </p>
+                    )}
+                  </div>
 
-                <div className="bg-white rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">تاريخ الإنشاء</p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {selectedAccount.created_at
-                      ? new Date(selectedAccount.created_at).toLocaleDateString('ar-SA')
-                      : '-'}
-                  </p>
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm text-gray-600 mb-1">تاريخ الإنشاء</p>
+                    <p className="text-base font-bold text-gray-900">
+                      {selectedAccount.created_at
+                        ? new Date(selectedAccount.created_at).toLocaleDateString('ar-SA')
+                        : '-'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

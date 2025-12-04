@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
-import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle, Copy, Check } from 'lucide-react'
+import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle, Copy, Check, Key, RefreshCw } from 'lucide-react'
 
 interface LoginPageProps {
   onLogin: () => void
@@ -19,6 +19,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [resetMessage, setResetMessage] = useState('')
   const [generatedToken, setGeneratedToken] = useState('')
   const [copiedToken, setCopiedToken] = useState(false)
+  const [showRenewal, setShowRenewal] = useState(false)
+  const [renewalCode, setRenewalCode] = useState('')
+  const [renewalUsername, setRenewalUsername] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -189,6 +192,192 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRenewalCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setResetMessage('')
+    setLoading(true)
+
+    try {
+      const cleanCode = renewalCode.trim().toUpperCase()
+      const cleanUsername = renewalUsername.trim()
+
+      if (!cleanCode || !cleanUsername) {
+        setError('يرجى إدخال اسم المستخدم ورمز التجديد')
+        setLoading(false)
+        return
+      }
+
+      // التحقق من رمز التجديد
+      const codeRecord = await db.renewal_codes
+        .where('code').equals(cleanCode)
+        .and(record => record.username === cleanUsername && !record.used)
+        .first()
+
+      if (!codeRecord) {
+        setError('رمز التجديد غير صحيح أو تم استخدامه مسبقاً')
+        setLoading(false)
+        return
+      }
+
+      // الحصول على معلومات الحساب
+      const credentials = await db.login_credentials
+        .where('username').equals(cleanUsername)
+        .first()
+
+      if (!credentials) {
+        setError('الحساب غير موجود')
+        setLoading(false)
+        return
+      }
+
+      // حساب تاريخ الانتهاء الجديد
+      let newExpiryDate: Date
+      if (credentials.expiry_date) {
+        const currentExpiry = new Date(credentials.expiry_date)
+        const today = new Date()
+        // إذا كان التاريخ منتهي، ابدأ من اليوم، وإلا أضف للتاريخ الحالي
+        newExpiryDate = currentExpiry > today ? new Date(currentExpiry) : new Date()
+      } else {
+        newExpiryDate = new Date()
+      }
+
+      newExpiryDate.setMonth(newExpiryDate.getMonth() + codeRecord.extension_months)
+
+      // تحديث الصلاحية
+      if (credentials.id) {
+        await db.login_credentials.update(credentials.id, {
+          expiry_date: newExpiryDate.toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        })
+      }
+
+      // تحديث رمز التجديد كمُستخدم
+      if (codeRecord.id) {
+        await db.renewal_codes.update(codeRecord.id, {
+          used: true,
+          used_at: new Date().toISOString()
+        })
+      }
+
+      alert(`✅ تم تجديد الصلاحية بنجاح!\n\nتاريخ الانتهاء الجديد: ${newExpiryDate.toLocaleDateString('ar-SA')}\n\nيمكنك الآن تسجيل الدخول`)
+
+      setShowRenewal(false)
+      setRenewalCode('')
+      setRenewalUsername('')
+      setLoading(false)
+    } catch (err) {
+      console.error('Renewal error:', err)
+      setError('حدث خطأ أثناء تجديد الصلاحية')
+      setLoading(false)
+    }
+  }
+
+  if (showRenewal) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-gray-100">
+          <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-rose-500 p-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full opacity-20">
+              <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white rounded-full"></div>
+              <div className="absolute bottom-4 left-4 w-20 h-20 border-2 border-white rounded-full"></div>
+            </div>
+
+            <div className="relative z-10">
+              <div className="bg-white/95 backdrop-blur-sm rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Key className="text-purple-600" size={48} />
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">تجديد الصلاحية</h1>
+              <p className="text-white/90 text-lg font-medium">أدخل رمز التجديد</p>
+            </div>
+          </div>
+
+          <div className="p-8">
+            <form onSubmit={handleRenewalCode} className="space-y-6">
+              <div>
+                <label className="block text-gray-700 font-bold mb-2 text-right">
+                  اسم المستخدم
+                </label>
+                <div className="relative">
+                  <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={renewalUsername}
+                    onChange={(e) => setRenewalUsername(e.target.value)}
+                    className="w-full pr-12 pl-4 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-right transition-colors text-lg"
+                    placeholder="أدخل اسم المستخدم"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-bold mb-2 text-right">
+                  رمز التجديد
+                </label>
+                <div className="relative">
+                  <Key className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={renewalCode}
+                    onChange={(e) => setRenewalCode(e.target.value.toUpperCase())}
+                    className="w-full pr-12 pl-4 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-center font-mono text-lg tracking-wider"
+                    placeholder="XXXX-XXXX-XXXX"
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-xl text-right flex items-center gap-3">
+                  <AlertCircle size={20} className="flex-shrink-0" />
+                  <span className="font-medium">{error}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-lg flex items-center justify-center gap-2"
+              >
+                <RefreshCw size={20} />
+                {loading ? 'جاري التجديد...' : 'تجديد الصلاحية'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRenewal(false)
+                  setRenewalCode('')
+                  setRenewalUsername('')
+                  setError('')
+                }}
+                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-xl transition-colors"
+              >
+                رجوع
+              </button>
+            </form>
+
+            <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
+                <div className="text-sm text-blue-800">
+                  <p className="font-bold mb-1">ملاحظة:</p>
+                  <p>رمز التجديد يُستخدم مرة واحدة فقط. إذا لم يكن لديك رمز، تواصل مع المسؤول.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (showForgotPassword) {
@@ -464,13 +653,23 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setShowForgotPassword(true)}
-            className="w-full text-blue-600 hover:text-blue-800 font-medium py-2 transition-colors"
-          >
-            نسيت كلمة المرور؟
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="flex-1 text-blue-600 hover:text-blue-800 font-medium py-2 transition-colors"
+            >
+              نسيت كلمة المرور؟
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowRenewal(true)}
+              className="flex-1 text-purple-600 hover:text-purple-800 font-medium py-2 transition-colors flex items-center justify-center gap-1"
+            >
+              <Key size={16} />
+              تجديد الصلاحية
+            </button>
+          </div>
         </form>
       </div>
     </div>

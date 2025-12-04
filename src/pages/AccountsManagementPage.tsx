@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { db, LoginCredentials } from '../lib/db'
-import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X, Download, Copy, Check } from 'lucide-react'
+import { db, LoginCredentials, RenewalCode } from '../lib/db'
+import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X, Download, Copy, Check, RefreshCw, Key } from 'lucide-react'
 
 export function AccountsManagementPage() {
   const [accounts, setAccounts] = useState<LoginCredentials[]>([])
@@ -9,6 +9,9 @@ export function AccountsManagementPage() {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<LoginCredentials | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showRenewalModal, setShowRenewalModal] = useState(false)
+  const [renewalCode, setRenewalCode] = useState('')
+  const [renewalMonths, setRenewalMonths] = useState('1')
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -72,8 +75,8 @@ export function AccountsManagementPage() {
   }
 
   const handleDeleteAccount = async (accountId: string, username: string) => {
-    if (username === 'admin') {
-      alert('لا يمكن حذف حساب المسؤول الرئيسي')
+    if (username === 'Wael') {
+      alert('لا يمكن حذف حساب المطور الرئيسي')
       return
     }
 
@@ -154,6 +157,49 @@ export function AccountsManagementPage() {
     URL.revokeObjectURL(url)
   }
 
+  const generateRenewalCode = (): string => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let code = ''
+    for (let i = 0; i < 12; i++) {
+      if (i > 0 && i % 4 === 0) code += '-'
+      code += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return code
+  }
+
+  const handleGenerateRenewalCode = async (account: LoginCredentials) => {
+    setSelectedAccount(account)
+    const code = generateRenewalCode()
+    setRenewalCode(code)
+    setShowRenewalModal(true)
+  }
+
+  const handleSaveRenewalCode = async () => {
+    if (!selectedAccount || !renewalCode) return
+
+    try {
+      await db.renewal_codes.add({
+        id: crypto.randomUUID(),
+        code: renewalCode,
+        username: selectedAccount.username,
+        extension_months: parseInt(renewalMonths),
+        used: false,
+        created_at: new Date().toISOString(),
+        used_at: null
+      })
+
+      alert(`✅ تم إنشاء رمز التجديد بنجاح!\n\nالرمز: ${renewalCode}\nالحساب: ${selectedAccount.username}\nالمدة: ${renewalMonths} شهر\n\nاحفظ هذا الرمز وأرسله للمستخدم`)
+
+      setShowRenewalModal(false)
+      setRenewalCode('')
+      setRenewalMonths('1')
+      setSelectedAccount(null)
+    } catch (error) {
+      console.error('Error saving renewal code:', error)
+      alert('حدث خطأ أثناء حفظ رمز التجديد')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -183,9 +229,10 @@ export function AccountsManagementPage() {
             <div className="text-sm text-blue-800">
               <p className="font-bold mb-1">ملاحظات مهمة:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>حساب المسؤول الرئيسي (admin) وحساب المطور (Wael) لا يخضعان لقيود الصلاحية</li>
+                <li>حساب المطور (Wael) لا يخضع لقيود الصلاحية ولا يمكن حذفه</li>
                 <li>سيتم تنبيه المستخدمين عند بقاء 7 أيام أو أقل على انتهاء صلاحيتهم</li>
                 <li>الحسابات المنتهية لن تتمكن من تسجيل الدخول</li>
+                <li>يمكن تجديد الصلاحيات عن بعد باستخدام رموز التجديد</li>
               </ul>
             </div>
           </div>
@@ -254,6 +301,13 @@ export function AccountsManagementPage() {
                         ) : (
                           <div className="flex items-center gap-2">
                             <button
+                              onClick={() => handleGenerateRenewalCode(account)}
+                              className="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition-colors"
+                              title="إنشاء رمز تجديد"
+                            >
+                              <Key size={18} />
+                            </button>
+                            <button
                               onClick={() => handleExportConfig(account)}
                               className="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-lg transition-colors"
                               title="تصدير التكوين"
@@ -267,7 +321,7 @@ export function AccountsManagementPage() {
                             >
                               <Calendar size={18} />
                             </button>
-                            {account.username !== 'admin' && (
+                            {account.username !== 'Wael' && (
                               <button
                                 onClick={() => handleDeleteAccount(account.id!, account.username)}
                                 className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-lg transition-colors"
@@ -463,6 +517,109 @@ export function AccountsManagementPage() {
               >
                 <Download size={20} />
                 تحميل ملف التكوين
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRenewalModal && selectedAccount && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-100 p-3 rounded-xl">
+                  <Key className="text-purple-600" size={24} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">إنشاء رمز تجديد</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowRenewalModal(false)
+                  setRenewalCode('')
+                  setRenewalMonths('1')
+                  setSelectedAccount(null)
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6 mb-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">الحساب</p>
+                  <p className="text-lg font-bold text-gray-900">{selectedAccount.username}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    مدة التجديد
+                  </label>
+                  <select
+                    value={renewalMonths}
+                    onChange={(e) => setRenewalMonths(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="1">شهر واحد</option>
+                    <option value="2">شهرين</option>
+                    <option value="3">3 أشهر</option>
+                    <option value="6">6 أشهر</option>
+                    <option value="12">سنة كاملة</option>
+                  </select>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border-2 border-purple-300">
+                  <p className="text-sm text-gray-600 mb-2">رمز التجديد</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-2xl font-bold text-purple-600 font-mono flex-1">{renewalCode}</p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(renewalCode)
+                        alert('تم نسخ الرمز!')
+                      }}
+                      className="bg-purple-100 hover:bg-purple-200 text-purple-600 p-2 rounded-lg transition-colors"
+                      title="نسخ الرمز"
+                    >
+                      <Copy size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6 flex items-start gap-3">
+              <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={20} />
+              <div className="text-sm text-yellow-800">
+                <p className="font-bold mb-1">تعليمات مهمة:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>احفظ هذا الرمز وأرسله للمستخدم عبر واتساب أو SMS</li>
+                  <li>المستخدم سيدخل الرمز في شاشة تسجيل الدخول</li>
+                  <li>الرمز يُستخدم مرة واحدة فقط</li>
+                  <li>سيتم تجديد الصلاحية تلقائياً عند استخدام الرمز</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRenewalModal(false)
+                  setRenewalCode('')
+                  setRenewalMonths('1')
+                  setSelectedAccount(null)
+                }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleSaveRenewalCode}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Check size={20} />
+                حفظ وإرسال
               </button>
             </div>
           </div>

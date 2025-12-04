@@ -61,6 +61,16 @@ export interface TeacherGroup {
   created_at?: string
 }
 
+export interface RenewalCode {
+  id?: string
+  code: string
+  username: string
+  extension_months: number
+  used: boolean
+  created_at?: string
+  used_at?: string | null
+}
+
 export class StudentsDatabase extends Dexie {
   groups!: Table<Group>
   students!: Table<Student>
@@ -72,6 +82,7 @@ export class StudentsDatabase extends Dexie {
   login_credentials!: Table<LoginCredentials>
   teachers!: Table<Teacher>
   teacher_groups!: Table<TeacherGroup>
+  renewal_codes!: Table<RenewalCode>
 
   constructor() {
     super('StudentsDatabase')
@@ -99,6 +110,10 @@ export class StudentsDatabase extends Dexie {
 
     this.version(7).stores({
       login_credentials: 'id, username, expiry_date'
+    })
+
+    this.version(8).stores({
+      renewal_codes: 'id, code, username, used'
     })
   }
 }

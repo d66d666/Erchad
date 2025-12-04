@@ -49,10 +49,10 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   }, [visitSearchTerm])
 
   async function fetchTeacherProfile() {
-    const { data: profile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
+
+    const profile = await db.teacher_profile.where('id').equals(userId).first()
 
     if (profile?.name) {
       setTeacherName(profile.name)

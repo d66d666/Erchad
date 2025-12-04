@@ -248,16 +248,25 @@ function App() {
         userId ? db.teacher_profile.where('id').equals(userId).first() : Promise.resolve(null),
       ])
 
+      console.log('fetchData - userId:', userId, 'profileData:', profileData)
+
       setGroups(groupsData)
       setSpecialStatuses(statusesData)
       setStudents(studentsData as Student[])
 
       if (profileData) {
+        console.log('Setting profile data in App:', {
+          name: profileData.name,
+          phone: profileData.phone,
+          school_name: profileData.school_name,
+          system_description: profileData.system_description
+        })
         setTeacherName(profileData.name || '')
         setTeacherPhone(profileData.phone || '')
         setSchoolName(profileData.school_name || '')
         setSystemDescription(profileData.system_description || '')
       } else {
+        console.log('No profile data found, clearing fields')
         setTeacherName('')
         setTeacherPhone('')
         setSchoolName('')
@@ -522,7 +531,12 @@ function App() {
       const violations = await db.student_violations.toArray()
       const teachers = await db.teachers.toArray()
       const teacherGroups = await db.teacher_groups.toArray()
-      const teacherProfile = await db.teacher_profile.toCollection().first()
+
+      // Get teacher profile using Supabase to ensure we get the current user's profile
+      const { data: teacherProfile } = await supabase
+        .from('teacher_profile')
+        .select('*')
+        .maybeSingle()
 
       const dataToExport = {
         version: '1.0',

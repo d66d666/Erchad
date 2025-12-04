@@ -70,6 +70,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
       // جلب الملف الشخصي الخاص بالمستخدم الحالي
       const profile = await db.teacher_profile.where('id').equals(userId).first()
+      console.log('Loading profile for user:', userId, 'Profile found:', profile)
 
       if (profile) {
         setProfileId(profile.id || '')
@@ -79,6 +80,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setSystemDescription(profile.system_description || '')
       } else {
         // لا يوجد ملف شخصي، نترك الحقول فارغة
+        console.log('No profile found for user:', userId, '- fields will be empty')
         setProfileId('')
         setTeacherName('')
         setTeacherPhone('')
@@ -132,6 +134,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       if (existingProfile) {
         // تحديث الملف الشخصي الموجود
         await db.teacher_profile.update(userId, profileData)
+        console.log('Updated profile for user:', userId, profileData)
       } else {
         // إنشاء ملف شخصي جديد للمستخدم
         const newProfile = {
@@ -142,11 +145,20 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
         await db.teacher_profile.add(newProfile)
         setProfileId(userId)
+        console.log('Created new profile for user:', userId, newProfile)
       }
+
+      // تأكيد الحفظ في IndexedDB قبل reload
+      const savedProfile = await db.teacher_profile.where('id').equals(userId).first()
+      console.log('Verified saved profile:', savedProfile)
 
       alert('تم حفظ البيانات بنجاح')
       onClose()
-      window.location.reload()
+
+      // تأخير بسيط للتأكد من اكتمال الحفظ
+      setTimeout(() => {
+        window.location.reload()
+      }, 100)
     } catch (error) {
       console.error('Error saving profile:', error)
       alert('حدث خطأ في حفظ البيانات')

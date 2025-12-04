@@ -67,6 +67,7 @@ export function SendToTeacherModal({
 
   const fetchTeacherGroups = async () => {
     const data = await db.teacher_groups.orderBy('created_at').toArray()
+    console.log('🔍 جلب روابط المعلمين والمجموعات:', data)
     setTeacherGroups(data)
   }
 
@@ -80,33 +81,29 @@ export function SendToTeacherModal({
 
   useEffect(() => {
     if (selectedTeacherId && !dataLoading) {
-      console.log('=== تحديد مراحل المعلم ===')
-      console.log('ID المعلم المختار:', selectedTeacherId)
-      console.log('جميع روابط المعلمين:', teacherGroups)
+      console.log('🔍 تحليل مراحل المعلم:')
+      console.log('- ID المعلم:', selectedTeacherId)
+      console.log('- عدد المجموعات:', allGroups.length)
+      console.log('- عدد الروابط:', teacherGroups.length)
 
       const teacherGroupIds = teacherGroups
         .filter(tg => tg.teacher_id === selectedTeacherId)
         .map(tg => tg.group_id)
 
-      console.log('معرفات المجموعات للمعلم:', teacherGroupIds)
-      console.log('جميع المجموعات:', allGroups)
+      console.log('- معرفات مجموعات المعلم:', teacherGroupIds)
 
       const teacherAssignedGroups = allGroups.filter(g => teacherGroupIds.includes(g.id))
-      console.log('مجموعات المعلم:', teacherAssignedGroups)
+      console.log('- المجموعات المسندة:', teacherAssignedGroups)
 
       const teacherStages = [...new Set(teacherAssignedGroups.map(g => g.stage))]
-      console.log('مراحل المعلم:', teacherStages)
+      console.log('- المراحل المستخرجة:', teacherStages)
 
       setStages(teacherStages)
-
       setSelectedStage('')
       setGroups([])
       setSelectedGroupIds([])
-    } else {
-      setStages([])
-      setGroups([])
-      setSelectedStage('')
-      setSelectedGroupIds([])
+    } else if (selectedTeacherId) {
+      console.log('⚠️ لم يتم تحميل البيانات بعد')
     }
   }, [selectedTeacherId, allGroups, teacherGroups, dataLoading])
 
@@ -325,8 +322,11 @@ export function SendToTeacherModal({
                 <p className="text-sm text-blue-700">جاري تحميل البيانات...</p>
               </div>
             ) : stages.length === 0 ? (
-              <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 text-center">
-                <p className="text-sm text-yellow-700">لا توجد مراحل مسندة لهذا المعلم</p>
+              <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3">
+                <p className="text-sm text-yellow-800 font-semibold mb-1">⚠️ لا توجد مراحل مسندة لهذا المعلم</p>
+                <p className="text-xs text-yellow-700">
+                  يرجى الذهاب إلى صفحة "المعلمين" وتعديل بيانات المعلم لإسناد المجموعات له
+                </p>
               </div>
             ) : (
               <select

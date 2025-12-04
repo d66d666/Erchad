@@ -324,12 +324,14 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
     try {
       if (teacher) {
+        console.log('💾 تحديث معلم:', teacher.id)
         await db.teachers.update(teacher.id, {
           name: name.trim(),
           phone: phone.trim(),
           specialization: specialization.trim() || undefined
         })
 
+        console.log('🗑️ حذف المجموعات القديمة للمعلم')
         await db.teacher_groups.where('teacher_id').equals(teacher.id).delete()
 
         if (selectedGroupIds.length > 0) {
@@ -340,10 +342,16 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             created_at: new Date().toISOString()
           }))
 
+          console.log('➕ إضافة مجموعات جديدة:', teacherGroupsData)
           await db.teacher_groups.bulkAdd(teacherGroupsData)
+
+          const verified = await db.teacher_groups.where('teacher_id').equals(teacher.id).toArray()
+          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified)
         }
       } else {
         const newTeacherId = crypto.randomUUID()
+        console.log('💾 إضافة معلم جديد:', newTeacherId)
+
         await db.teachers.add({
           id: newTeacherId,
           name: name.trim(),
@@ -360,14 +368,18 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             created_at: new Date().toISOString()
           }))
 
+          console.log('➕ إضافة مجموعات للمعلم الجديد:', teacherGroupsData)
           await db.teacher_groups.bulkAdd(teacherGroupsData)
+
+          const verified = await db.teacher_groups.where('teacher_id').equals(newTeacherId).toArray()
+          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified)
         }
       }
 
       onSave()
       onClose()
     } catch (error: any) {
-      console.error('Error saving teacher:', error)
+      console.error('❌ خطأ في الحفظ:', error)
       const errorMessage = error?.message || 'حدث خطأ غير معروف'
       alert(`حدث خطأ أثناء الحفظ:\n${errorMessage}`)
     } finally {

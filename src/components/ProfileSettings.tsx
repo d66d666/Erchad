@@ -36,6 +36,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   })
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string>('')
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<string>('')
+  const [isDeveloper, setIsDeveloper] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -43,7 +44,32 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   const fetchProfile = async () => {
     try {
-      const profile = await db.teacher_profile.toCollection().first()
+      const userId = localStorage.getItem('userId')
+      if (!userId) return
+
+      // جلب إعدادات auto logout لجميع المستخدمين
+      const savedTimeout = localStorage.getItem('autoLogoutMinutes')
+      if (savedTimeout) {
+        setAutoLogoutMinutes(savedTimeout)
+      }
+
+      // جلب بيانات المستخدم الحالي فقط
+      const credentials = await db.login_credentials.get(userId)
+
+      if (credentials) {
+        setCurrentUsername(credentials.username)
+        setNewUsername(credentials.username)
+
+        // تحقق إذا كان المستخدم مطور
+        if (credentials.username === 'admin') {
+          setIsDeveloper(true)
+          // لا نحتاج لجلب ملف شخصي أو اشتراك للمطور
+          return
+        }
+      }
+
+      // جلب الملف الشخصي
+      const profile = await db.teacher_profile.get(userId)
 
       if (profile) {
         setProfileId(profile.id || '')
@@ -58,29 +84,15 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         setSystemDescription('')
       }
 
-      const credentials = await db.login_credentials.toCollection().first()
+      // جلب الاشتراك
+      const subscription = await db.subscription
+        .where('school_id')
+        .equals(userId)
+        .first()
 
-      if (credentials) {
-        setCurrentUsername(credentials.username)
-        setNewUsername(credentials.username)
-      }
-
-      const savedTimeout = localStorage.getItem('autoLogoutMinutes')
-      if (savedTimeout) {
-        setAutoLogoutMinutes(savedTimeout)
-      }
-
-      const userId = localStorage.getItem('userId')
-      if (userId) {
-        const subscription = await db.subscription
-          .where('school_id')
-          .equals(userId)
-          .first()
-
-        if (subscription) {
-          setSubscriptionStartDate(subscription.start_date)
-          setSubscriptionEndDate(subscription.end_date)
-        }
+      if (subscription) {
+        setSubscriptionStartDate(subscription.start_date)
+        setSubscriptionEndDate(subscription.end_date)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -92,6 +104,17 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     setLoading(true)
 
     try {
+      // حفظ إعدادات auto logout للجميع
+      localStorage.setItem('autoLogoutMinutes', autoLogoutMinutes)
+
+      // المطور لا يحتاج لحفظ ملف شخصي
+      if (isDeveloper) {
+        alert('تم حفظ الإعدادات بنجاح')
+        onClose()
+        window.location.reload()
+        return
+      }
+
       const profileData = {
         name: teacherName,
         phone: teacherPhone,
@@ -112,8 +135,6 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         await db.teacher_profile.add(newProfile)
         setProfileId(newId)
       }
-
-      localStorage.setItem('autoLogoutMinutes', autoLogoutMinutes)
 
       alert('تم حفظ البيانات بنجاح')
       onClose()
@@ -272,7 +293,30 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         </div>
 
         <form onSubmit={handleSave} className="p-6 space-y-6">
-          {subscriptionEndDate && (
+          {isDeveloper && (
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-blue-600">
+                    <User className="text-white" size={16} />
+                  </div>
+                  <h3 className="text-base font-bold text-blue-900">
+                    حساب المطور
+                  </h3>
+                </div>
+                <div className="px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white">
+                  ✓ مطور
+                </div>
+              </div>
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg p-2">
+                <p className="text-xs text-blue-800 text-center font-semibold">
+                  حساب مطور النظام - الصلاحيات الكاملة بدون حاجة لاشتراك
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isDeveloper && subscriptionEndDate && (
             <div className={`${
               isSubscriptionActive(subscriptionEndDate)
                 ? 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200'
@@ -345,64 +389,66 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             </div>
           )}
 
-          <div className="bg-blue-50 rounded-lg p-6 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 text-right">
-              معلومات النظام
-            </h3>
+          {!isDeveloper && (
+            <div className="bg-blue-50 rounded-lg p-6 space-y-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 text-right">
+                معلومات النظام
+              </h3>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                اسم مسؤول النظام
-              </label>
-              <input
-                type="text"
-                value={teacherName}
-                onChange={(e) => setTeacherName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder="أدخل اسم مسؤول النظام"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                  اسم مسؤول النظام
+                </label>
+                <input
+                  type="text"
+                  value={teacherName}
+                  onChange={(e) => setTeacherName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                  placeholder="أدخل اسم مسؤول النظام"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                رقم الجوال
-              </label>
-              <input
-                type="tel"
-                maxLength={10}
-                value={teacherPhone}
-                onChange={(e) => setTeacherPhone(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder="05xxxxxxxx"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                  رقم الجوال
+                </label>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  value={teacherPhone}
+                  onChange={(e) => setTeacherPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                  placeholder="05xxxxxxxx"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                وصف النظام
-              </label>
-              <input
-                type="text"
-                value={systemDescription}
-                onChange={(e) => setSystemDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder="مثال: نظام إدارة شاملة لبيانات الطلاب"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                  وصف النظام
+                </label>
+                <input
+                  type="text"
+                  value={systemDescription}
+                  onChange={(e) => setSystemDescription(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                  placeholder="مثال: نظام إدارة شاملة لبيانات الطلاب"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
-                اسم المدرسة
-              </label>
-              <input
-                type="text"
-                value={schoolName}
-                onChange={(e) => setSchoolName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+                  اسم المدرسة
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={(e) => setSchoolName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+                  placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
             <div className="flex items-start gap-3 mb-4">

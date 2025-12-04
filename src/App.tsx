@@ -8,6 +8,7 @@ import { SpecialStatusPage } from './pages/SpecialStatusPage'
 import { ReceptionPage } from './pages/ReceptionPage'
 import { PermissionPage } from './pages/PermissionPage'
 import { AbsencePage } from './pages/AbsencePage'
+import { AccountsManagementPage } from './pages/AccountsManagementPage'
 import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
@@ -43,7 +44,7 @@ import {
   DoorOpen,
 } from 'lucide-react'
 
-type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers'
+type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'permission' | 'teachers' | 'accounts'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -1313,6 +1314,19 @@ function App() {
 
                 {showSettingsMenu && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                    {isMasterAdmin && (
+                      <button
+                        onClick={() => {
+                          setCurrentPage('accounts')
+                          setShowSettingsMenu(false)
+                        }}
+                        className="w-full text-right px-4 py-3 hover:bg-purple-50 transition-colors flex items-center gap-3"
+                      >
+                        <Shield size={18} className="text-purple-600" />
+                        <span className="text-sm font-medium text-gray-700">إدارة الحسابات والصلاحيات</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => {
                         setShowExcelImport(true)
@@ -1909,6 +1923,8 @@ function App() {
         {currentPage === 'permission' && <PermissionPage onUpdateStats={fetchTodayStats} />}
 
         {currentPage === 'absence' && <AbsencePage onUpdateStats={fetchTodayStats} />}
+
+        {currentPage === 'accounts' && isMasterAdmin && <AccountsManagementPage />}
       </div>
 
       {/* Modals */}

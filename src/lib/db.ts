@@ -47,6 +47,7 @@ export interface LoginCredentials {
   id?: string
   username: string
   password_hash: string
+  expiry_date?: string | null // تاريخ انتهاء الصلاحية
   reset_token?: string | null
   reset_token_expires?: string | null
   created_at?: string
@@ -94,6 +95,10 @@ export class StudentsDatabase extends Dexie {
 
     this.version(6).stores({
       teacher_groups: 'id, teacher_id, group_id'
+    })
+
+    this.version(7).stores({
+      login_credentials: 'id, username, expiry_date'
     })
   }
 }

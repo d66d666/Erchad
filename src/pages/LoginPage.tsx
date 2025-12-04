@@ -59,6 +59,27 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         return
       }
 
+      // فحص صلاحية الحساب
+      if (credentials.expiry_date) {
+        const expiryDate = new Date(credentials.expiry_date)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (today > expiryDate) {
+          setError('⚠️ انتهت صلاحية هذا الحساب\nيرجى التواصل مع المسؤول')
+          return
+        }
+
+        // حساب الأيام المتبقية
+        const daysRemaining = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (daysRemaining <= 7) {
+          setTimeout(() => {
+            alert(`⚠️ تنبيه: باقي ${daysRemaining} يوم على انتهاء صلاحية الحساب`)
+          }, 1500)
+        }
+      }
+
       localStorage.setItem('isLoggedIn', 'true')
       localStorage.setItem('userId', credentials.id || 'user')
 

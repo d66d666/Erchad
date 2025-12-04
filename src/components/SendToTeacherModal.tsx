@@ -27,16 +27,28 @@ export function SendToTeacherModal({
   const [selectedStatusId, setSelectedStatusId] = useState('all')
   const [loading, setLoading] = useState(false)
   const [systemAdminName, setSystemAdminName] = useState('')
+  const [dataLoading, setDataLoading] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
-      fetchTeachers()
-      fetchGroups()
-      fetchSpecialStatuses()
-      fetchTeacherGroups()
-      fetchSystemAdminName()
+      loadAllData()
     }
   }, [isOpen])
+
+  const loadAllData = async () => {
+    setDataLoading(true)
+    try {
+      await Promise.all([
+        fetchTeachers(),
+        fetchGroups(),
+        fetchSpecialStatuses(),
+        fetchTeacherGroups(),
+        fetchSystemAdminName()
+      ])
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const fetchTeachers = async () => {
     const data = await db.teachers.orderBy('name').toArray()
@@ -46,8 +58,6 @@ export function SendToTeacherModal({
   const fetchGroups = async () => {
     const data = await db.groups.orderBy('display_order').toArray()
     setAllGroups(data)
-    const uniqueStages = [...new Set(data.map(g => g.stage))]
-    setStages(uniqueStages)
   }
 
   const fetchSpecialStatuses = async () => {
@@ -69,13 +79,24 @@ export function SendToTeacherModal({
   }
 
   useEffect(() => {
-    if (selectedTeacherId) {
+    if (selectedTeacherId && !dataLoading) {
+      console.log('=== تحديد مراحل المعلم ===')
+      console.log('ID المعلم المختار:', selectedTeacherId)
+      console.log('جميع روابط المعلمين:', teacherGroups)
+
       const teacherGroupIds = teacherGroups
         .filter(tg => tg.teacher_id === selectedTeacherId)
         .map(tg => tg.group_id)
 
+      console.log('معرفات المجموعات للمعلم:', teacherGroupIds)
+      console.log('جميع المجموعات:', allGroups)
+
       const teacherAssignedGroups = allGroups.filter(g => teacherGroupIds.includes(g.id))
+      console.log('مجموعات المعلم:', teacherAssignedGroups)
+
       const teacherStages = [...new Set(teacherAssignedGroups.map(g => g.stage))]
+      console.log('مراحل المعلم:', teacherStages)
+
       setStages(teacherStages)
 
       setSelectedStage('')
@@ -87,7 +108,7 @@ export function SendToTeacherModal({
       setSelectedStage('')
       setSelectedGroupIds([])
     }
-  }, [selectedTeacherId, allGroups, teacherGroups])
+  }, [selectedTeacherId, allGroups, teacherGroups, dataLoading])
 
   useEffect(() => {
     if (selectedStage && selectedTeacherId) {
@@ -279,9 +300,10 @@ export function SendToTeacherModal({
             <select
               value={selectedTeacherId}
               onChange={(e) => setSelectedTeacherId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              disabled={dataLoading}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
-              <option value="">-- اختر المعلم --</option>
+              <option value="">{dataLoading ? 'جاري التحميل...' : '-- اختر المعلم --'}</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.name} - {teacher.specialization || 'غير محدد'}
@@ -297,6 +319,10 @@ export function SendToTeacherModal({
             {!selectedTeacherId ? (
               <div className="bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-center">
                 <p className="text-sm text-gray-500">اختر المعلم أولاً</p>
+              </div>
+            ) : dataLoading ? (
+              <div className="bg-blue-50 border border-blue-300 rounded-lg px-4 py-3 text-center">
+                <p className="text-sm text-blue-700">جاري تحميل البيانات...</p>
               </div>
             ) : stages.length === 0 ? (
               <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3 text-center">

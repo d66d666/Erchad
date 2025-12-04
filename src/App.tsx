@@ -250,13 +250,12 @@ function App() {
   }, [])
 
   async function fetchTeachers() {
-    const { data } = await supabase
-      .from('teachers')
-      .select('*')
-      .order('name')
-
-    if (data) {
-      setTeachers(data)
+    try {
+      const data = await db.teachers.toArray()
+      setTeachers(data || [])
+    } catch (error) {
+      console.error('Error fetching teachers:', error)
+      setTeachers([])
     }
   }
 
@@ -383,15 +382,18 @@ function App() {
   const handleAddSpecialStatus = async () => {
     if (!newStatusName.trim()) return
 
-    const { data, error } = await supabase
-      .from('special_statuses')
-      .insert([{ name: newStatusName.trim() }])
-      .select()
-      .single()
-
-    if (!error && data) {
+    try {
+      const newStatus = {
+        id: crypto.randomUUID(),
+        name: newStatusName.trim(),
+        created_at: new Date().toISOString()
+      }
+      await db.special_statuses.add(newStatus)
       setNewStatusName('')
       fetchData()
+    } catch (error) {
+      console.error('Error adding special status:', error)
+      alert('حدث خطأ أثناء إضافة الحالة الخاصة')
     }
   }
 
@@ -405,13 +407,12 @@ function App() {
       return
     }
 
-    const { error } = await supabase
-      .from('special_statuses')
-      .delete()
-      .eq('id', statusId)
-
-    if (!error) {
+    try {
+      await db.special_statuses.delete(statusId)
       fetchData()
+    } catch (error) {
+      console.error('Error deleting special status:', error)
+      alert('حدث خطأ أثناء حذف الحالة الخاصة')
     }
   }
 
@@ -419,10 +420,10 @@ function App() {
     if (!newStage.trim() || !newGroupName.trim()) return
 
     try {
-      const { data: stageGroups } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('stage', newStage.trim())
+      const stageGroups = await db.groups
+        .where('stage')
+        .equals(newStage.trim())
+        .toArray()
 
       const maxOrder = stageGroups && stageGroups.length > 0
         ? Math.max(...stageGroups.map(g => g.display_order || 0))
@@ -435,12 +436,6 @@ function App() {
         display_order: maxOrder + 1,
         created_at: new Date().toISOString(),
       }
-
-      const { error } = await supabase
-        .from('groups')
-        .insert(newGroup)
-
-      if (error) throw error
 
       await db.groups.add(newGroup)
       setNewStage('')
@@ -464,13 +459,6 @@ function App() {
     if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
 
     try {
-      const { error } = await supabase
-        .from('groups')
-        .delete()
-        .eq('id', groupId)
-
-      if (error) throw error
-
       await db.groups.delete(groupId)
       fetchData()
       alert('تم حذف المجموعة بنجاح')
@@ -1858,13 +1846,6 @@ function App() {
                                                             onClick={async () => {
                                                               if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
                                                                 try {
-                                                                  const { error } = await supabase
-                                                                    .from('students')
-                                                                    .delete()
-                                                                    .eq('id', student.id)
-
-                                                                  if (error) throw error
-
                                                                   await db.students.delete(student.id)
                                                                   alert('تم حذف الطالب بنجاح')
                                                                   fetchData()
@@ -2671,22 +2652,15 @@ function App() {
                 <button
                   onClick={async () => {
                     try {
-                      const { error } = await supabase
-                        .from('students')
-                        .update({
-                          name: editingStudent.name,
-                          national_id: editingStudent.national_id,
-                          phone: editingStudent.phone,
-                          guardian_phone: editingStudent.guardian_phone,
-                          group_id: editingStudent.group_id,
-                          special_status_id: editingStudent.special_status_id,
-                          updated_at: new Date().toISOString()
-                        })
-                        .eq('id', editingStudent.id)
-
-                      if (error) throw error
-
-                      await db.students.update(editingStudent.id, editingStudent)
+                      await db.students.update(editingStudent.id, {
+                        name: editingStudent.name,
+                        national_id: editingStudent.national_id,
+                        phone: editingStudent.phone,
+                        guardian_phone: editingStudent.guardian_phone,
+                        group_id: editingStudent.group_id,
+                        special_status_id: editingStudent.special_status_id,
+                        updated_at: new Date().toISOString()
+                      })
                       alert('تم تحديث بيانات الطالب بنجاح')
                       fetchData()
                       setShowEditModal(false)

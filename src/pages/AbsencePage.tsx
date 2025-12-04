@@ -378,9 +378,18 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     `)
   }
 
-  const filteredStudents = students.filter(s =>
-    s.name.includes(searchTerm) || s.national_id.includes(searchTerm)
-  )
+  const filteredStudents = students.filter(s => {
+    const search = searchTerm.trim().toLowerCase()
+    const name = (s.name || '').toLowerCase().trim()
+    const nationalId = (s.national_id || '').trim()
+    const phone = (s.phone || '').trim()
+    const guardianPhone = (s.guardian_phone || '').trim()
+
+    return name.includes(search) ||
+           nationalId.includes(search) ||
+           phone.includes(search) ||
+           guardianPhone.includes(search)
+  })
 
   return (
     <div className="space-y-6">

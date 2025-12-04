@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
-import { supabase } from '../lib/supabase'
 import { X, Trash2, Plus } from 'lucide-react'
 
 interface ManageModalProps {
@@ -60,13 +59,12 @@ export function ManageModal({
           created_at: new Date().toISOString(),
         })
       } else {
-        const { error } = await supabase
-          .from('special_statuses')
-          .insert({
-            name: newItem.trim(),
-          })
-
-        if (error) throw error
+        const newId = crypto.randomUUID()
+        await db.special_statuses.add({
+          id: newId,
+          name: newItem.trim(),
+          created_at: new Date().toISOString()
+        })
       }
 
       setNewItem('')
@@ -87,12 +85,7 @@ export function ManageModal({
       if (type === 'groups') {
         await db.groups.delete(id)
       } else {
-        const { error } = await supabase
-          .from('special_statuses')
-          .delete()
-          .eq('id', id)
-
-        if (error) throw error
+        await db.special_statuses.delete(id)
       }
       onDataUpdated()
     } finally {

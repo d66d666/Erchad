@@ -69,41 +69,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   }
 
   async function fetchStudents() {
-    // جلب الطلاب من Supabase أولاً
-    const { data: supabaseStudents } = await supabase
-      .from('students')
-      .select('*')
-      .order('name')
-
-    // مزامنة مع IndexedDB
-    if (supabaseStudents && supabaseStudents.length > 0) {
-      await db.students.clear()
-      for (const student of supabaseStudents) {
-        await db.students.put(student)
-      }
-    }
-
-    // جلب المجموعات والحالات
-    const { data: supabaseGroups } = await supabase.from('groups').select('*')
-    const { data: supabaseStatuses } = await supabase.from('special_statuses').select('*')
-
-    // مزامنة المجموعات
-    if (supabaseGroups && supabaseGroups.length > 0) {
-      await db.groups.clear()
-      for (const group of supabaseGroups) {
-        await db.groups.put(group)
-      }
-    }
-
-    // مزامنة الحالات الخاصة
-    if (supabaseStatuses && supabaseStatuses.length > 0) {
-      await db.special_statuses.clear()
-      for (const status of supabaseStatuses) {
-        await db.special_statuses.put(status)
-      }
-    }
-
-    // قراءة من IndexedDB بعد المزامنة
+    // قراءة من IndexedDB فقط
     const allStudents = await db.students.toArray()
     const groups = await db.groups.toArray()
     const statuses = await db.special_statuses.toArray()
@@ -123,24 +89,23 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
   async function fetchVisits(filterDate?: string, searchQuery?: string) {
     try {
-      let query = supabase
-        .from('student_visits')
-        .select('*')
-        .order('visit_date', { ascending: false })
+      // قراءة من IndexedDB فقط
+      let visitsData = await db.student_visits.orderBy('visit_date').reverse().toArray()
 
-      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      // تطبيق الفلاتر
       if (searchQuery && searchQuery.trim() !== '') {
         // لا تحديد بالتاريخ، جلب كل الزيارات للبحث
-        query = query.limit(200)
+        visitsData = visitsData.slice(0, 200)
       } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
         endOfDay.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('visit_date', startOfDay.toISOString())
-          .lte('visit_date', endOfDay.toISOString())
+        visitsData = visitsData.filter(v => {
+          const visitDate = new Date(v.visit_date)
+          return visitDate >= startOfDay && visitDate <= endOfDay
+        })
       } else {
         // عرض زيارات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
@@ -148,17 +113,15 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
         const endOfToday = new Date()
         endOfToday.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('visit_date', today.toISOString())
-          .lte('visit_date', endOfToday.toISOString())
+        visitsData = visitsData.filter(v => {
+          const visitDate = new Date(v.visit_date)
+          return visitDate >= today && visitDate <= endOfToday
+        })
       }
 
-      const { data: visitsData } = await query
-      const { data: studentsData } = await supabase.from('students').select('*')
+      const allStudents = await db.students.toArray()
 
-      const allStudents = studentsData || []
-
-      const visitsWithStudents = (visitsData || []).map((visit) => {
+      const visitsWithStudents = visitsData.map((visit) => {
         const student = allStudents.find(s => s.id === visit.student_id)
         return {
           ...visit,
@@ -172,19 +135,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       })
 
       setVisits(visitsWithStudents)
-
-      if (visitsData) {
-        await db.student_visits.bulkPut(visitsData.map(v => ({
-          id: v.id,
-          student_id: v.student_id,
-          visit_date: v.visit_date,
-          reason: v.reason,
-          action_taken: v.action_taken,
-          referred_to: v.referred_to,
-          notes: v.notes || '',
-          created_at: v.created_at
-        })))
-      }
     } catch (error) {
       console.error('Error fetching visits:', error)
     }
@@ -199,41 +149,20 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       const visitDate = new Date().toISOString()
       const currentCount = selectedStudent.visit_count || 0
 
-      const { data: visitData, error: visitError } = await supabase
-        .from('student_visits')
-        .insert({
-          student_id: selectedStudent.id,
-          visit_date: visitDate,
-          reason: formData.reason,
-          action_taken: formData.action_taken,
-          referred_to: formData.referred_to,
-          notes: formData.notes
-        })
-        .select()
-        .single()
+      // حفظ الزيارة في IndexedDB فقط
+      const visitId = crypto.randomUUID()
+      await db.student_visits.add({
+        id: visitId,
+        student_id: selectedStudent.id,
+        visit_date: visitDate,
+        reason: formData.reason,
+        action_taken: formData.action_taken,
+        referred_to: formData.referred_to,
+        notes: formData.notes || '',
+        created_at: new Date().toISOString()
+      })
 
-      if (visitError) throw visitError
-
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({ visit_count: currentCount + 1 })
-        .eq('id', selectedStudent.id)
-
-      if (updateError) throw updateError
-
-      if (visitData) {
-        await db.student_visits.add({
-          id: visitData.id,
-          student_id: visitData.student_id,
-          visit_date: visitData.visit_date,
-          reason: visitData.reason,
-          action_taken: visitData.action_taken,
-          referred_to: visitData.referred_to,
-          notes: visitData.notes || '',
-          created_at: visitData.created_at
-        })
-      }
-
+      // تحديث عداد الزيارات
       await db.students.update(selectedStudent.id, {
         visit_count: currentCount + 1
       })
@@ -255,26 +184,15 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     if (!confirm('هل أنت متأكد من حذف هذه الزيارة؟')) return
 
     try {
-      const { error } = await supabase
-        .from('student_visits')
-        .delete()
-        .eq('id', visitId)
-
-      if (error) throw error
+      // حذف من IndexedDB فقط
+      await db.student_visits.delete(visitId)
 
       const student = students.find(s => s.id === studentId)
       if (student && student.visit_count > 0) {
-        await supabase
-          .from('students')
-          .update({ visit_count: student.visit_count - 1 })
-          .eq('id', studentId)
-
         await db.students.update(studentId, {
           visit_count: student.visit_count - 1
         })
       }
-
-      await db.student_visits.delete(visitId)
 
       alert('تم حذف الزيارة بنجاح')
       fetchStudents()

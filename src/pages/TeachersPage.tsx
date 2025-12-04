@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Teacher, Group, TeacherGroup } from '../types'
 import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
+import { db } from '../lib/db'
 
 interface TeacherWithGroups extends Teacher {
   teacher_groups?: TeacherGroup[]
@@ -22,24 +23,20 @@ export function TeachersPage() {
   const fetchData = async () => {
     setLoading(true)
 
-    const [teachersRes, groupsRes, teacherGroupsRes] = await Promise.all([
-      supabase.from('teachers').select('*').order('name'),
-      supabase.from('groups').select('*').order('name'),
-      supabase.from('teacher_groups').select('*, groups(*)')
-    ])
+    const allTeachers = await db.teachers.orderBy('name').toArray()
+    const allGroups = await db.groups.orderBy('name').toArray()
+    const allTeacherGroups = await db.teacher_groups.toArray()
 
-    if (groupsRes.data) setGroups(groupsRes.data)
+    setGroups(allGroups)
 
-    if (teachersRes.data) {
-      const teachersWithGroups = teachersRes.data.map(teacher => ({
-        ...teacher,
-        groups: teacherGroupsRes.data
-          ?.filter(tg => tg.teacher_id === teacher.id)
-          .map(tg => tg.groups)
-          .filter(Boolean) as Group[]
-      }))
-      setTeachers(teachersWithGroups)
-    }
+    const teachersWithGroups = allTeachers.map(teacher => ({
+      ...teacher,
+      groups: allTeacherGroups
+        .filter(tg => tg.teacher_id === teacher.id)
+        .map(tg => allGroups.find(g => g.id === tg.group_id))
+        .filter(Boolean) as Group[]
+    }))
+    setTeachers(teachersWithGroups)
 
     setLoading(false)
   }
@@ -57,16 +54,13 @@ export function TeachersPage() {
   const handleDelete = async (teacherId: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا المعلم؟')) return
 
-    const { error } = await supabase
-      .from('teachers')
-      .delete()
-      .eq('id', teacherId)
-
-    if (error) {
+    try {
+      await db.teachers.delete(teacherId)
+      await db.teacher_groups.where('teacher_id').equals(teacherId).delete()
+      fetchData()
+    } catch (error) {
       alert('حدث خطأ أثناء الحذف')
       console.error(error)
-    } else {
-      fetchData()
     }
   }
 
@@ -281,17 +275,19 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
   const fetchTeacherGroups = async () => {
     if (!teacher) return
 
-    const { data } = await supabase
-      .from('teacher_groups')
-      .select('group_id, groups(stage)')
-      .eq('teacher_id', teacher.id)
+    const teacherGroups = await db.teacher_groups
+      .where('teacher_id')
+      .equals(teacher.id)
+      .toArray()
 
-    if (data) {
-      const groupIds = data.map(tg => tg.group_id)
+    if (teacherGroups) {
+      const groupIds = teacherGroups.map(tg => tg.group_id)
       setSelectedGroupIds(groupIds)
 
+      const allGroups = await db.groups.toArray()
+      const teacherGroupsData = groupIds.map(gId => allGroups.find(g => g.id === gId)).filter(Boolean)
       const uniqueStages = Array.from(new Set(
-        data.map(tg => (tg as any).groups?.stage).filter(Boolean)
+        teacherGroupsData.map(g => g!.stage).filter(Boolean)
       )) as string[]
       setSelectedStages(uniqueStages)
     }
@@ -328,74 +324,43 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
     try {
       if (teacher) {
-        const { error: updateError } = await supabase
-          .from('teachers')
-          .update({
-            name: name.trim(),
-            phone: phone.trim(),
-            specialization: specialization.trim() || null
-          })
-          .eq('id', teacher.id)
+        await db.teachers.update(teacher.id, {
+          name: name.trim(),
+          phone: phone.trim(),
+          specialization: specialization.trim() || undefined
+        })
 
-        if (updateError) {
-          console.error('Update error:', updateError)
-          throw new Error(`فشل تحديث المعلم: ${updateError.message}`)
-        }
-
-        const { error: deleteError } = await supabase
-          .from('teacher_groups')
-          .delete()
-          .eq('teacher_id', teacher.id)
-
-        if (deleteError) {
-          console.error('Delete groups error:', deleteError)
-        }
+        await db.teacher_groups.where('teacher_id').equals(teacher.id).delete()
 
         if (selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
+            id: crypto.randomUUID(),
             teacher_id: teacher.id,
             group_id: groupId,
+            created_at: new Date().toISOString()
           }))
 
-          const { error: groupsError } = await supabase
-            .from('teacher_groups')
-            .insert(teacherGroupsData)
-
-          if (groupsError) {
-            console.error('Insert groups error:', groupsError)
-            throw new Error(`فشل ربط المجموعات: ${groupsError.message}`)
-          }
+          await db.teacher_groups.bulkAdd(teacherGroupsData)
         }
       } else {
-        const { data: newTeacher, error: insertError } = await supabase
-          .from('teachers')
-          .insert({
-            name: name.trim(),
-            phone: phone.trim(),
-            specialization: specialization.trim() || null
-          })
-          .select()
-          .single()
+        const newTeacherId = crypto.randomUUID()
+        await db.teachers.add({
+          id: newTeacherId,
+          name: name.trim(),
+          phone: phone.trim(),
+          specialization: specialization.trim() || undefined,
+          created_at: new Date().toISOString()
+        })
 
-        if (insertError) {
-          console.error('Insert error:', insertError)
-          throw new Error(`فشل إضافة المعلم: ${insertError.message}`)
-        }
-
-        if (newTeacher && selectedGroupIds.length > 0) {
+        if (selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
-            teacher_id: newTeacher.id,
+            id: crypto.randomUUID(),
+            teacher_id: newTeacherId,
             group_id: groupId,
+            created_at: new Date().toISOString()
           }))
 
-          const { error: groupsError } = await supabase
-            .from('teacher_groups')
-            .insert(teacherGroupsData)
-
-          if (groupsError) {
-            console.error('Insert groups error:', groupsError)
-            throw new Error(`فشل ربط المجموعات: ${groupsError.message}`)
-          }
+          await db.teacher_groups.bulkAdd(teacherGroupsData)
         }
       }
 

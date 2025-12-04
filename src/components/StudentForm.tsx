@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { db } from '../lib/db'
 import { Group, SpecialStatus, Student } from '../types'
 import { Plus, X } from 'lucide-react'
 
@@ -67,18 +67,18 @@ export function StudentForm({
       }
 
       if (editingStudent) {
-        const { error: updateError } = await supabase
-          .from('students')
-          .update(data)
-          .eq('id', editingStudent.id)
-
-        if (updateError) throw updateError
+        await db.students.update(editingStudent.id, {
+          ...data,
+          updated_at: new Date().toISOString()
+        })
       } else {
-        const { error: insertError } = await supabase
-          .from('students')
-          .insert(data)
-
-        if (insertError) throw insertError
+        const newId = crypto.randomUUID()
+        await db.students.add({
+          id: newId,
+          ...data,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
       }
 
       setFormData({

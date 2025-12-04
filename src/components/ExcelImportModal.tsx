@@ -61,11 +61,7 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
         ).values(),
       ]
 
-      const { data: existingGroups, error: fetchError } = await supabase
-        .from('groups')
-        .select('id, name, stage')
-
-      if (fetchError) throw fetchError
+      const existingGroups = await db.groups.toArray()
 
       const existingGroupsMap = new Map(
         (existingGroups || []).map((g) => [`${g.stage}|${g.name}`, g.id])
@@ -86,22 +82,14 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
             created_at: new Date().toISOString()
           }
 
-          const { error: insertGroupError } = await supabase
-            .from('groups')
-            .insert(newGroup)
-
-          if (insertGroupError) throw insertGroupError
+          await db.groups.add(newGroup)
 
           existingGroupsMap.set(`${group.stage}|${group.name}`, newId)
           await db.groups.put(newGroup)
         }
       }
 
-      const { data: existingStudents, error: studentsError } = await supabase
-        .from('students')
-        .select('id, national_id')
-
-      if (studentsError) throw studentsError
+      const existingStudents = await db.students.toArray()
 
       const existingStudentsMap = new Map(
         (existingStudents || []).map((s) => [s.national_id, s.id])
@@ -151,24 +139,14 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
 
       for (const studentData of insertData) {
         try {
-          const { data: insertedStudent, error: insertError } = await supabase
-            .from('students')
-            .insert(studentData)
-            .select()
-            .maybeSingle()
-
-          if (insertError) {
-            if (insertError.code === '23505') {
-              skippedCount++
-              continue
-            }
-            throw insertError
-          }
-
-          if (insertedStudent) {
-            insertedCount++
-            await db.students.put(insertedStudent)
-          }
+          const newId = crypto.randomUUID()
+          await db.students.add({
+            id: newId,
+            ...studentData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          insertedCount++
         } catch (err) {
           skippedCount++
         }
@@ -177,15 +155,11 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
       let updatedCount = 0
       for (const student of updateData) {
         const { id, ...updateFields } = student
-        const { error: updateError } = await supabase
-          .from('students')
-          .update(updateFields)
-          .eq('id', id)
-
-        if (!updateError) {
-          updatedCount++
-          await db.students.update(id, updateFields)
-        }
+        await db.students.update(id, {
+          ...updateFields,
+          updated_at: new Date().toISOString()
+        })
+        updatedCount++
       }
 
       const messages: string[] = []
@@ -257,36 +231,26 @@ export function ExcelImportModal({ isOpen, onClose, groups, onImportComplete }: 
       let updatedCount = 0
 
       for (const teacher of uniqueTeachers) {
-        const { data: existingTeacher } = await supabase
-          .from('teachers')
-          .select('*')
-          .eq('phone', teacher.phone)
-          .maybeSingle()
+        const existingTeacher = await db.teachers
+          .where('phone')
+          .equals(teacher.phone)
+          .first()
 
         if (!existingTeacher) {
-          const { data: newTeacher, error: insertError } = await supabase
-            .from('teachers')
-            .insert(teacher)
-            .select()
-            .maybeSingle()
-
-          if (!insertError && newTeacher) {
-            await db.teachers.put(newTeacher)
-            addedCount++
-          }
+          const newId = crypto.randomUUID()
+          await db.teachers.add({
+            id: newId,
+            ...teacher,
+            created_at: new Date().toISOString()
+          })
+          addedCount++
         } else {
-          const { error: updateError } = await supabase
-            .from('teachers')
-            .update({ name: teacher.name, specialization: teacher.specialization })
-            .eq('phone', teacher.phone)
-
-          if (!updateError) {
-            await db.teachers.update(existingTeacher.id, {
-              name: teacher.name,
-              specialization: teacher.specialization
-            })
-            updatedCount++
-          }
+          await db.teachers.update(existingTeacher.id, {
+            name: teacher.name,
+            specialization: teacher.specialization,
+            updated_at: new Date().toISOString()
+          })
+          updatedCount++
         }
       }
 

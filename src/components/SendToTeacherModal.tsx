@@ -38,51 +38,32 @@ export function SendToTeacherModal({
   }, [isOpen])
 
   const fetchTeachers = async () => {
-    const { data } = await supabase
-      .from('teachers')
-      .select('*')
-      .order('name')
-
-    if (data) setTeachers(data)
+    const data = await db.teachers.orderBy('name').toArray()
+    setTeachers(data)
   }
 
   const fetchGroups = async () => {
-    const { data } = await supabase
-      .from('groups')
-      .select('*')
-      .order('display_order')
-
-    if (data) {
-      setAllGroups(data)
-      const uniqueStages = [...new Set(data.map(g => g.stage))]
-      setStages(uniqueStages)
-    }
+    const data = await db.groups.orderBy('display_order').toArray()
+    setAllGroups(data)
+    const uniqueStages = [...new Set(data.map(g => g.stage))]
+    setStages(uniqueStages)
   }
 
   const fetchSpecialStatuses = async () => {
-    const { data } = await supabase
-      .from('special_statuses')
-      .select('*')
-      .order('name')
-
-    if (data) setSpecialStatuses(data)
+    const data = await db.special_statuses.orderBy('name').toArray()
+    setSpecialStatuses(data)
   }
 
   const fetchTeacherGroups = async () => {
-    const { data } = await supabase
-      .from('teacher_groups')
-      .select('*, groups(*)')
-      .order('created_at')
-
-    if (data) setTeacherGroups(data)
+    const data = await db.teacher_groups.orderBy('created_at').toArray()
+    setTeacherGroups(data)
   }
 
   const fetchSystemAdminName = async () => {
-    const { data } = await supabase
-      .from('teacher_profile')
-      .select('name')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
 
+    const data = await db.teacher_profile.where('id').equals(userId).first()
     if (data?.name) setSystemAdminName(data.name)
   }
 

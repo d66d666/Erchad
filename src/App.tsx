@@ -532,11 +532,9 @@ function App() {
       const teachers = await db.teachers.toArray()
       const teacherGroups = await db.teacher_groups.toArray()
 
-      // Get teacher profile using Supabase to ensure we get the current user's profile
-      const { data: teacherProfile } = await supabase
-        .from('teacher_profile')
-        .select('*')
-        .maybeSingle()
+      // Get teacher profile
+      const userId = localStorage.getItem('userId')
+      const teacherProfile = userId ? await db.teacher_profile.where('id').equals(userId).first() : null
 
       const dataToExport = {
         version: '1.0',

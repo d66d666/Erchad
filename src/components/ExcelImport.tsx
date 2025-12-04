@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { db } from '../lib/db'
-import { supabase } from '../lib/supabase'
 import { Upload, AlertCircle, Users, GraduationCap } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
@@ -63,11 +62,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       ]
 
       // جلب المجموعات الموجودة حالياً
-      const { data: existingGroups, error: fetchError } = await supabase
-        .from('groups')
-        .select('id, name, stage')
-
-      if (fetchError) throw fetchError
+      const existingGroups = await db.groups.toArray()
 
       const existingGroupsMap = new Map(
         (existingGroups || []).map((g) => [`${g.stage}|${g.name}`, g.id])
@@ -90,14 +85,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
               created_at: new Date().toISOString()
             }
 
-            const { error: insertGroupError } = await supabase
-              .from('groups')
-              .insert(newGroup)
-
-            if (insertGroupError) {
-              console.error('Error creating group:', insertGroupError)
-              throw new Error(`فشل في إنشاء المجموعة "${group.name}" في "${group.stage}": ${insertGroupError.message}`)
-            }
+            await db.groups.add(newGroup)
 
             existingGroupsMap.set(`${group.stage}|${group.name}`, newId)
             await db.groups.put(newGroup)
@@ -109,11 +97,7 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       }
 
       // جلب الطلاب الموجودين للتحقق من التحديث أو الإضافة
-      const { data: existingStudents, error: studentsError } = await supabase
-        .from('students')
-        .select('id, national_id')
-
-      if (studentsError) throw studentsError
+      const existingStudents = await db.students.toArray()
 
       const existingStudentsMap = new Map(
         (existingStudents || []).map((s) => [s.national_id, s.id])
@@ -186,25 +170,15 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
 
       for (const studentData of insertData) {
         try {
-          const { data: insertedStudent, error: insertError } = await supabase
-            .from('students')
-            .insert(studentData)
-            .select()
-            .maybeSingle()
-
-          if (insertError) {
-            if (insertError.code === '23505' && insertError.message.includes('students_national_id_key')) {
-              console.warn(`طالب موجود مسبقاً: ${studentData.name} (${studentData.national_id})`)
-              skippedCount++
-              continue
-            }
-            throw insertError
+          const newId = crypto.randomUUID()
+          const newStudent = {
+            id: newId,
+            ...studentData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
-
-          if (insertedStudent) {
-            insertedCount++
-            await db.students.put(insertedStudent)
-          }
+          await db.students.add(newStudent)
+          insertedCount++
         } catch (err) {
           console.error('خطأ في إضافة الطالب:', studentData.name, err)
           skippedCount++
@@ -215,15 +189,11 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       let updatedCount = 0
       for (const student of updateData) {
         const { id, ...updateFields } = student
-        const { error: updateError } = await supabase
-          .from('students')
-          .update(updateFields)
-          .eq('id', id)
-
-        if (!updateError) {
-          updatedCount++
-          await db.students.update(id, updateFields)
-        }
+        await db.students.update(id, {
+          ...updateFields,
+          updated_at: new Date().toISOString()
+        })
+        updatedCount++
       }
 
       // رسالة النجاح
@@ -315,38 +285,26 @@ export function ExcelImport({ groups, onImportComplete }: ExcelImportProps) {
       let skippedCount = 0
 
       for (const teacher of uniqueTeachers) {
-        const { data: existingTeacher } = await supabase
-          .from('teachers')
-          .select('*')
-          .eq('phone', teacher.phone)
-          .maybeSingle()
+        const existingTeacher = await db.teachers
+          .where('phone')
+          .equals(teacher.phone)
+          .first()
 
         if (!existingTeacher) {
-          const { data: newTeacher, error: insertError } = await supabase
-            .from('teachers')
-            .insert(teacher)
-            .select()
-            .maybeSingle()
-
-          if (!insertError && newTeacher) {
-            await db.teachers.put(newTeacher)
-            addedCount++
-          } else {
-            skippedCount++
-          }
+          const newId = crypto.randomUUID()
+          await db.teachers.add({
+            id: newId,
+            ...teacher,
+            created_at: new Date().toISOString()
+          })
+          addedCount++
         } else {
-          const { error: updateError } = await supabase
-            .from('teachers')
-            .update({ name: teacher.name, specialization: teacher.specialization })
-            .eq('phone', teacher.phone)
-
-          if (!updateError) {
-            await db.teachers.update(existingTeacher.id, {
-              name: teacher.name,
-              specialization: teacher.specialization
-            })
-            updatedCount++
-          }
+          await db.teachers.update(existingTeacher.id, {
+            name: teacher.name,
+            specialization: teacher.specialization,
+            updated_at: new Date().toISOString()
+          })
+          updatedCount++
         }
       }
 

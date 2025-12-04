@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { db } from '../lib/db'
 import { Group, SpecialStatus, Student } from '../types'
 import { X } from 'lucide-react'
 
@@ -46,12 +46,10 @@ export function EditStudentModal({
         special_status_id: formData.special_status_id || null,
       }
 
-      const { error: updateError } = await supabase
-        .from('students')
-        .update(data)
-        .eq('id', student.id)
-
-      if (updateError) throw updateError
+      await db.students.update(student.id, {
+        ...data,
+        updated_at: new Date().toISOString()
+      })
 
       onStudentUpdated()
       onClose()

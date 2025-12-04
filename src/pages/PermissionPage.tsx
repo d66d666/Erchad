@@ -48,10 +48,10 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   }, [permissionSearchTerm])
 
   async function fetchTeacherProfile() {
-    const { data: profile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
+
+    const profile = await db.teacher_profile.where('id').equals(userId).first()
 
     if (profile?.name) {
       setTeacherName(profile.name)
@@ -69,32 +69,14 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
   async function fetchStudents() {
     try {
-      // جلب الطلاب من Supabase
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('students')
-        .select('*')
-        .eq('status', 'نشط')
-        .order('name')
+      // قراءة من IndexedDB فقط
+      const allStudents = await db.students.toArray()
+      const activeStudents = allStudents.filter(s => s.status === 'نشط')
 
-      if (studentsError) {
-        console.error('Error fetching students:', studentsError)
-        return
-      }
+      const groups = await db.groups.toArray()
+      const statuses = await db.special_statuses.toArray()
 
-      // جلب المجموعات من Supabase
-      const { data: groupsData } = await supabase
-        .from('groups')
-        .select('*')
-
-      // جلب الحالات الخاصة من Supabase
-      const { data: statusesData } = await supabase
-        .from('special_statuses')
-        .select('*')
-
-      const groups = groupsData || []
-      const statuses = statusesData || []
-
-      const studentsWithRelations = (studentsData || []).map(student => {
+      const studentsWithRelations = activeStudents.map(student => {
         const group = groups.find(g => g.id === student.group_id)
         const special_status = statuses.find(s => s.id === student.special_status_id)
         return {
@@ -105,17 +87,6 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
       })
 
       setStudents(studentsWithRelations as Student[])
-
-      // تحديث IndexedDB المحلية
-      if (studentsData) {
-        await db.students.bulkPut(studentsData)
-      }
-      if (groups.length > 0) {
-        await db.groups.bulkPut(groups)
-      }
-      if (statuses.length > 0) {
-        await db.special_statuses.bulkPut(statuses)
-      }
     } catch (error) {
       console.error('Error in fetchStudents:', error)
     }
@@ -123,25 +94,23 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
   async function fetchPermissions(filterDate?: string, searchQuery?: string) {
     try {
-      // إعداد الفلتر الزمني
-      let query = supabase
-        .from('student_permissions')
-        .select('*')
-        .order('permission_date', { ascending: false })
+      // قراءة من IndexedDB فقط
+      let permissionsData = await db.student_permissions.orderBy('permission_date').reverse().toArray()
 
-      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      // تطبيق الفلاتر
       if (searchQuery && searchQuery.trim() !== '') {
         // لا تحديد بالتاريخ، جلب كل الاستئذانات للبحث
-        query = query.limit(200)
+        permissionsData = permissionsData.slice(0, 200)
       } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
         endOfDay.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('permission_date', startOfDay.toISOString())
-          .lte('permission_date', endOfDay.toISOString())
+        permissionsData = permissionsData.filter(p => {
+          const permissionDate = new Date(p.permission_date)
+          return permissionDate >= startOfDay && permissionDate <= endOfDay
+        })
       } else {
         // عرض استئذانات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
@@ -149,26 +118,17 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
         const endOfToday = new Date()
         endOfToday.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('permission_date', today.toISOString())
-          .lte('permission_date', endOfToday.toISOString())
-      }
-
-      const { data: permissionsData, error: permissionsError } = await query
-
-      if (permissionsError) {
-        console.error('Error fetching permissions:', permissionsError)
-        return
+        permissionsData = permissionsData.filter(p => {
+          const permissionDate = new Date(p.permission_date)
+          return permissionDate >= today && permissionDate <= endOfToday
+        })
       }
 
       // جلب المجموعات والطلاب
-      const { data: groupsData } = await supabase.from('groups').select('*')
-      const { data: studentsData } = await supabase.from('students').select('*')
+      const groups = await db.groups.toArray()
+      const allStudents = await db.students.toArray()
 
-      const groups = groupsData || []
-      const allStudents = studentsData || []
-
-      const permissionsWithStudents = (permissionsData || []).map((permission) => {
+      const permissionsWithStudents = permissionsData.map((permission) => {
         const student = allStudents.find(s => s.id === permission.student_id)
         const group = student ? groups.find(g => g.id === student.group_id) : undefined
         return {
@@ -184,19 +144,6 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
       })
 
       setPermissions(permissionsWithStudents)
-
-      // تحديث IndexedDB المحلية
-      if (permissionsData) {
-        await db.student_permissions.bulkPut(permissionsData.map(p => ({
-          id: p.id,
-          student_id: p.student_id,
-          permission_date: p.permission_date,
-          reason: p.reason,
-          guardian_notified: p.guardian_notified,
-          notes: p.notes || '',
-          created_at: p.created_at
-        })))
-      }
     } catch (error) {
       console.error('Error in fetchPermissions:', error)
     }
@@ -211,51 +158,19 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
       const permissionDate = new Date().toISOString()
       const currentCount = selectedStudent.permission_count || 0
 
-      // حفظ الاستئذان في Supabase
-      const { data: permissionData, error: permissionError } = await supabase
-        .from('student_permissions')
-        .insert({
-          student_id: selectedStudent.id,
-          permission_date: permissionDate,
-          reason: formData.reason,
-          notes: formData.notes,
-          guardian_notified: true
-        })
-        .select()
-        .single()
+      // حفظ الاستئذان في IndexedDB فقط
+      const permissionId = crypto.randomUUID()
+      await db.student_permissions.add({
+        id: permissionId,
+        student_id: selectedStudent.id,
+        permission_date: permissionDate,
+        reason: formData.reason,
+        guardian_notified: true,
+        notes: formData.notes || '',
+        created_at: new Date().toISOString()
+      })
 
-      if (permissionError) {
-        console.error('Error saving permission:', permissionError)
-        throw permissionError
-      }
-
-      // تحديث حالة الطالب في Supabase
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({
-          status: 'استئذان',
-          permission_count: currentCount + 1
-        })
-        .eq('id', selectedStudent.id)
-
-      if (updateError) {
-        console.error('Error updating student:', updateError)
-        throw updateError
-      }
-
-      // حفظ في IndexedDB المحلية
-      if (permissionData) {
-        await db.student_permissions.add({
-          id: permissionData.id,
-          student_id: permissionData.student_id,
-          permission_date: permissionData.permission_date,
-          reason: permissionData.reason,
-          guardian_notified: permissionData.guardian_notified,
-          notes: permissionData.notes || '',
-          created_at: permissionData.created_at
-        })
-      }
-
+      // تحديث حالة الطالب
       await db.students.update(selectedStudent.id, {
         status: 'استئذان',
         permission_count: currentCount + 1
@@ -350,26 +265,15 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
     if (!confirm('هل أنت متأكد من حذف هذا الاستئذان؟')) return
 
     try {
-      const { error } = await supabase
-        .from('student_permissions')
-        .delete()
-        .eq('id', permissionId)
-
-      if (error) throw error
+      // حذف من IndexedDB فقط
+      await db.student_permissions.delete(permissionId)
 
       const student = students.find(s => s.id === studentId)
       if (student && student.permission_count > 0) {
-        await supabase
-          .from('students')
-          .update({ permission_count: student.permission_count - 1 })
-          .eq('id', studentId)
-
         await db.students.update(studentId, {
           permission_count: student.permission_count - 1
         })
       }
-
-      await db.student_permissions.delete(permissionId)
 
       alert('تم حذف الاستئذان بنجاح')
       fetchStudents()

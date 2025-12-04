@@ -42,59 +42,25 @@ export function GroupsManagementPage() {
   }, [groups])
 
   const fetchGroups = async () => {
-    // Fetch from Supabase first
-    const { data: supabaseGroups } = await supabase
-      .from('groups')
-      .select('*')
-      .order('display_order', { ascending: true })
-
-    if (supabaseGroups) {
-      // Sync to IndexedDB
-      await db.groups.clear()
-      await db.groups.bulkAdd(supabaseGroups)
-      setGroups(supabaseGroups)
-    } else {
-      // Fallback to IndexedDB
-      const allGroups = await db.groups.toArray()
-      setGroups(allGroups)
-    }
+    const allGroups = await db.groups.orderBy('display_order').toArray()
+    setGroups(allGroups)
   }
 
   const fetchStudents = async () => {
-    // Fetch from Supabase first with special_status joined
-    const { data: supabaseStudents } = await supabase
-      .from('students')
-      .select(`
-        *,
-        special_status:special_statuses(name)
-      `)
+    const allStudents = await db.students.toArray()
+    const allStatuses = await db.special_statuses.toArray()
 
-    if (supabaseStudents) {
-      // Map the data to match Student interface
-      const mappedStudents = supabaseStudents.map((s: any) => ({
-        ...s,
-        civil_id: s.national_id,
-        special_status: s.special_status?.name || null
-      }))
+    const mappedStudents = allStudents.map((s) => ({
+      ...s,
+      civil_id: s.national_id,
+      special_status: s.special_status_id ? allStatuses.find(st => st.id === s.special_status_id)?.name || null : null
+    }))
 
-      // Sync to IndexedDB
-      await db.students.clear()
-      await db.students.bulkAdd(mappedStudents)
-      setStudents(mappedStudents as Student[])
-    } else {
-      // Fallback to IndexedDB
-      const allStudents = await db.students.toArray()
-      setStudents(allStudents as Student[])
-    }
+    setStudents(mappedStudents as Student[])
   }
 
   const fetchStudentCounts = async () => {
-    // Fetch from Supabase first
-    const { data: supabaseStudents } = await supabase
-      .from('students')
-      .select('*')
-
-    const studentsToCount = supabaseStudents || await db.students.toArray()
+    const studentsToCount = await db.students.toArray()
     const counts: Record<string, number> = {}
 
     studentsToCount.forEach(student => {
@@ -107,23 +73,19 @@ export function GroupsManagementPage() {
   }
 
   const fetchSpecialStatuses = async () => {
-    const { data } = await supabase
-      .from('special_statuses')
-      .select('*')
-      .order('name')
-
-    if (data) setSpecialStatuses(data)
+    const allStatuses = await db.special_statuses.orderBy('name').toArray()
+    setSpecialStatuses(allStatuses)
   }
 
   const fetchTeacherProfile = async () => {
-    const { data } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
 
-    if (data) {
-      setTeacherName(data.name || '')
-      setSchoolName(data.school_name || '')
+    const profile = await db.teacher_profile.where('id').equals(userId).first()
+
+    if (profile) {
+      setTeacherName(profile.name || '')
+      setSchoolName(profile.school_name || '')
     }
   }
 
@@ -584,11 +546,8 @@ export function GroupsManagementPage() {
 
     setLoading(true)
     try {
-      // Get max order from Supabase
-      const { data: stageGroups } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('stage', newStage.trim())
+      // Get max order from IndexedDB
+      const stageGroups = await db.groups.where('stage').equals(newStage.trim()).toArray()
 
       const maxOrder = stageGroups && stageGroups.length > 0
         ? Math.max(...stageGroups.map(g => g.display_order || 0))
@@ -601,13 +560,6 @@ export function GroupsManagementPage() {
         display_order: maxOrder + 1,
         created_at: new Date().toISOString(),
       }
-
-      // Insert to Supabase
-      const { error } = await supabase
-        .from('groups')
-        .insert(newGroup)
-
-      if (error) throw error
 
       // Add to IndexedDB
       await db.groups.add(newGroup)
@@ -636,14 +588,6 @@ export function GroupsManagementPage() {
     if (!window.confirm('هل أنت متأكد من حذف هذه المجموعة؟')) return
 
     try {
-      // Delete from Supabase
-      const { error } = await supabase
-        .from('groups')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
       // Delete from IndexedDB
       await db.groups.delete(id)
       await fetchGroups()
@@ -665,17 +609,6 @@ export function GroupsManagementPage() {
     if (!editingGroup || !editName.trim() || !editStage.trim()) return
 
     try {
-      // Update in Supabase
-      const { error } = await supabase
-        .from('groups')
-        .update({
-          name: editName.trim(),
-          stage: editStage.trim(),
-        })
-        .eq('id', editingGroup.id)
-
-      if (error) throw error
-
       // Update in IndexedDB
       await db.groups.update(editingGroup.id, {
         name: editName.trim(),
@@ -707,10 +640,6 @@ export function GroupsManagementPage() {
     const prevOrder = prevGroup.display_order || currentIndex
 
     try {
-      // Update in Supabase
-      await supabase.from('groups').update({ display_order: prevOrder }).eq('id', group.id)
-      await supabase.from('groups').update({ display_order: currentOrder }).eq('id', prevGroup.id)
-
       // Update in IndexedDB
       await db.groups.update(group.id, { display_order: prevOrder })
       await db.groups.update(prevGroup.id, { display_order: currentOrder })
@@ -729,10 +658,6 @@ export function GroupsManagementPage() {
     const nextOrder = nextGroup.display_order || currentIndex + 2
 
     try {
-      // Update in Supabase
-      await supabase.from('groups').update({ display_order: nextOrder }).eq('id', group.id)
-      await supabase.from('groups').update({ display_order: currentOrder }).eq('id', nextGroup.id)
-
       // Update in IndexedDB
       await db.groups.update(group.id, { display_order: nextOrder })
       await db.groups.update(nextGroup.id, { display_order: currentOrder })

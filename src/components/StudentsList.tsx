@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { db } from '../lib/db'
 import { Student, SpecialStatus, SchoolInfo } from '../types'
 import { Trash2, Edit2, MoreVertical, Printer, DoorOpen } from 'lucide-react'
 import { AllowClassEntryModal } from './AllowClassEntryModal'
@@ -36,13 +36,8 @@ export function StudentsList({
   }, [])
 
   const fetchSchoolInfo = async () => {
-    const { data } = await supabase
-      .from('school_info')
-      .select('*')
-      .limit(1)
-      .maybeSingle()
-
-    if (data) setSchoolInfo(data)
+    const data = await db.school_info.toArray()
+    if (data && data.length > 0) setSchoolInfo(data[0])
   }
 
 
@@ -51,12 +46,7 @@ export function StudentsList({
 
     setLoadingDelete(studentId)
     try {
-      const { error } = await supabase
-        .from('students')
-        .delete()
-        .eq('id', studentId)
-
-      if (error) throw error
+      await db.students.delete(studentId)
       onStudentDeleted()
     } finally {
       setLoadingDelete(null)
@@ -72,12 +62,10 @@ export function StudentsList({
     if (!newGroupId || newGroupId === currentGroupId) return
 
     try {
-      const { error } = await supabase
-        .from('students')
-        .update({ group_id: newGroupId })
-        .eq('id', studentId)
-
-      if (error) throw error
+      await db.students.update(studentId, {
+        group_id: newGroupId,
+        updated_at: new Date().toISOString()
+      })
       onStudentDeleted()
     } finally {
       setExpandedId(null)
@@ -99,10 +87,8 @@ export function StudentsList({
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
 
     // Fetch teacher name and school name
-    const { data: teacherProfile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    const teacherProfile = userId ? await db.teacher_profile.where('id').equals(userId).first() : null
 
     const teacherName = teacherProfile?.name || ''
     const schoolName = teacherProfile?.school_name || schoolInfo?.school_name || 'اسم المدرسة'

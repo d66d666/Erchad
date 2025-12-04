@@ -43,11 +43,11 @@ export function AddStudentModal({
   }, [preselectedGroupId, preselectedGroup])
 
   const fetchGroupsAndStatuses = async () => {
-    const { data: groupsData } = await supabase.from('groups').select('*').order('display_order', { ascending: true })
-    const { data: statusesData } = await supabase.from('special_statuses').select('*')
+    const groupsData = await db.groups.orderBy('display_order').toArray()
+    const statusesData = await db.special_statuses.toArray()
 
-    if (groupsData) setGroups(groupsData)
-    if (statusesData) setSpecialStatuses(statusesData)
+    setGroups(groupsData)
+    setSpecialStatuses(statusesData)
   }
 
   const stages = Array.from(new Set(groups.map(g => g.stage)))
@@ -98,11 +98,13 @@ export function AddStudentModal({
         special_status_id: formData.special_status_id || null,
       }
 
-      const { error: insertError } = await supabase
-        .from('students')
-        .insert(data)
-
-      if (insertError) throw insertError
+      const newId = crypto.randomUUID()
+      await db.students.add({
+        id: newId,
+        ...data,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
 
       alert('تم إضافة الطالب بنجاح')
       onClose()

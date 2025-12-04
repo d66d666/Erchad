@@ -53,10 +53,10 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   }, [violationSearchTerm])
 
   async function fetchTeacherProfile() {
-    const { data: profile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
+
+    const profile = await db.teacher_profile.where('id').equals(userId).first()
 
     if (profile?.name) {
       setTeacherName(profile.name)
@@ -74,18 +74,11 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 
   async function fetchStudents() {
     try {
-      const { data: studentsData } = await supabase
-        .from('students')
-        .select('*')
-        .order('name')
+      const allStudents = await db.students.toArray()
+      const groups = await db.groups.toArray()
+      const statuses = await db.special_statuses.toArray()
 
-      const { data: groupsData } = await supabase.from('groups').select('*')
-      const { data: statusesData } = await supabase.from('special_statuses').select('*')
-
-      const groups = groupsData || []
-      const statuses = statusesData || []
-
-      const studentsWithRelations = (studentsData || []).map(student => {
+      const studentsWithRelations = allStudents.map(student => {
         const group = groups.find(g => g.id === student.group_id)
         const special_status = statuses.find(s => s.id === student.special_status_id)
         return {
@@ -96,10 +89,6 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       })
 
       setStudents(studentsWithRelations as Student[])
-
-      if (studentsData) await db.students.bulkPut(studentsData)
-      if (groups.length > 0) await db.groups.bulkPut(groups)
-      if (statuses.length > 0) await db.special_statuses.bulkPut(statuses)
     } catch (error) {
       console.error('Error fetching students:', error)
     }
@@ -107,24 +96,22 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 
   async function fetchViolations(filterDate?: string, searchQuery?: string) {
     try {
-      let query = supabase
-        .from('student_violations')
-        .select('*')
-        .order('violation_date', { ascending: false })
+      let violationsData = await db.student_violations.orderBy('violation_date').reverse().toArray()
 
-      // إذا كان هناك بحث، لا تطبق فلتر التاريخ
+      // تطبيق الفلاتر
       if (searchQuery && searchQuery.trim() !== '') {
         // لا تحديد بالتاريخ، جلب كل المخالفات للبحث
-        query = query.limit(200)
+        violationsData = violationsData.slice(0, 200)
       } else if (filterDate) {
         const startOfDay = new Date(filterDate)
         startOfDay.setHours(0, 0, 0, 0)
         const endOfDay = new Date(filterDate)
         endOfDay.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('violation_date', startOfDay.toISOString())
-          .lte('violation_date', endOfDay.toISOString())
+        violationsData = violationsData.filter(v => {
+          const violationDate = new Date(v.violation_date)
+          return violationDate >= startOfDay && violationDate <= endOfDay
+        })
       } else {
         // عرض مخالفات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
@@ -132,20 +119,16 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
         const endOfToday = new Date()
         endOfToday.setHours(23, 59, 59, 999)
 
-        query = query
-          .gte('violation_date', today.toISOString())
-          .lte('violation_date', endOfToday.toISOString())
+        violationsData = violationsData.filter(v => {
+          const violationDate = new Date(v.violation_date)
+          return violationDate >= today && violationDate <= endOfToday
+        })
       }
 
-      const { data: violationsData } = await query
-      const { data: studentsData } = await supabase.from('students').select('*')
+      const allStudents = await db.students.toArray()
+      const groups = await db.groups.toArray()
 
-      const allStudents = studentsData || []
-
-      const { data: groupsData } = await supabase.from('groups').select('*')
-      const groups = groupsData || []
-
-      const violationsWithStudents = (violationsData || []).map((violation) => {
+      const violationsWithStudents = violationsData.map((violation) => {
         const student = allStudents.find(s => s.id === violation.student_id)
         const group = student ? groups.find(g => g.id === student.group_id) : undefined
         return {
@@ -162,19 +145,6 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       })
 
       setViolations(violationsWithStudents)
-
-      if (violationsData) {
-        await db.student_violations.bulkPut(violationsData.map(v => ({
-          id: v.id,
-          student_id: v.student_id,
-          violation_type: v.violation_type,
-          violation_date: v.violation_date,
-          description: v.description,
-          action_taken: v.action_taken,
-          notes: v.notes || '',
-          created_at: v.created_at
-        })))
-      }
     } catch (error) {
       console.error('Error fetching violations:', error)
     }
@@ -189,40 +159,17 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       const violationDate = new Date().toISOString()
       const currentCount = selectedStudent.violation_count || 0
 
-      const { data: violationData, error: violationError } = await supabase
-        .from('student_violations')
-        .insert({
-          student_id: selectedStudent.id,
-          violation_type: formData.violation_type,
-          violation_date: violationDate,
-          description: formData.description,
-          action_taken: formData.action_taken,
-          notes: formData.notes
-        })
-        .select()
-        .single()
-
-      if (violationError) throw violationError
-
-      const { error: updateError } = await supabase
-        .from('students')
-        .update({ violation_count: currentCount + 1 })
-        .eq('id', selectedStudent.id)
-
-      if (updateError) throw updateError
-
-      if (violationData) {
-        await db.student_violations.add({
-          id: violationData.id,
-          student_id: violationData.student_id,
-          violation_type: violationData.violation_type,
-          violation_date: violationData.violation_date,
-          description: violationData.description,
-          action_taken: violationData.action_taken,
-          notes: violationData.notes || '',
-          created_at: violationData.created_at
-        })
-      }
+      const violationId = crypto.randomUUID()
+      await db.student_violations.add({
+        id: violationId,
+        student_id: selectedStudent.id,
+        violation_type: formData.violation_type,
+        violation_date: violationDate,
+        description: formData.description,
+        action_taken: formData.action_taken,
+        notes: formData.notes || '',
+        created_at: new Date().toISOString()
+      })
 
       await db.students.update(selectedStudent.id, {
         violation_count: currentCount + 1
@@ -280,26 +227,14 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     if (!confirm('هل أنت متأكد من حذف هذه المخالفة؟')) return
 
     try {
-      const { error } = await supabase
-        .from('student_violations')
-        .delete()
-        .eq('id', violationId)
-
-      if (error) throw error
+      await db.student_violations.delete(violationId)
 
       const student = students.find(s => s.id === studentId)
       if (student && student.violation_count > 0) {
-        await supabase
-          .from('students')
-          .update({ violation_count: student.violation_count - 1 })
-          .eq('id', studentId)
-
         await db.students.update(studentId, {
           violation_count: student.violation_count - 1
         })
       }
-
-      await db.student_violations.delete(violationId)
 
       alert('تم حذف المخالفة بنجاح')
       fetchStudents()

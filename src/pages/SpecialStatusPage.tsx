@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Student, Group, SpecialStatus } from '../types'
 import { Star, Printer, FileText, Send, Filter } from 'lucide-react'
 import { SendToTeacherModal } from '../components/SendToTeacherModal'
+import { db } from '../lib/db'
 
 export function SpecialStatusPage({
   students,
@@ -18,19 +19,8 @@ export function SpecialStatusPage({
   const [selectedStatusId, setSelectedStatusId] = useState<string>('all')
 
   useEffect(() => {
-    fetchLabContact()
+    // لا حاجة لجلب البيانات من Supabase
   }, [])
-
-  const fetchLabContact = async () => {
-    const { data } = await supabase
-      .from('lab_contact')
-      .select('*')
-      .maybeSingle()
-
-    if (data) {
-      setLabPhone(data.phone || '')
-    }
-  }
 
   const studentsWithSpecialStatus = students.filter(
     (s) => s.special_status_id !== null &&
@@ -61,10 +51,8 @@ export function SpecialStatusPage({
   const stages = Object.keys(groupedByStage).sort()
 
   const handlePrintAll = async () => {
-    const { data: teacherProfile } = await supabase
-      .from('teacher_profile')
-      .select('*')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    const teacherProfile = userId ? await db.teacher_profile.where('id').equals(userId).first() : null
 
     const teacherName = teacherProfile?.name || ''
     const schoolName = teacherProfile?.school_name || ''

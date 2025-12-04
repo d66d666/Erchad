@@ -164,6 +164,12 @@ function App() {
         return
       }
 
+      // حساب المطور ليس له حد زمني
+      if (userId === 'master-admin') {
+        setIsSubscriptionExpired(false)
+        return
+      }
+
       const credentials = await db.login_credentials.get(userId)
       if (credentials && credentials.username === 'admin') {
         setIsSubscriptionExpired(false)
@@ -428,6 +434,7 @@ function App() {
 
     setIsLoggedIn(true)
     setIsMasterAdmin(isMaster)
+    checkSubscription()
     fetchData()
     fetchTodayStats()
     fetchTeachersCount()

@@ -1049,8 +1049,8 @@ export function GroupsManagementPage() {
 
       {showAddStudentModal && (
         <AddStudentModal
-          onClose={() => {
-            setShowAddStudentModal(false)
+          onClose={() => setShowAddStudentModal(false)}
+          onStudentAdded={() => {
             fetchStudents()
             fetchStudentCounts()
           }}

@@ -70,12 +70,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   async function fetchStudents() {
     try {
       const allStudents = await db.students.toArray()
-      console.log('=== صفحة الاستئذان - جلب الطلاب ===')
-      console.log('عدد الطلاب الكلي:', allStudents.length)
-      console.log('أسماء جميع الطلاب:', allStudents.map(s => `${s.name} (${s.status})`))
-
       const activeStudents = allStudents.filter(s => s.status === 'نشط')
-      console.log('عدد الطلاب النشطين:', activeStudents.length)
 
       const groups = await db.groups.toArray()
       const statuses = await db.special_statuses.toArray()
@@ -423,24 +418,11 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
     const phone = (s.phone || '').trim()
     const guardianPhone = (s.guardian_phone || '').trim()
 
-    const matches = name.includes(search) ||
+    return name.includes(search) ||
            nationalId.includes(search) ||
            phone.includes(search) ||
            guardianPhone.includes(search)
-
-    if (search && search.length > 0) {
-      console.log(`البحث عن: "${search}" | الطالب: "${name}" | مطابق: ${matches}`)
-    }
-
-    return matches
   })
-
-  if (searchTerm && searchTerm.trim().length > 0) {
-    console.log('=== نتائج البحث ===')
-    console.log('كلمة البحث:', searchTerm)
-    console.log('عدد النتائج:', filteredStudents.length)
-    console.log('عدد الطلاب المتاحين:', students.length)
-  }
 
   return (
     <div className="space-y-6">

@@ -2149,8 +2149,6 @@ function App() {
 
       {showAddStudentModal && (
         <AddStudentModal
-          groups={groups}
-          specialStatuses={specialStatuses}
           onClose={() => setShowAddStudentModal(false)}
           onStudentAdded={fetchData}
         />

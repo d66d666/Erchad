@@ -6,11 +6,13 @@ import { db } from '../lib/db'
 interface AddStudentModalProps {
   onClose: () => void
   preselectedGroupId?: string
+  onStudentAdded?: () => void
 }
 
 export function AddStudentModal({
   onClose,
   preselectedGroupId,
+  onStudentAdded,
 }: AddStudentModalProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -108,6 +110,12 @@ export function AddStudentModal({
       })
 
       alert('تم إضافة الطالب بنجاح')
+
+      // تحديث البيانات في الصفحة الرئيسية
+      if (onStudentAdded) {
+        onStudentAdded()
+      }
+
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ ما')

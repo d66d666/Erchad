@@ -159,6 +159,9 @@ export function validateLicenseKey(licenseKey: string, schoolId: string): Parsed
   const now = new Date();
   const endDate = new Date(licenseData.endDate);
 
+  now.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+
   if (endDate < now) {
     return {
       ...licenseData,
@@ -179,8 +182,13 @@ export function validateLicenseKey(licenseKey: string, schoolId: string): Parsed
  */
 export function isSubscriptionActive(endDate: string): boolean {
   if (!endDate) return false;
+
   const now = new Date();
   const expiry = new Date(endDate);
+
+  now.setHours(0, 0, 0, 0);
+  expiry.setHours(0, 0, 0, 0);
+
   return expiry >= now;
 }
 
@@ -189,8 +197,13 @@ export function isSubscriptionActive(endDate: string): boolean {
  */
 export function getDaysRemaining(endDate: string): number {
   if (!endDate) return 0;
+
   const now = new Date();
   const expiry = new Date(endDate);
+
+  now.setHours(0, 0, 0, 0);
+  expiry.setHours(0, 0, 0, 0);
+
   const diffTime = expiry.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);

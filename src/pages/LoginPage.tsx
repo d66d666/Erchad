@@ -93,11 +93,21 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
+      // تنظيف اسم المستخدم
+      const cleanUsername = username.trim()
+
+      // منع حساب المطور من استخدام استعادة كلمة المرور
+      if (cleanUsername === 'Wael') {
+        setError('⚠️ حساب المطور لا يمكن استعادة كلمة المرور له\n\nإذا نسيت كلمة المرور، تواصل مع الدعم الفني')
+        setLoading(false)
+        return
+      }
+
       const token = Math.random().toString(36).substring(2, 10).toUpperCase()
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 1)
 
-      const credentials = await db.login_credentials.where('username').equals(username).first()
+      const credentials = await db.login_credentials.where('username').equals(cleanUsername).first()
 
       if (!credentials || !credentials.id) {
         setError('اسم المستخدم غير موجود')
@@ -127,9 +137,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true)
 
     try {
+      // تنظيف المدخلات
+      const cleanUsername = username.trim()
+      const cleanResetToken = resetToken.trim()
+
       const credentials = await db.login_credentials
-        .where('username').equals(username)
-        .and(cred => cred.reset_token === resetToken)
+        .where('username').equals(cleanUsername)
+        .and(cred => cred.reset_token === cleanResetToken)
         .first()
 
       if (!credentials) {
@@ -145,9 +159,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         }
       }
 
+      if (!newPassword || newPassword.trim().length < 4) {
+        setError('كلمة المرور يجب أن تكون 4 أحرف على الأقل')
+        return
+      }
+
       if (credentials.id) {
         await db.login_credentials.update(credentials.id, {
-          password_hash: newPassword,
+          password_hash: newPassword.trim(),
           reset_token: null,
           reset_token_expires: null,
           updated_at: new Date().toISOString()

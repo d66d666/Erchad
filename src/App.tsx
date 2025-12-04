@@ -158,13 +158,23 @@ function App() {
 
   const checkSubscription = async () => {
     try {
-      const profile = await db.teacher_profile.toCollection().first()
-      const schoolIdValue = profile?.school_name || 'SCHOOL_DEFAULT'
-      setSchoolId(schoolIdValue)
+      const userId = localStorage.getItem('userId')
+      if (!userId) {
+        setIsSubscriptionExpired(true)
+        return
+      }
+
+      const credentials = await db.login_credentials.get(userId)
+      if (credentials && credentials.username === 'admin') {
+        setIsSubscriptionExpired(false)
+        return
+      }
+
+      setSchoolId(userId)
 
       const subscription = await db.subscription
         .where('school_id')
-        .equals(schoolIdValue)
+        .equals(userId)
         .first()
 
       if (!subscription) {

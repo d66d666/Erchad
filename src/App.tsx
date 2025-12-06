@@ -2946,7 +2946,7 @@ function App() {
                   </p>
                   {teacherName && (
                     <p className="text-sm text-gray-500 text-center mt-1">
-                      المرشد: {teacherName}
+                      {teacherName}
                     </p>
                   )}
                 </div>

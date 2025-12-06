@@ -463,10 +463,10 @@ export function AccountsManagementPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">إضافة حساب جديد</h2>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">إضافة حساب جديد</h2>
 
-            <form onSubmit={handleAddAccount} className="space-y-5">
+            <form onSubmit={handleAddAccount} className="space-y-4">
               <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-3 mb-4 flex items-start gap-2">
                 <AlertCircle className="text-purple-600 flex-shrink-0 mt-0.5" size={18} />
                 <div className="text-sm text-purple-800">
@@ -475,40 +475,40 @@ export function AccountsManagementPage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة (للمرجعية فقط)</h3>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3">
+                <h3 className="text-base font-bold text-blue-900 mb-2">معلومات المدرسة (للمرجعية فقط)</h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       اسم المدرسة
                     </label>
                     <input
                       type="text"
                       value={formData.schoolName}
                       onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       اسم المعلم المسؤول
                     </label>
                     <input
                       type="text"
                       value={formData.teacherName}
                       onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل اسم المعلم المسؤول"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       رقم الجوال
                     </label>
                     <input
@@ -516,7 +516,7 @@ export function AccountsManagementPage() {
                       maxLength={10}
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="05xxxxxxxx"
                       required
                     />
@@ -524,46 +524,46 @@ export function AccountsManagementPage() {
                 </div>
               </div>
 
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-green-900 mb-3">معلومات الدخول</h3>
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3">
+                <h3 className="text-base font-bold text-green-900 mb-2">معلومات الدخول</h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       اسم المستخدم
                     </label>
                     <input
                       type="text"
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل اسم المستخدم"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       كلمة المرور
                     </label>
                     <input
                       type="text"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل كلمة المرور"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
                       مدة الاشتراك
                     </label>
                     <select
                       value={formData.expiryMonths}
                       onChange={(e) => setFormData({ ...formData, expiryMonths: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="1">شهر واحد</option>
                       <option value="2">شهرين</option>
@@ -580,20 +580,20 @@ export function AccountsManagementPage() {
                 <p className="text-lg font-bold">{new Date(calculateExpiryDate(parseInt(formData.expiryMonths))).toLocaleDateString('ar-SA')}</p>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddModal(false)
                     setFormData({ username: '', password: '', schoolName: '', teacherName: '', phone: '', expiryMonths: '1' })
                   }}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 rounded-lg transition-all"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-2.5 rounded-lg transition-all shadow-lg"
                 >
                   إضافة الحساب
                 </button>
@@ -605,7 +605,7 @@ export function AccountsManagementPage() {
 
       {showConfigModal && selectedAccount && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">تكوين الحساب</h2>
               <button
@@ -730,7 +730,7 @@ export function AccountsManagementPage() {
 
       {showRenewalModal && selectedAccount && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="bg-purple-100 p-3 rounded-xl">
@@ -833,13 +833,13 @@ export function AccountsManagementPage() {
 
       {showEditModal && selectedAccount && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-3 rounded-xl">
-                  <Edit2 className="text-blue-600" size={24} />
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <Edit2 className="text-blue-600" size={20} />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">تعديل الحساب</h2>
+                <h2 className="text-xl font-bold text-gray-800">تعديل الحساب</h2>
               </div>
               <button
                 onClick={() => {
@@ -848,45 +848,45 @@ export function AccountsManagementPage() {
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateAccount} className="space-y-5">
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة</h3>
+            <form onSubmit={handleUpdateAccount} className="space-y-4">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3">
+                <h3 className="text-base font-bold text-blue-900 mb-2">معلومات المدرسة</h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       اسم المدرسة
                     </label>
                     <input
                       type="text"
                       value={editFormData.schoolName}
                       onChange={(e) => setEditFormData({ ...editFormData, schoolName: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       اسم المعلم المسؤول
                     </label>
                     <input
                       type="text"
                       value={editFormData.teacherName}
                       onChange={(e) => setEditFormData({ ...editFormData, teacherName: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="أدخل اسم المعلم المسؤول"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       رقم الجوال
                     </label>
                     <input
@@ -894,7 +894,7 @@ export function AccountsManagementPage() {
                       maxLength={10}
                       value={editFormData.phone}
                       onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="05xxxxxxxx"
                       required
                     />
@@ -902,33 +902,33 @@ export function AccountsManagementPage() {
                 </div>
               </div>
 
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-green-900 mb-3">معلومات الدخول</h3>
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3">
+                <h3 className="text-base font-bold text-green-900 mb-2">معلومات الدخول</h3>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       اسم المستخدم
                     </label>
                     <input
                       type="text"
                       value={editFormData.username}
                       onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="أدخل اسم المستخدم"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       كلمة المرور
                     </label>
                     <input
                       type="text"
                       value={editFormData.password}
                       onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="أدخل كلمة المرور"
                       required
                     />
@@ -936,32 +936,32 @@ export function AccountsManagementPage() {
                 </div>
               </div>
 
-              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-purple-900 mb-3">فترة الاشتراك</h3>
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-3">
+                <h3 className="text-base font-bold text-purple-900 mb-2">فترة الاشتراك</h3>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       تاريخ بداية الاشتراك
                     </label>
                     <input
                       type="date"
                       value={editFormData.startDate}
                       onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                    <label className="block text-sm font-bold text-gray-700 mb-1 text-right">
                       تاريخ نهاية الاشتراك
                     </label>
                     <input
                       type="date"
                       value={editFormData.endDate}
                       onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
                       required
                     />
                   </div>
@@ -987,22 +987,22 @@ export function AccountsManagementPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowEditModal(false)
                     setSelectedAccount(null)
                   }}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 rounded-lg transition-all"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-2.5 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
                 >
-                  <Save size={20} />
+                  <Save size={18} />
                   حفظ التعديلات
                 </button>
               </div>

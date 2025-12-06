@@ -10,7 +10,7 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 600,
-    icon: path.join(__dirname, '../public/favicon.svg'),
+    icon: path.join(__dirname, '../public/icon.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

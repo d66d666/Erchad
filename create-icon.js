@@ -1,0 +1,42 @@
+const fs = require('fs');
+
+// إنشاء SVG أيقونة جميلة لنظام إدارة الطلاب
+const svg = `
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- خلفية مع حواف دائرية -->
+  <rect width="512" height="512" rx="100" fill="url(#grad1)"/>
+  
+  <!-- دائرة بيضاء في المنتصف -->
+  <circle cx="256" cy="256" r="200" fill="white" opacity="0.95"/>
+  
+  <!-- شكل الكتاب -->
+  <rect x="156" y="206" width="200" height="160" rx="8" fill="url(#grad2)"/>
+  <rect x="156" y="206" width="20" height="160" fill="#0891b2"/>
+  
+  <!-- خطوط الصفحات -->
+  <line x1="196" y1="236" x2="326" y2="236" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+  <line x1="196" y1="266" x2="326" y2="266" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+  <line x1="196" y1="296" x2="280" y2="296" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+  
+  <!-- نجمة التميز -->
+  <polygon points="256,150 270,178 300,182 278,203 284,233 256,218 228,233 234,203 212,182 242,178" 
+           fill="#fbbf24" stroke="#f59e0b" stroke-width="3"/>
+  
+  <!-- ظل خفيف -->
+  <ellipse cx="256" cy="410" rx="180" ry="20" fill="black" opacity="0.1"/>
+</svg>
+`;
+
+fs.writeFileSync('/tmp/cc-agent/59557747/project/public/icon.svg', svg);
+console.log('SVG icon created successfully!');

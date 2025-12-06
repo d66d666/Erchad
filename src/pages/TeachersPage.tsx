@@ -324,7 +324,12 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
 
     try {
       if (teacher) {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         console.log('💾 تحديث معلم:', teacher.id)
+        console.log('📝 الاسم:', name.trim())
+        console.log('📱 الجوال:', phone.trim())
+        console.log('📚 عدد المجموعات المختارة:', selectedGroupIds.length)
+
         await db.teachers.update(teacher.id, {
           name: name.trim(),
           phone: phone.trim(),
@@ -332,7 +337,8 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
         })
 
         console.log('🗑️ حذف المجموعات القديمة للمعلم')
-        await db.teacher_groups.where('teacher_id').equals(teacher.id).delete()
+        const deletedCount = await db.teacher_groups.where('teacher_id').equals(teacher.id).delete()
+        console.log(`✓ تم حذف ${deletedCount} رابط قديم`)
 
         if (selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
@@ -342,15 +348,34 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             created_at: new Date().toISOString()
           }))
 
-          console.log('➕ إضافة مجموعات جديدة:', teacherGroupsData)
+          console.log('➕ إضافة مجموعات جديدة:', teacherGroupsData.length, 'مجموعة')
+          teacherGroupsData.forEach((tg, i) => {
+            const group = groups.find(g => g.id === tg.group_id)
+            console.log(`  ${i + 1}. ${group?.name || 'غير معروف'} (ID: ${tg.group_id})`)
+          })
+
           await db.teacher_groups.bulkAdd(teacherGroupsData)
 
           const verified = await db.teacher_groups.where('teacher_id').equals(teacher.id).toArray()
-          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified)
+          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified.length, 'مجموعة')
+
+          if (verified.length !== selectedGroupIds.length) {
+            console.error('⚠️ تحذير: عدد المجموعات المحفوظة لا يطابق المتوقع!')
+            console.error(`المتوقع: ${selectedGroupIds.length}, المحفوظ: ${verified.length}`)
+          } else {
+            console.log('✓ جميع المجموعات تم حفظها بنجاح')
+          }
+        } else {
+          console.log('ℹ️ لم يتم اختيار أي مجموعات - سيتم حذف جميع الروابط')
         }
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       } else {
         const newTeacherId = crypto.randomUUID()
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         console.log('💾 إضافة معلم جديد:', newTeacherId)
+        console.log('📝 الاسم:', name.trim())
+        console.log('📱 الجوال:', phone.trim())
+        console.log('📚 عدد المجموعات المختارة:', selectedGroupIds.length)
 
         await db.teachers.add({
           id: newTeacherId,
@@ -359,6 +384,7 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
           specialization: specialization.trim() || undefined,
           created_at: new Date().toISOString()
         })
+        console.log('✓ تم إضافة المعلم بنجاح')
 
         if (selectedGroupIds.length > 0) {
           const teacherGroupsData = selectedGroupIds.map(groupId => ({
@@ -368,12 +394,27 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             created_at: new Date().toISOString()
           }))
 
-          console.log('➕ إضافة مجموعات للمعلم الجديد:', teacherGroupsData)
+          console.log('➕ إضافة مجموعات للمعلم الجديد:', teacherGroupsData.length, 'مجموعة')
+          teacherGroupsData.forEach((tg, i) => {
+            const group = groups.find(g => g.id === tg.group_id)
+            console.log(`  ${i + 1}. ${group?.name || 'غير معروف'} (ID: ${tg.group_id})`)
+          })
+
           await db.teacher_groups.bulkAdd(teacherGroupsData)
 
           const verified = await db.teacher_groups.where('teacher_id').equals(newTeacherId).toArray()
-          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified)
+          console.log('✅ تم التحقق - المجموعات المحفوظة:', verified.length, 'مجموعة')
+
+          if (verified.length !== selectedGroupIds.length) {
+            console.error('⚠️ تحذير: عدد المجموعات المحفوظة لا يطابق المتوقع!')
+            console.error(`المتوقع: ${selectedGroupIds.length}, المحفوظ: ${verified.length}`)
+          } else {
+            console.log('✓ جميع المجموعات تم حفظها بنجاح')
+          }
+        } else {
+          console.log('ℹ️ لم يتم اختيار أي مجموعات')
         }
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       }
 
       onSave()

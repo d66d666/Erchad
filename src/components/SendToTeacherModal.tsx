@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Send } from 'lucide-react'
+import { X, Send, RefreshCw } from 'lucide-react'
 import { Teacher, Group, Student, SpecialStatus } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { db } from '../lib/db'
@@ -66,9 +66,11 @@ export function SendToTeacherModal({
   }
 
   const fetchTeacherGroups = async () => {
-    const data = await db.teacher_groups.orderBy('created_at').toArray()
+    const data = await db.teacher_groups.toArray()
     console.log('🔍 جلب روابط المعلمين والمجموعات:', data)
+    console.log('📊 إجمالي الروابط:', data.length)
     setTeacherGroups(data)
+    return data
   }
 
   const fetchSystemAdminName = async () => {
@@ -81,22 +83,41 @@ export function SendToTeacherModal({
 
   useEffect(() => {
     if (selectedTeacherId && !dataLoading) {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       console.log('🔍 تحليل مراحل المعلم:')
       console.log('- ID المعلم:', selectedTeacherId)
-      console.log('- عدد المجموعات:', allGroups.length)
-      console.log('- عدد الروابط:', teacherGroups.length)
+      console.log('- إجمالي المجموعات المتاحة:', allGroups.length)
+      console.log('- إجمالي روابط المعلمين:', teacherGroups.length)
+
+      // طباعة جميع الروابط
+      console.log('- كل الروابط في قاعدة البيانات:')
+      teacherGroups.forEach(tg => {
+        console.log(`  * معلم ${tg.teacher_id} -> مجموعة ${tg.group_id}`)
+      })
 
       const teacherGroupIds = teacherGroups
-        .filter(tg => tg.teacher_id === selectedTeacherId)
+        .filter(tg => {
+          const matches = tg.teacher_id === selectedTeacherId
+          console.log(`  - فحص رابط: teacher_id=${tg.teacher_id}, يطابق=${matches}`)
+          return matches
+        })
         .map(tg => tg.group_id)
 
-      console.log('- معرفات مجموعات المعلم:', teacherGroupIds)
+      console.log('✅ معرفات مجموعات هذا المعلم:', teacherGroupIds)
+      console.log('📝 عدد المجموعات:', teacherGroupIds.length)
 
-      const teacherAssignedGroups = allGroups.filter(g => teacherGroupIds.includes(g.id))
-      console.log('- المجموعات المسندة:', teacherAssignedGroups)
+      const teacherAssignedGroups = allGroups.filter(g => {
+        const included = teacherGroupIds.includes(g.id)
+        if (included) {
+          console.log(`  ✓ مجموعة مطابقة: ${g.name} (${g.stage})`)
+        }
+        return included
+      })
+      console.log('📚 المجموعات المسندة:', teacherAssignedGroups.length, 'مجموعة')
 
       const teacherStages = [...new Set(teacherAssignedGroups.map(g => g.stage))]
-      console.log('- المراحل المستخرجة:', teacherStages)
+      console.log('🎓 المراحل المستخرجة:', teacherStages)
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
       setStages(teacherStages)
       setSelectedStage('')
@@ -257,12 +278,23 @@ export function SendToTeacherModal({
             <Send className="text-green-600" size={24} />
             <h2 className="text-2xl font-bold text-gray-900">إرسال للمعلم</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadAllData}
+              disabled={dataLoading}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              title="إعادة تحميل البيانات"
+            >
+              <RefreshCw size={16} className={dataLoading ? 'animate-spin' : ''} />
+              <span>تحديث</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">
@@ -322,11 +354,27 @@ export function SendToTeacherModal({
                 <p className="text-sm text-blue-700">جاري تحميل البيانات...</p>
               </div>
             ) : stages.length === 0 ? (
-              <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3">
-                <p className="text-sm text-yellow-800 font-semibold mb-1">⚠️ لا توجد مراحل مسندة لهذا المعلم</p>
-                <p className="text-xs text-yellow-700">
-                  يرجى الذهاب إلى صفحة "المعلمين" وتعديل بيانات المعلم لإسناد المجموعات له
-                </p>
+              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">⚠️</div>
+                  <div className="flex-1">
+                    <p className="text-sm text-yellow-900 font-bold mb-2">لا توجد مجموعات مسندة لهذا المعلم</p>
+                    <div className="text-xs text-yellow-800 space-y-2">
+                      <p>لحل هذه المشكلة:</p>
+                      <ol className="list-decimal list-inside space-y-1 mr-2">
+                        <li>اذهب إلى صفحة "المعلمين"</li>
+                        <li>اضغط على "تعديل" بجانب اسم المعلم</li>
+                        <li>اختر المراحل والمجموعات التي يدرسها</li>
+                        <li>احفظ التعديلات</li>
+                        <li>ارجع هنا واضغط زر "تحديث" أعلاه</li>
+                      </ol>
+                      <div className="mt-3 pt-2 border-t border-yellow-300">
+                        <p className="font-semibold">💡 نصيحة:</p>
+                        <p>تأكد من حفظ التعديلات في صفحة المعلمين قبل الرجوع</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <select

@@ -3,6 +3,7 @@ import { db } from '../lib/db'
 import { X, Send, DoorOpen } from 'lucide-react'
 import { Teacher, Student } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { openWhatsApp } from '../lib/openWhatsApp'
 
 interface AllowClassEntryModalProps {
   isOpen: boolean
@@ -29,20 +30,15 @@ export function AllowClassEntryModal({
   }, [isOpen])
 
   const fetchTeachers = async () => {
-    const { data } = await supabase
-      .from('teachers')
-      .select('*')
-      .order('name')
-
-    if (data) setTeachers(data)
+    const data = await db.teachers.orderBy('name').toArray()
+    setTeachers(data)
   }
 
   const fetchCounselorInfo = async () => {
-    const { data } = await supabase
-      .from('teacher_profile')
-      .select('name, school_name')
-      .maybeSingle()
+    const userId = localStorage.getItem('userId')
+    if (!userId) return
 
+    const data = await db.teacher_profile.where('id').equals(userId).first()
     if (data) {
       setCounselorName(data.name || '')
       setSchoolName(data.school_name || '')
@@ -79,11 +75,8 @@ export function AllowClassEntryModal({
       message += `المرسل: ${counselorName || 'الأستاذ'}`
 
       // فتح واتساب
-      const encodedMessage = encodeURIComponent(message)
       const phoneNumber = formatPhoneForWhatsApp(teacher.phone)
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`
-
-      window.open(whatsappUrl, '_blank')
+      openWhatsApp(phoneNumber, message)
 
       onClose()
     } catch (error) {

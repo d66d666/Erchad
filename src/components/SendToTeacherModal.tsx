@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Send, RefreshCw } from 'lucide-react'
 import { Teacher, Group, Student, SpecialStatus } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { openWhatsApp } from '../lib/openWhatsApp'
 import { db } from '../lib/db'
 
 interface SendToTeacherModalProps {
@@ -248,11 +249,8 @@ export function SendToTeacherModal({
       message += `\n${systemAdminName || 'مسؤول النظام'}`
 
       // فتح واتساب
-      const encodedMessage = encodeURIComponent(message)
       const phoneNumber = formatPhoneForWhatsApp(teacher.phone)
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`
-
-      window.open(whatsappUrl, '_blank')
+      openWhatsApp(phoneNumber, message)
 
       onClose()
     } catch (error) {

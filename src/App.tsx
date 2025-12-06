@@ -13,6 +13,7 @@ import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
+import { openWhatsApp } from './lib/openWhatsApp'
 import ActivateLicenseModal from './components/ActivateLicenseModal'
 import { isSubscriptionActive } from './lib/licenseKey'
 import {
@@ -2650,8 +2651,7 @@ function App() {
 اسم الطالب: *${allowEntryStudent.name}*
 المرسل الأستاذ: ${teacherName || 'مسؤول النظام'}`
 
-                    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-                    window.open(whatsappUrl, '_blank')
+                    openWhatsApp(phone, message)
 
                     setShowAllowEntryModal(false)
                     setAllowEntryStudent(null)

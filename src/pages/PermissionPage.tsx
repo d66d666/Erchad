@@ -3,6 +3,7 @@ import { db, StudentPermission } from '../lib/db'
 import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { openWhatsApp } from '../lib/openWhatsApp'
 import { formatBothDates } from '../lib/hijriDate'
 
 interface PermissionWithStudent extends StudentPermission {
@@ -221,8 +222,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
 مع تحيات إدارة المدرسة`
 
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
+    openWhatsApp(phone, message)
   }
 
   function sendWhatsAppForPermission(permission: PermissionWithStudent) {
@@ -256,8 +256,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
 مع تحيات إدارة المدرسة`
 
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
+    openWhatsApp(phone, message)
   }
 
   async function handleDeletePermission(permissionId: string, studentId: string) {

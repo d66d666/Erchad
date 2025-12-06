@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { db, LoginCredentials, RenewalCode } from '../lib/db'
 import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X, Download, Copy, Check, RefreshCw, Key } from 'lucide-react'
+import { openWhatsApp } from '../lib/openWhatsApp'
 
 export function AccountsManagementPage() {
   const [accounts, setAccounts] = useState<LoginCredentials[]>([])
@@ -295,10 +296,10 @@ export function AccountsManagementPage() {
     }
   }
 
-  const openWhatsApp = (phone: string, name: string) => {
+  const sendWhatsAppMessage = (phone: string, name: string) => {
     const formattedPhone = phone.startsWith('0') ? '966' + phone.substring(1) : phone
-    const message = encodeURIComponent(`السلام عليكم ${name}`)
-    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank')
+    const message = `السلام عليكم ${name}`
+    openWhatsApp(formattedPhone, message)
   }
 
   return (
@@ -370,7 +371,7 @@ export function AccountsManagementPage() {
                       <td className="px-6 py-4">
                         {account.phone ? (
                           <button
-                            onClick={() => openWhatsApp(account.phone || '', account.teacher_name || account.username)}
+                            onClick={() => sendWhatsAppMessage(account.phone || '', account.teacher_name || account.username)}
                             className="text-sm text-green-600 hover:text-green-800 font-mono hover:underline flex items-center gap-1"
                           >
                             {account.phone}

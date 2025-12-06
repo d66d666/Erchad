@@ -3,6 +3,7 @@ import { db, StudentVisit } from '../lib/db'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
+import { openWhatsApp } from '../lib/openWhatsApp'
 import { formatBothDates } from '../lib/hijriDate'
 
 interface VisitWithStudent extends StudentVisit {
@@ -370,8 +371,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
 مع تحيات إدارة المدرسة`
 
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
+    openWhatsApp(phone, message)
   }
 
   const filteredStudents = students.filter(s => {

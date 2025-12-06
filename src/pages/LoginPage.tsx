@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { db } from '../lib/db'
 import { Lock, User, Eye, EyeOff, GraduationCap, AlertCircle, Copy, Check, Key, RefreshCw } from 'lucide-react'
+import { Toast } from '../components/Toast'
 
 interface LoginPageProps {
   onLogin: () => void
@@ -22,6 +23,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [showRenewal, setShowRenewal] = useState(false)
   const [renewalCode, setRenewalCode] = useState('')
   const [renewalUsername, setRenewalUsername] = useState('')
+  const [toast, setToast] = useState<{
+    show: boolean
+    message: string
+    type: 'success' | 'error' | 'warning' | 'info'
+    title?: string
+  }>({ show: false, message: '', type: 'info' })
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', title?: string) => {
+    setToast({ show: true, message, type, title })
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,10 +50,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         localStorage.setItem('userId', 'master-admin')
         setLoading(false)
 
-        // رسالة ترحيب خاصة للمطور
-        alert('🎉 مرحباً وائل!\n\nتم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\n✨ لديك صلاحيات كاملة على النظام')
+        showToast(
+          'تم تسجيل الدخول بنجاح بحساب المطور الرئيسي\n\nلديك صلاحيات كاملة على النظام',
+          'success',
+          'مرحباً وائل! 🎉'
+        )
 
-        onLogin()
+        setTimeout(() => {
+          onLogin()
+        }, 1500)
         return
       }
 
@@ -72,7 +88,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         if (daysRemaining <= 7) {
           setTimeout(() => {
-            alert(`⚠️ تنبيه: باقي ${daysRemaining} يوم على انتهاء صلاحية الحساب`)
+            showToast(
+              `باقي ${daysRemaining} يوم على انتهاء صلاحية الحساب`,
+              'warning',
+              'تنبيه'
+            )
           }, 1500)
         }
       }
@@ -262,11 +282,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         })
       }
 
-      alert(`✅ تم تجديد الصلاحية بنجاح!\n\nتاريخ الانتهاء الجديد: ${newExpiryDate.toLocaleDateString('ar-SA')}\n\nيمكنك الآن تسجيل الدخول`)
+      showToast(
+        `تاريخ الانتهاء الجديد: ${newExpiryDate.toLocaleDateString('ar-SA')}\n\nيمكنك الآن تسجيل الدخول`,
+        'success',
+        'تم تجديد الصلاحية بنجاح!'
+      )
 
-      setShowRenewal(false)
-      setRenewalCode('')
-      setRenewalUsername('')
+      setTimeout(() => {
+        setShowRenewal(false)
+        setRenewalCode('')
+        setRenewalUsername('')
+      }, 2000)
+
       setLoading(false)
     } catch (err) {
       console.error('Renewal error:', err)
@@ -376,6 +403,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </div>
           </div>
         </div>
+
+        {toast.show && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            title={toast.title}
+            onClose={() => setToast({ ...toast, show: false })}
+          />
+        )}
       </div>
     )
   }
@@ -560,6 +596,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             )}
           </div>
         </div>
+
+        {toast.show && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            title={toast.title}
+            onClose={() => setToast({ ...toast, show: false })}
+          />
+        )}
       </div>
     )
   }
@@ -680,6 +725,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </div>
         </form>
       </div>
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          title={toast.title}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      )}
     </div>
   )
 }

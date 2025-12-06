@@ -2708,8 +2708,14 @@ function App() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">السجل المدني</label>
                   <input
                     type="text"
+                    maxLength={10}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={editingStudent.national_id}
-                    onChange={(e) => setEditingStudent({...editingStudent, national_id: e.target.value})}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '')
+                      setEditingStudent({...editingStudent, national_id: value})
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -2717,18 +2723,30 @@ function App() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">جوال الطالب</label>
                     <input
-                      type="text"
+                      type="tel"
+                      maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={editingStudent.phone}
-                      onChange={(e) => setEditingStudent({...editingStudent, phone: e.target.value})}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '')
+                        setEditingStudent({...editingStudent, phone: value})
+                      }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">جوال ولي الأمر</label>
                     <input
-                      type="text"
+                      type="tel"
+                      maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={editingStudent.guardian_phone}
-                      onChange={(e) => setEditingStudent({...editingStudent, guardian_phone: e.target.value})}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '')
+                        setEditingStudent({...editingStudent, guardian_phone: value})
+                      }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>

@@ -144,8 +144,13 @@ export function StudentForm({
               type="text"
               required
               maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.national_id}
-              onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '')
+                setFormData({ ...formData, national_id: value })
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="10 أرقام"
             />
@@ -159,8 +164,13 @@ export function StudentForm({
               type="tel"
               required
               maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '')
+                setFormData({ ...formData, phone: value })
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="05xxxxxxxx"
             />
@@ -174,8 +184,13 @@ export function StudentForm({
               type="tel"
               required
               maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.guardian_phone}
-              onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '')
+                setFormData({ ...formData, guardian_phone: value })
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="05xxxxxxxx"
             />

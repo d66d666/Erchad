@@ -168,8 +168,13 @@ export function AddStudentModal({
                 type="text"
                 required
                 maxLength={10}
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.national_id}
-                onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '')
+                  setFormData({ ...formData, national_id: value })
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                 placeholder="12564646"
               />
@@ -183,8 +188,13 @@ export function AddStudentModal({
                 <input
                   type="tel"
                   maxLength={10}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '')
+                    setFormData({ ...formData, phone: value })
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="555555465"
                 />
@@ -198,8 +208,13 @@ export function AddStudentModal({
                   type="tel"
                   required
                   maxLength={10}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={formData.guardian_phone}
-                  onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '')
+                    setFormData({ ...formData, guardian_phone: value })
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="565464644"
                 />

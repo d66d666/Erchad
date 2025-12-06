@@ -474,10 +474,10 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             <div className="flex items-start gap-3 mb-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
-                  <Lock className="text-purple-600 flex-shrink-0" size={24} />
                   <h3 className="text-xl font-bold text-purple-900">
                     تسجيل الخروج التلقائي
                   </h3>
+                  <Lock className="text-purple-600 flex-shrink-0" size={24} />
                 </div>
                 <p className="text-sm text-purple-700 mb-4 text-right">
                   حدد المدة الزمنية التي يتم بعدها تسجيل الخروج تلقائياً في حالة عدم النشاط لحماية بيانات الطلاب
@@ -509,10 +509,10 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             <div className="flex items-start gap-3 mb-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
-                  <Lock className="text-green-600 flex-shrink-0" size={24} />
                   <h3 className="text-xl font-bold text-green-900">
                     إعدادات تسجيل الدخول
                   </h3>
+                  <Lock className="text-green-600 flex-shrink-0" size={24} />
                 </div>
                 <p className="text-sm text-green-700 mb-4 text-right">
                   يمكنك تغيير اسم المستخدم وكلمة المرور من هنا
@@ -609,10 +609,10 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
             <div className="flex items-start gap-3 mb-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
-                  <AlertTriangle className="text-red-600 flex-shrink-0" size={24} />
                   <h3 className="text-xl font-bold text-red-900">
                     تصفير قاعدة البيانات
                   </h3>
+                  <AlertTriangle className="text-red-600 flex-shrink-0" size={24} />
                 </div>
                 <p className="text-sm text-red-700 mb-2 text-right">
                   تحذير: سيتم حذف جميع البيانات بشكل نهائي. هذا الإجراء لا يمكن التراجع عنه!

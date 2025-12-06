@@ -70,12 +70,11 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   async function fetchStudents() {
     try {
       const allStudents = await db.students.toArray()
-      const activeStudents = allStudents.filter(s => s.status === 'نشط')
 
       const groups = await db.groups.toArray()
       const statuses = await db.special_statuses.toArray()
 
-      const studentsWithRelations = activeStudents.map(student => {
+      const studentsWithRelations = allStudents.map(student => {
         const group = groups.find(g => g.id === student.group_id)
         const special_status = statuses.find(s => s.id === student.special_status_id)
         return {

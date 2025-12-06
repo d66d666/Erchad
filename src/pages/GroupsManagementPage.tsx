@@ -3,6 +3,7 @@ import { X, Plus, Layers, Trash2, Edit2, ChevronUp, ChevronDown, Printer, UserPl
 import { db } from '../lib/db'
 import { Group, Student, SpecialStatus } from '../types'
 import { AddStudentModal } from '../components/AddStudentModal'
+import { CustomAlert } from '../components/CustomAlert'
 
 export function GroupsManagementPage() {
   const [groups, setGroups] = useState<Group[]>([])
@@ -20,6 +21,9 @@ export function GroupsManagementPage() {
   const [showStatusDetails, setShowStatusDetails] = useState(false)
   const [showManageModal, setShowManageModal] = useState(false)
   const [showAddStudentModal, setShowAddStudentModal] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>(() => {
     const allStages = {} as Record<string, boolean>
     return allStages
@@ -568,10 +572,14 @@ export function GroupsManagementPage() {
       setNewGroupName('')
       await fetchGroups()
       await fetchStudentCounts()
-      alert('تمت إضافة المجموعة بنجاح')
+      setAlertMessage('تمت إضافة المجموعة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error adding group:', error)
-      alert('حدث خطأ أثناء إضافة المجموعة')
+      setAlertMessage('حدث خطأ أثناء إضافة المجموعة')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setLoading(false)
     }
@@ -581,7 +589,9 @@ export function GroupsManagementPage() {
     const studentCount = studentCounts[id] || 0
 
     if (studentCount > 0) {
-      alert(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentCount} طالب/طالبة`)
+      setAlertMessage(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentCount} طالب/طالبة`)
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -592,10 +602,14 @@ export function GroupsManagementPage() {
       await db.groups.delete(id)
       await fetchGroups()
       await fetchStudentCounts()
-      alert('تم حذف المجموعة بنجاح')
+      setAlertMessage('تم حذف المجموعة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error deleting group:', error)
-      alert('حدث خطأ أثناء حذف المجموعة')
+      setAlertMessage('حدث خطأ أثناء حذف المجموعة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -621,7 +635,9 @@ export function GroupsManagementPage() {
       await fetchGroups()
     } catch (error) {
       console.error('Error updating group:', error)
-      alert('حدث خطأ أثناء تحديث المجموعة')
+      setAlertMessage('حدث خطأ أثناء تحديث المجموعة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -1054,6 +1070,13 @@ export function GroupsManagementPage() {
             fetchStudents()
             fetchStudentCounts()
           }}
+        />
+      )}
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
         />
       )}
     </div>

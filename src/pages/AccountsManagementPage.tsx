@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { db, LoginCredentials, RenewalCode } from '../lib/db'
 import { UserPlus, Edit2, Trash2, Calendar, Users, AlertCircle, Save, X, Download, Copy, Check, RefreshCw, Key } from 'lucide-react'
 import { openWhatsApp } from '../lib/openWhatsApp'
+import { CustomAlert } from '../components/CustomAlert'
 
 export function AccountsManagementPage() {
   const [accounts, setAccounts] = useState<LoginCredentials[]>([])
@@ -31,6 +32,9 @@ export function AccountsManagementPage() {
     phone: '',
     expiryMonths: '1'
   })
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     loadAccounts()
@@ -82,10 +86,14 @@ export function AccountsManagementPage() {
       setFormData({ username: '', password: '', schoolName: '', teacherName: '', phone: '', expiryMonths: '1' })
       setShowAddModal(false)
       loadAccounts()
-      alert('تم إضافة الحساب بنجاح!')
+      setAlertMessage('تم إضافة الحساب بنجاح!')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error adding account:', error)
-      alert('حدث خطأ أثناء إضافة الحساب')
+      setAlertMessage('حدث خطأ أثناء إضافة الحساب')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -98,16 +106,22 @@ export function AccountsManagementPage() {
       })
       loadAccounts()
       setEditingAccount(null)
-      alert('تم تحديث الصلاحية بنجاح!')
+      setAlertMessage('تم تحديث الصلاحية بنجاح!')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error updating expiry:', error)
-      alert('حدث خطأ أثناء تحديث الصلاحية')
+      setAlertMessage('حدث خطأ أثناء تحديث الصلاحية')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
   const handleDeleteAccount = async (accountId: string, username: string) => {
     if (username === 'Wael') {
-      alert('لا يمكن حذف حساب المطور الرئيسي')
+      setAlertMessage('لا يمكن حذف حساب المطور الرئيسي')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -115,10 +129,14 @@ export function AccountsManagementPage() {
       try {
         await db.login_credentials.delete(accountId)
         loadAccounts()
-        alert('تم حذف الحساب بنجاح!')
+        setAlertMessage('تم حذف الحساب بنجاح!')
+        setAlertType('success')
+        setShowAlert(true)
       } catch (error) {
         console.error('Error deleting account:', error)
-        alert('حدث خطأ أثناء حذف الحساب')
+        setAlertMessage('حدث خطأ أثناء حذف الحساب')
+        setAlertType('error')
+        setShowAlert(true)
       }
     }
   }
@@ -219,7 +237,9 @@ export function AccountsManagementPage() {
         used_at: null
       })
 
-      alert(`✅ تم إنشاء رمز التجديد بنجاح!\n\nالرمز: ${renewalCode}\nالحساب: ${selectedAccount.username}\nالمدة: ${renewalMonths} شهر\n\nاحفظ هذا الرمز وأرسله للمستخدم`)
+      setAlertMessage(`تم إنشاء رمز التجديد بنجاح!\n\nالرمز: ${renewalCode}\nالحساب: ${selectedAccount.username}\nالمدة: ${renewalMonths} شهر\n\nاحفظ هذا الرمز وأرسله للمستخدم`)
+      setAlertType('success')
+      setShowAlert(true)
 
       setShowRenewalModal(false)
       setRenewalCode('')
@@ -227,7 +247,9 @@ export function AccountsManagementPage() {
       setSelectedAccount(null)
     } catch (error) {
       console.error('Error saving renewal code:', error)
-      alert('حدث خطأ أثناء حفظ رمز التجديد')
+      setAlertMessage('حدث خطأ أثناء حفظ رمز التجديد')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -289,10 +311,14 @@ export function AccountsManagementPage() {
       setShowEditModal(false)
       setSelectedAccount(null)
       loadAccounts()
-      alert('تم تحديث الحساب بنجاح!')
+      setAlertMessage('تم تحديث الحساب بنجاح!')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error updating account:', error)
-      alert('حدث خطأ أثناء تحديث الحساب')
+      setAlertMessage('حدث خطأ أثناء تحديث الحساب')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -1010,6 +1036,13 @@ export function AccountsManagementPage() {
             </form>
           </div>
         </div>
+      )}
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
       )}
     </div>
   )

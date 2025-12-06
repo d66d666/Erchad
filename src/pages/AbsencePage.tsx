@@ -6,6 +6,7 @@ import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
 import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
+import { CustomAlert } from '../components/CustomAlert'
 
 interface ViolationWithStudent extends StudentViolation {
   student?: {
@@ -44,6 +45,9 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [systemDescription, setSystemDescription] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     fetchStudents()
@@ -178,7 +182,9 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
         violation_count: currentCount + 1
       })
 
-      alert('تم تسجيل المخالفة بنجاح')
+      setAlertMessage('تم تسجيل المخالفة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
       setFormData({ violation_type: 'هروب من الحصة', description: '', action_taken: '', notes: '' })
       setSelectedStudent(null)
       fetchStudents()
@@ -186,20 +192,26 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving violation:', error)
-      alert('حدث خطأ أثناء الحفظ')
+      setAlertMessage('حدث خطأ أثناء الحفظ')
+      setAlertType('error')
+      setShowAlert(true)
     }
     setLoading(false)
   }
 
   function sendWhatsApp(violation: ViolationWithStudent) {
     if (!violation.student?.guardian_phone) {
-      alert('رقم جوال ولي الأمر غير مسجل')
+      setAlertMessage('رقم جوال ولي الأمر غير مسجل')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     const phone = formatPhoneForWhatsApp(violation.student.guardian_phone)
     if (!phone) {
-      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertMessage('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -238,13 +250,17 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
         })
       }
 
-      alert('تم حذف المخالفة بنجاح')
+      setAlertMessage('تم حذف المخالفة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
       fetchStudents()
       fetchViolations(dateFilter)
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting violation:', error)
-      alert('حدث خطأ أثناء الحذف')
+      setAlertMessage('حدث خطأ أثناء الحذف')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -779,6 +795,13 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
           </div>
         )}
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

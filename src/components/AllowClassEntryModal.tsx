@@ -4,6 +4,7 @@ import { X, Send, DoorOpen } from 'lucide-react'
 import { Teacher, Student } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
+import { CustomAlert } from './CustomAlert'
 
 interface AllowClassEntryModalProps {
   isOpen: boolean
@@ -21,6 +22,9 @@ export function AllowClassEntryModal({
   const [loading, setLoading] = useState(false)
   const [counselorName, setCounselorName] = useState('')
   const [schoolName, setSchoolName] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +51,9 @@ export function AllowClassEntryModal({
 
   const handleSend = async () => {
     if (!selectedTeacherId || !student) {
-      alert('الرجاء اختيار المعلم')
+      setAlertMessage('الرجاء اختيار المعلم')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -81,7 +87,9 @@ export function AllowClassEntryModal({
       onClose()
     } catch (error) {
       console.error('Error sending entry permission:', error)
-      alert('حدث خطأ أثناء الإرسال')
+      setAlertMessage('حدث خطأ أثناء الإرسال')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setLoading(false)
     }
@@ -168,6 +176,13 @@ export function AllowClassEntryModal({
           </div>
         </div>
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

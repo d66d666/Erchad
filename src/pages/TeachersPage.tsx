@@ -3,6 +3,7 @@ import { Teacher, Group, TeacherGroup } from '../types'
 import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
 import { db } from '../lib/db'
 import { arabicTextIncludes } from '../lib/normalizeArabic'
+import { CustomAlert } from '../components/CustomAlert'
 
 interface TeacherWithGroups extends Teacher {
   teacher_groups?: TeacherGroup[]
@@ -16,6 +17,9 @@ export function TeachersPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     fetchData()
@@ -60,7 +64,9 @@ export function TeachersPage() {
       await db.teacher_groups.where('teacher_id').equals(teacherId).delete()
       fetchData()
     } catch (error) {
-      alert('حدث خطأ أثناء الحذف')
+      setAlertMessage('حدث خطأ أثناء الحذف')
+      setAlertType('error')
+      setShowAlert(true)
       console.error(error)
     }
   }
@@ -239,6 +245,13 @@ export function TeachersPage() {
           onSave={fetchData}
         />
       )}
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }
@@ -312,11 +325,17 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
     }
   }
 
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!name.trim() || !phone.trim()) {
-      alert('الرجاء تعبئة جميع الحقول المطلوبة')
+      setAlertMessage('الرجاء تعبئة جميع الحقول المطلوبة')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -422,7 +441,9 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
     } catch (error: any) {
       console.error('❌ خطأ في الحفظ:', error)
       const errorMessage = error?.message || 'حدث خطأ غير معروف'
-      alert(`حدث خطأ أثناء الحفظ:\n${errorMessage}`)
+      setAlertMessage(`حدث خطأ أثناء الحفظ:\n${errorMessage}`)
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setLoading(false)
     }
@@ -561,6 +582,13 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
           </div>
         </form>
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

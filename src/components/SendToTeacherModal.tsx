@@ -4,6 +4,7 @@ import { Teacher, Group, Student, SpecialStatus } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
 import { db } from '../lib/db'
+import { CustomAlert } from './CustomAlert'
 
 interface SendToTeacherModalProps {
   isOpen: boolean
@@ -29,6 +30,9 @@ export function SendToTeacherModal({
   const [loading, setLoading] = useState(false)
   const [systemAdminName, setSystemAdminName] = useState('')
   const [dataLoading, setDataLoading] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     if (isOpen) {
@@ -156,17 +160,23 @@ export function SendToTeacherModal({
 
   const handleSend = async () => {
     if (!selectedTeacherId) {
-      alert('الرجاء اختيار المعلم')
+      setAlertMessage('الرجاء اختيار المعلم')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     if (!selectedStage) {
-      alert('الرجاء اختيار المرحلة')
+      setAlertMessage('الرجاء اختيار المرحلة')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     if (selectedGroupIds.length === 0) {
-      alert('الرجاء اختيار مجموعة واحدة على الأقل')
+      setAlertMessage('الرجاء اختيار مجموعة واحدة على الأقل')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -194,7 +204,9 @@ export function SendToTeacherModal({
       }
 
       if (filteredStudents.length === 0) {
-        alert('لا يوجد طلاب في الفئة والمجموعات المختارة')
+        setAlertMessage('لا يوجد طلاب في الفئة والمجموعات المختارة')
+        setAlertType('error')
+        setShowAlert(true)
         setLoading(false)
         return
       }
@@ -255,7 +267,9 @@ export function SendToTeacherModal({
       onClose()
     } catch (error) {
       console.error('Error sending to teacher:', error)
-      alert('حدث خطأ أثناء الإرسال')
+      setAlertMessage('حدث خطأ أثناء الإرسال')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setLoading(false)
     }
@@ -474,6 +488,13 @@ export function SendToTeacherModal({
           </div>
         </div>
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

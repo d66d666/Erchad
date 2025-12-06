@@ -12,6 +12,7 @@ import { AccountsManagementPage } from './pages/AccountsManagementPage'
 import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
+import { CustomAlert } from './components/CustomAlert'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import { openWhatsApp } from './lib/openWhatsApp'
 import { arabicTextIncludes } from './lib/normalizeArabic'
@@ -87,6 +88,9 @@ function App() {
   const [showActivateLicense, setShowActivateLicense] = useState(false)
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
   const [schoolId, setSchoolId] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   const [headerCards, setHeaderCards] = useState({
     totalStudents: true,
@@ -328,7 +332,9 @@ function App() {
       if (logoutTimer) clearTimeout(logoutTimer)
       logoutTimer = setTimeout(() => {
         handleLogout()
-        alert('تم تسجيل الخروج تلقائياً بسبب عدم النشاط')
+        setAlertMessage('تم تسجيل الخروج تلقائياً بسبب عدم النشاط')
+        setAlertType('info')
+        setShowAlert(true)
       }, timeoutMs)
     }
 
@@ -459,7 +465,9 @@ function App() {
       setNewStatusName('')
     } catch (error) {
       console.error('Error adding special status:', error)
-      alert('حدث خطأ أثناء إضافة الحالة الخاصة')
+      setAlertMessage('حدث خطأ أثناء إضافة الحالة الخاصة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -469,7 +477,9 @@ function App() {
     )
 
     if (studentsWithStatus.length > 0) {
-      alert(`لا يمكن حذف هذه الحالة لأن هناك ${studentsWithStatus.length} طالب مرتبط بها`)
+      setAlertMessage(`لا يمكن حذف هذه الحالة لأن هناك ${studentsWithStatus.length} طالب مرتبط بها`)
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -478,7 +488,9 @@ function App() {
       setSpecialStatuses(prev => prev.filter(s => s.id !== statusId))
     } catch (error) {
       console.error('Error deleting special status:', error)
-      alert('حدث خطأ أثناء حذف الحالة الخاصة')
+      setAlertMessage('حدث خطأ أثناء حذف الحالة الخاصة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -507,10 +519,14 @@ function App() {
       setGroups(prev => [...prev, newGroup])
       setNewStage('')
       setNewGroupName('')
-      alert('تمت إضافة المجموعة بنجاح')
+      setAlertMessage('تمت إضافة المجموعة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error adding group:', error)
-      alert('حدث خطأ أثناء إضافة المجموعة')
+      setAlertMessage('حدث خطأ أثناء إضافة المجموعة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -518,7 +534,9 @@ function App() {
     const studentsInGroup = students.filter((s) => s.group_id === groupId)
 
     if (studentsInGroup.length > 0) {
-      alert(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentsInGroup.length} طالب/طالبة`)
+      setAlertMessage(`لا يمكن حذف هذه المجموعة لأنها تحتوي على ${studentsInGroup.length} طالب/طالبة`)
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -527,10 +545,14 @@ function App() {
     try {
       await db.groups.delete(groupId)
       setGroups(prev => prev.filter(g => g.id !== groupId))
-      alert('تم حذف المجموعة بنجاح')
+      setAlertMessage('تم حذف المجموعة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error deleting group:', error)
-      alert('حدث خطأ أثناء حذف المجموعة')
+      setAlertMessage('حدث خطأ أثناء حذف المجموعة')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -571,10 +593,14 @@ function App() {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      alert('تم تصدير البيانات بنجاح! ✓\n\nيحتوي الملف على:\n- الطلاب والمجموعات\n- الحالات الخاصة\n- الزيارات والاستئذانات والمخالفات\n- المعلمين والمجموعات المرتبطة\n- جميع الإعدادات')
+      setAlertMessage('تم تصدير البيانات بنجاح!\n\nيحتوي الملف على:\n• الطلاب والمجموعات\n• الحالات الخاصة\n• الزيارات والاستئذانات والمخالفات\n• المعلمين والمجموعات المرتبطة\n• جميع الإعدادات')
+      setAlertType('success')
+      setShowAlert(true)
     } catch (error) {
       console.error('Error exporting data:', error)
-      alert('حدث خطأ أثناء تصدير البيانات')
+      setAlertMessage('حدث خطأ أثناء تصدير البيانات')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -584,7 +610,9 @@ function App() {
       const importedData = JSON.parse(text)
 
       if (!importedData.version || !importedData.exportDate) {
-        alert('ملف غير صالح! الرجاء اختيار ملف صحيح تم تصديره من النظام')
+        setAlertMessage('ملف غير صالح! الرجاء اختيار ملف صحيح تم تصديره من النظام')
+        setAlertType('error')
+        setShowAlert(true)
         return
       }
 
@@ -640,11 +668,15 @@ function App() {
         await db.teacher_profile.add(importedData.teacherProfile)
       }
 
-      alert('✓ تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة الآن...')
+      setAlertMessage('تم استيراد البيانات بنجاح!\n\nسيتم تحديث الصفحة الآن...')
+      setAlertType('success')
+      setShowAlert(true)
       window.location.reload()
     } catch (error) {
       console.error('Error importing data:', error)
-      alert('حدث خطأ أثناء استيراد البيانات. تأكد من أن الملف صحيح.')
+      setAlertMessage('حدث خطأ أثناء استيراد البيانات. تأكد من أن الملف صحيح.')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -1964,11 +1996,15 @@ function App() {
                                                                 try {
                                                                   await db.students.delete(student.id)
                                                                   setStudents(prev => prev.filter(s => s.id !== student.id))
-                                                                  alert('تم حذف الطالب بنجاح')
+                                                                  setAlertMessage('تم حذف الطالب بنجاح')
+                                                                  setAlertType('success')
+                                                                  setShowAlert(true)
                                                                   setStudentMenuOpen(null)
                                                                 } catch (error) {
                                                                   console.error('Error deleting student:', error)
-                                                                  alert('حدث خطأ أثناء حذف الطالب')
+                                                                  setAlertMessage('حدث خطأ أثناء حذف الطالب')
+                                                                  setAlertType('error')
+                                                                  setShowAlert(true)
                                                                 }
                                                               }
                                                             }}
@@ -2637,19 +2673,25 @@ function App() {
                 <button
                   onClick={() => {
                     if (!selectedTeacherId) {
-                      alert('الرجاء اختيار المعلم')
+                      setAlertMessage('الرجاء اختيار المعلم')
+                      setAlertType('error')
+                      setShowAlert(true)
                       return
                     }
 
                     const selectedTeacher = teachers.find(t => t.id === selectedTeacherId)
                     if (!selectedTeacher || !selectedTeacher.phone) {
-                      alert('المعلم المختار لا يحتوي على رقم جوال')
+                      setAlertMessage('المعلم المختار لا يحتوي على رقم جوال')
+                      setAlertType('error')
+                      setShowAlert(true)
                       return
                     }
 
                     const phone = formatPhoneForWhatsApp(selectedTeacher.phone)
                     if (!phone) {
-                      alert('رقم جوال المعلم غير صالح')
+                      setAlertMessage('رقم جوال المعلم غير صالح')
+                      setAlertType('error')
+                      setShowAlert(true)
                       return
                     }
 
@@ -2803,12 +2845,16 @@ function App() {
                       setStudents(prev => prev.map(s =>
                         s.id === editingStudent.id ? { ...s, ...updatedData } : s
                       ))
-                      alert('تم تحديث بيانات الطالب بنجاح')
+                      setAlertMessage('تم تحديث بيانات الطالب بنجاح')
+                      setAlertType('success')
+                      setShowAlert(true)
                       setShowEditModal(false)
                       setEditingStudent(null)
                     } catch (error) {
                       console.error('Error updating student:', error)
-                      alert('حدث خطأ أثناء التحديث')
+                      setAlertMessage('حدث خطأ أثناء التحديث')
+                      setAlertType('error')
+                      setShowAlert(true)
                     }
                   }}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors"
@@ -2951,6 +2997,15 @@ function App() {
           </a>
         </div>
       </footer>
+
+      {/* Custom Alert */}
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

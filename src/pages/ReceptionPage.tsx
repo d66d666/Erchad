@@ -6,6 +6,7 @@ import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
 import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
+import { CustomAlert } from '../components/CustomAlert'
 
 interface VisitWithStudent extends StudentVisit {
   student?: {
@@ -40,6 +41,9 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [systemDescription, setSystemDescription] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     fetchStudents()
@@ -170,7 +174,9 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
         visit_count: currentCount + 1
       })
 
-      alert('تم تسجيل الزيارة بنجاح')
+      setAlertMessage('تم تسجيل الزيارة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
       setFormData({ reason: '', action_taken: '', referred_to: 'لا يوجد', notes: '' })
       setSelectedStudent(null)
       fetchStudents()
@@ -178,7 +184,9 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving visit:', error)
-      alert('حدث خطأ أثناء الحفظ')
+      setAlertMessage('حدث خطأ أثناء الحفظ')
+      setAlertType('error')
+      setShowAlert(true)
     }
     setLoading(false)
   }
@@ -197,13 +205,17 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
         })
       }
 
-      alert('تم حذف الزيارة بنجاح')
+      setAlertMessage('تم حذف الزيارة بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
       fetchStudents()
       fetchVisits(dateFilter)
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting visit:', error)
-      alert('حدث خطأ أثناء الحذف')
+      setAlertMessage('حدث خطأ أثناء الحذف')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -342,13 +354,17 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
   function sendWhatsApp(visit: VisitWithStudent) {
     if (!visit.student?.guardian_phone) {
-      alert('رقم جوال ولي الأمر غير مسجل')
+      setAlertMessage('رقم جوال ولي الأمر غير مسجل')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     const phone = formatPhoneForWhatsApp(visit.student.guardian_phone)
     if (!phone) {
-      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertMessage('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -773,6 +789,13 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
           </div>
         )}
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

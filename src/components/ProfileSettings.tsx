@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
 import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown, Calendar } from 'lucide-react'
 import { formatSubscriptionDate, getDaysRemaining, isSubscriptionActive } from '../lib/licenseKey'
+import { CustomAlert } from './CustomAlert'
 
 interface ProfileSettingsProps {
   onClose: (updated?: boolean) => void
@@ -37,6 +38,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string>('')
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<string>('')
   const [isDeveloper, setIsDeveloper] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     fetchProfile()
@@ -113,9 +117,13 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
       // المطور لا يحتاج لحفظ ملف شخصي
       if (isDeveloper) {
-        alert('تم حفظ الإعدادات بنجاح')
-        onClose()
-        window.location.reload()
+        setAlertMessage('تم حفظ الإعدادات بنجاح')
+        setAlertType('success')
+        setShowAlert(true)
+        setTimeout(() => {
+          onClose()
+          window.location.reload()
+        }, 1500)
         return
       }
 
@@ -152,16 +160,20 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       const savedProfile = await db.teacher_profile.where('id').equals(userId).first()
       console.log('Verified saved profile:', savedProfile)
 
-      alert('تم حفظ البيانات بنجاح')
-      onClose(true)
+      setAlertMessage('تم حفظ البيانات بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
 
       // تأخير بسيط للتأكد من اكتمال الحفظ
       setTimeout(() => {
+        onClose(true)
         window.location.reload()
-      }, 100)
+      }, 1500)
     } catch (error) {
       console.error('Error saving profile:', error)
-      alert('حدث خطأ في حفظ البيانات')
+      setAlertMessage('حدث خطأ في حفظ البيانات')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setLoading(false)
     }
@@ -193,7 +205,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
           updated_at: new Date().toISOString()
         })
 
-        alert('تم تغيير بيانات الدخول بنجاح!')
+        setAlertMessage('تم تغيير بيانات الدخول بنجاح!')
+        setAlertType('success')
+        setShowAlert(true)
         setCurrentUsername(newUsername)
         setShowPasswordSection(false)
         setNewPassword('')
@@ -235,7 +249,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
     if (!deleteOptions.students && !deleteOptions.teachers && !deleteOptions.specialStatuses &&
         !deleteOptions.visits && !deleteOptions.permissions && !deleteOptions.violations &&
         !deleteOptions.profile && !deleteOptions.all) {
-      alert('الرجاء اختيار البيانات المراد حذفها')
+      setAlertMessage('الرجاء اختيار البيانات المراد حذفها')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -274,7 +290,9 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         await db.teacher_profile.clear()
       }
 
-      alert('تم حذف البيانات المحددة بنجاح!')
+      setAlertMessage('تم حذف البيانات المحددة بنجاح!')
+      setAlertType('success')
+      setShowAlert(true)
       setShowResetConfirm(false)
       setDeleteOptions({
         students: false,
@@ -286,11 +304,15 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
         profile: false,
         all: false,
       })
-      onClose()
-      window.location.reload()
+      setTimeout(() => {
+        onClose()
+        window.location.reload()
+      }, 1500)
     } catch (error) {
       console.error('Error resetting database:', error)
-      alert('حدث خطأ أثناء حذف البيانات')
+      setAlertMessage('حدث خطأ أثناء حذف البيانات')
+      setAlertType('error')
+      setShowAlert(true)
     } finally {
       setResetLoading(false)
     }
@@ -769,6 +791,13 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
           </div>
         </form>
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

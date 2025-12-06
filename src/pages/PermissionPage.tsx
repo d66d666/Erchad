@@ -6,6 +6,7 @@ import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
 import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
+import { CustomAlert } from '../components/CustomAlert'
 
 interface PermissionWithStudent extends StudentPermission {
   student?: {
@@ -39,6 +40,9 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   const [teacherPhone, setTeacherPhone] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [systemDescription, setSystemDescription] = useState('')
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
     fetchStudents()
@@ -179,7 +183,9 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
       sendWhatsAppNotification(selectedStudent, formData.reason)
 
-      alert('تم تسجيل الاستئذان وإرسال رسالة لولي الأمر')
+      setAlertMessage('تم تسجيل الاستئذان وإرسال رسالة لولي الأمر')
+      setAlertType('success')
+      setShowAlert(true)
       setFormData({ reason: '', notes: '' })
       setSelectedStudent(null)
       fetchStudents()
@@ -187,20 +193,26 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving permission:', error)
-      alert('حدث خطأ أثناء الحفظ')
+      setAlertMessage('حدث خطأ أثناء الحفظ')
+      setAlertType('error')
+      setShowAlert(true)
     }
     setLoading(false)
   }
 
   function sendWhatsAppNotification(student: Student, reason: string) {
     if (!student.guardian_phone) {
-      alert('رقم جوال ولي الأمر غير مسجل')
+      setAlertMessage('رقم جوال ولي الأمر غير مسجل')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     const phone = formatPhoneForWhatsApp(student.guardian_phone)
     if (!phone) {
-      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertMessage('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -228,13 +240,17 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
   function sendWhatsAppForPermission(permission: PermissionWithStudent) {
     if (!permission.student?.guardian_phone) {
-      alert('رقم جوال ولي الأمر غير مسجل')
+      setAlertMessage('رقم جوال ولي الأمر غير مسجل')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
     const phone = formatPhoneForWhatsApp(permission.student.guardian_phone)
     if (!phone) {
-      alert('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertMessage('رقم جوال ولي الأمر غير صالح. يرجى التأكد من إدخال الرقم الصحيح في بيانات الطالب.')
+      setAlertType('error')
+      setShowAlert(true)
       return
     }
 
@@ -274,13 +290,17 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
         })
       }
 
-      alert('تم حذف الاستئذان بنجاح')
+      setAlertMessage('تم حذف الاستئذان بنجاح')
+      setAlertType('success')
+      setShowAlert(true)
       fetchStudents()
       fetchPermissions(dateFilter)
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting permission:', error)
-      alert('حدث خطأ أثناء الحذف')
+      setAlertMessage('حدث خطأ أثناء الحذف')
+      setAlertType('error')
+      setShowAlert(true)
     }
   }
 
@@ -772,6 +792,13 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
           </div>
         )}
       </div>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type={alertType}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Group, SpecialStatus, Student } from '../types'
 import { X } from 'lucide-react'
 import { db } from '../lib/db'
+import { CustomAlert } from './CustomAlert'
 
 interface AddStudentModalProps {
   onClose: () => void
@@ -18,6 +19,8 @@ export function AddStudentModal({
   const [error, setError] = useState('')
   const [groups, setGroups] = useState<Group[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
+  const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
 
   const preselectedGroup = preselectedGroupId ? groups.find(g => g.id === preselectedGroupId) : null
 
@@ -110,14 +113,13 @@ export function AddStudentModal({
       }
       await db.students.add(newStudent)
 
-      alert('تم إضافة الطالب بنجاح')
+      setAlertMessage('تم إضافة الطالب بنجاح')
+      setShowAlert(true)
 
       // تحديث البيانات في الصفحة الرئيسية
       if (onStudentAdded) {
         onStudentAdded(newStudent as Student)
       }
-
-      onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ ما')
     } finally {
@@ -126,7 +128,19 @@ export function AddStudentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <>
+      {showAlert && (
+        <CustomAlert
+          message={alertMessage}
+          type="success"
+          onClose={() => {
+            setShowAlert(false)
+            onClose()
+          }}
+        />
+      )}
+
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
           <h2 className="text-xl font-bold">إضافة طالب جديد</h2>
@@ -308,5 +322,6 @@ export function AddStudentModal({
         </form>
       </div>
     </div>
+    </>
   )
 }

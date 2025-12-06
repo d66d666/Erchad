@@ -27,6 +27,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [violations, setViolations] = useState<ViolationWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [showAll, setShowAll] = useState(false)
   const [formData, setFormData] = useState({
     violation_type: 'هروب من الحصة' as const,
     description: '',
@@ -94,7 +95,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     }
   }
 
-  async function fetchViolations(filterDate?: string, searchQuery?: string) {
+  async function fetchViolations(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
     try {
       let violationsData = await db.student_violations.orderBy('violation_date').reverse().toArray()
 
@@ -112,7 +113,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
           const violationDate = new Date(v.violation_date)
           return violationDate >= startOfDay && violationDate <= endOfDay
         })
-      } else {
+      } else if (!viewAll) {
         // عرض مخالفات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -579,17 +580,21 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
           <div>
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <FileText size={24} />
-              سجل المخالفات {dateFilter ? 'المفلترة' : 'اليوم'}
+              سجل المخالفات {showAll ? 'الكاملة' : dateFilter ? 'المفلترة' : 'اليوم'}
             </h3>
-            {!dateFilter && (
+            {!dateFilter && !showAll && (
               <p className="text-sm text-gray-500 mt-1">عرض مخالفات اليوم الحالي فقط</p>
+            )}
+            {showAll && (
+              <p className="text-sm text-blue-600 mt-1 font-semibold">عرض جميع المخالفات</p>
             )}
           </div>
           <div className="flex gap-2">
-            {dateFilter && (
+            {(dateFilter || showAll) && (
               <button
                 onClick={() => {
                   setDateFilter('')
+                  setShowAll(false)
                   fetchViolations()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
@@ -597,6 +602,21 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
                 إعادة تعيين
               </button>
             )}
+            <button
+              onClick={() => {
+                setShowAll(!showAll)
+                setDateFilter('')
+                fetchViolations('', '', !showAll)
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showAll
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+              }`}
+            >
+              <AlertTriangle size={16} />
+              {showAll ? 'إخفاء الجميع' : 'عرض الجميع'}
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors"

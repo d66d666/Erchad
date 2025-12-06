@@ -27,6 +27,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [permissionSearchTerm, setPermissionSearchTerm] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [formData, setFormData] = useState({
     reason: '',
     notes: ''
@@ -90,7 +91,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
     }
   }
 
-  async function fetchPermissions(filterDate?: string, searchQuery?: string) {
+  async function fetchPermissions(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
     try {
       // قراءة من IndexedDB فقط
       let permissionsData = await db.student_permissions.orderBy('permission_date').reverse().toArray()
@@ -109,7 +110,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
           const permissionDate = new Date(p.permission_date)
           return permissionDate >= startOfDay && permissionDate <= endOfDay
         })
-      } else {
+      } else if (!viewAll) {
         // عرض استئذانات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -575,17 +576,21 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
           <div>
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <Clock size={24} />
-              سجل الاستئذانات {dateFilter ? 'المفلترة' : 'اليوم'}
+              سجل الاستئذانات {showAll ? 'الكاملة' : dateFilter ? 'المفلترة' : 'اليوم'}
             </h3>
-            {!dateFilter && (
+            {!dateFilter && !showAll && (
               <p className="text-sm text-gray-500 mt-1">عرض استئذانات اليوم الحالي فقط</p>
+            )}
+            {showAll && (
+              <p className="text-sm text-blue-600 mt-1 font-semibold">عرض جميع الاستئذانات</p>
             )}
           </div>
           <div className="flex gap-2">
-            {dateFilter && (
+            {(dateFilter || showAll) && (
               <button
                 onClick={() => {
                   setDateFilter('')
+                  setShowAll(false)
                   fetchPermissions()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
@@ -593,6 +598,21 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
                 إعادة تعيين
               </button>
             )}
+            <button
+              onClick={() => {
+                setShowAll(!showAll)
+                setDateFilter('')
+                fetchPermissions('', '', !showAll)
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showAll
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+              }`}
+            >
+              <LogOut size={16} />
+              {showAll ? 'إخفاء الجميع' : 'عرض الجميع'}
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium transition-colors"

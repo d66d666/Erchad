@@ -26,6 +26,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [dateFilter, setDateFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [visitSearchTerm, setVisitSearchTerm] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [formData, setFormData] = useState({
     reason: '',
     action_taken: '',
@@ -87,7 +88,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     setStudents(studentsWithRelations as Student[])
   }
 
-  async function fetchVisits(filterDate?: string, searchQuery?: string) {
+  async function fetchVisits(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
     try {
       // قراءة من IndexedDB فقط
       let visitsData = await db.student_visits.orderBy('visit_date').reverse().toArray()
@@ -106,7 +107,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
           const visitDate = new Date(v.visit_date)
           return visitDate >= startOfDay && visitDate <= endOfDay
         })
-      } else {
+      } else if (!viewAll) {
         // عرض زيارات اليوم الحالي فقط بشكل افتراضي
         const today = new Date()
         today.setHours(0, 0, 0, 0)
@@ -571,17 +572,21 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
           <div>
             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <FileText size={24} />
-              سجل الزيارات {dateFilter ? 'المفلترة' : 'اليوم'}
+              سجل الزيارات {showAll ? 'الكاملة' : dateFilter ? 'المفلترة' : 'اليوم'}
             </h3>
-            {!dateFilter && (
+            {!dateFilter && !showAll && (
               <p className="text-sm text-gray-500 mt-1">عرض زيارات اليوم الحالي فقط</p>
+            )}
+            {showAll && (
+              <p className="text-sm text-blue-600 mt-1 font-semibold">عرض جميع الزيارات</p>
             )}
           </div>
           <div className="flex gap-2">
-            {dateFilter && (
+            {(dateFilter || showAll) && (
               <button
                 onClick={() => {
                   setDateFilter('')
+                  setShowAll(false)
                   fetchVisits()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
@@ -589,6 +594,21 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                 إعادة تعيين
               </button>
             )}
+            <button
+              onClick={() => {
+                setShowAll(!showAll)
+                setDateFilter('')
+                fetchVisits('', '', !showAll)
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                showAll
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+              }`}
+            >
+              <FileText size={16} />
+              {showAll ? 'إخفاء الجميع' : 'عرض الجميع'}
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-colors"

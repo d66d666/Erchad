@@ -168,7 +168,7 @@ export function AddStudentModal({
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                 placeholder="الياس"
               />
@@ -187,7 +187,7 @@ export function AddStudentModal({
                 value={formData.national_id}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9]/g, '')
-                  setFormData({ ...formData, national_id: value })
+                  setFormData(prev => ({ ...prev, national_id: value }))
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                 placeholder="12564646"
@@ -207,7 +207,7 @@ export function AddStudentModal({
                   value={formData.phone}
                   onChange={(e) => {
                     const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                    setFormData({ ...formData, phone: numericValue })
+                    setFormData(prev => ({ ...prev, phone: numericValue }))
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="555555465"
@@ -227,7 +227,7 @@ export function AddStudentModal({
                   value={formData.guardian_phone}
                   onChange={(e) => {
                     const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                    setFormData({ ...formData, guardian_phone: numericValue })
+                    setFormData(prev => ({ ...prev, guardian_phone: numericValue }))
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="565464644"
@@ -244,7 +244,7 @@ export function AddStudentModal({
                   required
                   value={formData.grade}
                   onChange={(e) => {
-                    setFormData({ ...formData, grade: e.target.value, group_id: '' })
+                    setFormData(prev => ({ ...prev, grade: e.target.value, group_id: '' }))
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
                 >
@@ -265,7 +265,7 @@ export function AddStudentModal({
                   required
                   value={formData.group_id}
                   onChange={(e) => {
-                    setFormData({ ...formData, group_id: e.target.value })
+                    setFormData(prev => ({ ...prev, group_id: e.target.value }))
                   }}
                   disabled={!formData.grade}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -289,7 +289,7 @@ export function AddStudentModal({
               <select
                 value={formData.special_status_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, special_status_id: e.target.value })
+                  setFormData(prev => ({ ...prev, special_status_id: e.target.value }))
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right appearance-none bg-white"
               >

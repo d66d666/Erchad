@@ -508,7 +508,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
                 </label>
                 <select
                   value={formData.violation_type}
-                  onChange={(e) => setFormData({ ...formData, violation_type: e.target.value as any })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, violation_type: e.target.value as any }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 >
                   <option value="هروب من الحصة">هروب من الحصة</option>
@@ -529,7 +529,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
                 <textarea
                   required
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   rows={3}
                   placeholder="اكتب وصف تفصيلي للمخالفة..."
@@ -543,7 +543,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
                 <textarea
                   required
                   value={formData.action_taken}
-                  onChange={(e) => setFormData({ ...formData, action_taken: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, action_taken: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   rows={3}
                   placeholder="اكتب الإجراء الذي تم اتخاذه..."
@@ -556,7 +556,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
                 </label>
                 <textarea
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   rows={2}
                   placeholder="ملاحظات إضافية..."

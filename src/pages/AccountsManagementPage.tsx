@@ -513,7 +513,7 @@ export function AccountsManagementPage() {
                     <input
                       type="text"
                       value={formData.schoolName}
-                      onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, schoolName: e.target.value }))}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
                       required
@@ -527,7 +527,7 @@ export function AccountsManagementPage() {
                     <input
                       type="text"
                       value={formData.teacherName}
-                      onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, teacherName: e.target.value }))}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل اسم المعلم المسؤول"
                       required
@@ -546,7 +546,7 @@ export function AccountsManagementPage() {
                       value={formData.phone}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                        setFormData({ ...formData, phone: numericValue })
+                        setFormData(prev => ({ ...prev, phone: numericValue }))
                       }}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="05xxxxxxxx"
@@ -567,7 +567,7 @@ export function AccountsManagementPage() {
                     <input
                       type="text"
                       value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل اسم المستخدم"
                       required
@@ -581,7 +581,7 @@ export function AccountsManagementPage() {
                     <input
                       type="text"
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="أدخل كلمة المرور"
                       required
@@ -594,7 +594,7 @@ export function AccountsManagementPage() {
                     </label>
                     <select
                       value={formData.expiryMonths}
-                      onChange={(e) => setFormData({ ...formData, expiryMonths: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, expiryMonths: e.target.value }))}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="1">شهر واحد</option>

@@ -504,7 +504,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                 <textarea
                   required
                   value={formData.reason}
-                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="اكتب سبب الزيارة أو وصف المشكلة..."
@@ -518,7 +518,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                 <textarea
                   required
                   value={formData.action_taken}
-                  onChange={(e) => setFormData({ ...formData, action_taken: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, action_taken: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="اكتب الإجراء الذي تم اتخاذه..."
@@ -531,7 +531,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                 </label>
                 <select
                   value={formData.referred_to}
-                  onChange={(e) => setFormData({ ...formData, referred_to: e.target.value as any })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, referred_to: e.target.value as any }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="لا يوجد">لا يوجد</option>
@@ -548,7 +548,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
                 </label>
                 <textarea
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={2}
                   placeholder="ملاحظات إضافية..."

@@ -92,7 +92,7 @@ export function EditStudentModal({
                       type="text"
                       required
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                     />
                   </div>
@@ -106,7 +106,7 @@ export function EditStudentModal({
                       required
                       maxLength={10}
                       value={formData.national_id}
-                      onChange={(e) => setFormData({ ...formData, national_id: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, national_id: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                       placeholder="10 أرقام"
                     />
@@ -125,7 +125,7 @@ export function EditStudentModal({
                       value={formData.phone}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                        setFormData({ ...formData, phone: numericValue })
+                        setFormData(prev => ({ ...prev, phone: numericValue }))
                       }}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                       placeholder="05xxxxxxxx"
@@ -145,7 +145,7 @@ export function EditStudentModal({
                       value={formData.guardian_phone}
                       onChange={(e) => {
                         const numericValue = e.target.value.replace(/[^0-9]/g, '')
-                        setFormData({ ...formData, guardian_phone: numericValue })
+                        setFormData(prev => ({ ...prev, guardian_phone: numericValue }))
                       }}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                       placeholder="05xxxxxxxx"
@@ -160,7 +160,7 @@ export function EditStudentModal({
                       type="text"
                       required
                       value={formData.grade}
-                      onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, grade: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                     />
                   </div>
@@ -172,7 +172,7 @@ export function EditStudentModal({
                     <select
                       required
                       value={formData.group_id}
-                      onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg bg-white"
                     >
                       <option value="">اختر مجموعة</option>
@@ -191,7 +191,7 @@ export function EditStudentModal({
                     <select
                       value={formData.special_status_id}
                       onChange={(e) =>
-                        setFormData({ ...formData, special_status_id: e.target.value })
+                        setFormData(prev => ({ ...prev, special_status_id: e.target.value }))
                       }
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg bg-white"
                     >

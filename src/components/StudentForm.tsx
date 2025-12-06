@@ -131,7 +131,7 @@ export function StudentForm({
               type="text"
               required
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -149,7 +149,7 @@ export function StudentForm({
               value={formData.national_id}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '')
-                setFormData({ ...formData, national_id: value })
+                setFormData(prev => ({ ...prev, national_id: value }))
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="10 أرقام"
@@ -169,7 +169,7 @@ export function StudentForm({
               value={formData.phone}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '')
-                setFormData({ ...formData, phone: value })
+                setFormData(prev => ({ ...prev, phone: value }))
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="05xxxxxxxx"
@@ -189,7 +189,7 @@ export function StudentForm({
               value={formData.guardian_phone}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '')
-                setFormData({ ...formData, guardian_phone: value })
+                setFormData(prev => ({ ...prev, guardian_phone: value }))
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="05xxxxxxxx"
@@ -204,7 +204,7 @@ export function StudentForm({
               type="text"
               required
               value={formData.grade}
-              onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, grade: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -216,7 +216,7 @@ export function StudentForm({
             <select
               required
               value={formData.group_id}
-              onChange={(e) => setFormData({ ...formData, group_id: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, group_id: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">اختر مجموعة</option>
@@ -235,7 +235,7 @@ export function StudentForm({
             <select
               value={formData.special_status_id}
               onChange={(e) =>
-                setFormData({ ...formData, special_status_id: e.target.value })
+                setFormData(prev => ({ ...prev, special_status_id: e.target.value }))
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >

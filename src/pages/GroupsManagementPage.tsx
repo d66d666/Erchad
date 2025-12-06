@@ -875,7 +875,7 @@ export function GroupsManagementPage() {
                                         <span>إضافة طالب</span>
                                       </button>
                                       <button
-                                        onClick={() => printGroup(group, groupStudents, showStatusDetails)}
+                                        onClick={() => printGroup(group, getStageStudentsForGroup(group.id), showStatusDetails)}
                                         className="flex items-center gap-2 px-4 py-2 bg-white text-cyan-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
                                       >
                                         <Printer size={16} />

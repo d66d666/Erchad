@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Teacher, Group, TeacherGroup } from '../types'
 import { Users, Plus, Edit2, Trash2, BookOpen, Search } from 'lucide-react'
 import { db } from '../lib/db'
+import { arabicTextIncludes } from '../lib/normalizeArabic'
 
 interface TeacherWithGroups extends Teacher {
   teacher_groups?: TeacherGroup[]
@@ -123,10 +124,9 @@ export function TeachersPage() {
       ) : (() => {
         const filteredTeachers = teachers.filter((teacher) => {
           if (!searchQuery.trim()) return true
-          const query = searchQuery.toLowerCase()
           return (
-            teacher.name.toLowerCase().includes(query) ||
-            teacher.phone.includes(query)
+            arabicTextIncludes(teacher.name, searchQuery) ||
+            teacher.phone.includes(searchQuery)
           )
         })
 

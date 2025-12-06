@@ -4,6 +4,7 @@ import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
+import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
 
 interface VisitWithStudent extends StudentVisit {
@@ -704,7 +705,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 
         {visits.filter(visit =>
           visitSearchTerm === '' ||
-          visit.student?.name.toLowerCase().includes(visitSearchTerm.toLowerCase()) ||
+          arabicTextIncludes(visit.student?.name || '', visitSearchTerm) ||
           visit.student?.national_id.includes(visitSearchTerm)
         ).length === 0 ? (
           <p className="text-center text-gray-500 py-8">
@@ -714,7 +715,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
           <div className="space-y-3">
             {visits.filter(visit =>
               visitSearchTerm === '' ||
-              visit.student?.name.toLowerCase().includes(visitSearchTerm.toLowerCase()) ||
+              arabicTextIncludes(visit.student?.name || '', visitSearchTerm) ||
               visit.student?.national_id.includes(visitSearchTerm)
             ).map(visit => (
             <div key={visit.id} className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">

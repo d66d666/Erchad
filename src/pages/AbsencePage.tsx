@@ -4,6 +4,7 @@ import { Student } from '../types'
 import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
+import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
 
 interface ViolationWithStudent extends StudentViolation {
@@ -714,7 +715,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 
         {violations.filter(violation =>
           violationSearchTerm === '' ||
-          violation.student?.name.toLowerCase().includes(violationSearchTerm.toLowerCase()) ||
+          arabicTextIncludes(violation.student?.name || '', violationSearchTerm) ||
           violation.student?.national_id.includes(violationSearchTerm)
         ).length === 0 ? (
           <p className="text-center text-gray-500 py-8">
@@ -724,7 +725,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
           <div className="space-y-3">
             {violations.filter(violation =>
               violationSearchTerm === '' ||
-              violation.student?.name.toLowerCase().includes(violationSearchTerm.toLowerCase()) ||
+              arabicTextIncludes(violation.student?.name || '', violationSearchTerm) ||
               violation.student?.national_id.includes(violationSearchTerm)
             ).map(violation => (
               <div key={violation.id} className="border border-red-200 rounded-lg p-4 bg-red-50">

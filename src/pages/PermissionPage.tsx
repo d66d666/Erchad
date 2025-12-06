@@ -4,6 +4,7 @@ import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
+import { arabicTextIncludes } from '../lib/normalizeArabic'
 import { formatBothDates } from '../lib/hijriDate'
 
 interface PermissionWithStudent extends StudentPermission {
@@ -707,7 +708,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 
         {permissions.filter(permission =>
           permissionSearchTerm === '' ||
-          permission.student?.name.toLowerCase().includes(permissionSearchTerm.toLowerCase()) ||
+          arabicTextIncludes(permission.student?.name || '', permissionSearchTerm) ||
           permission.student?.national_id.includes(permissionSearchTerm)
         ).length === 0 ? (
           <p className="text-center text-gray-500 py-8">
@@ -717,7 +718,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
           <div className="space-y-3">
             {permissions.filter(permission =>
               permissionSearchTerm === '' ||
-              permission.student?.name.toLowerCase().includes(permissionSearchTerm.toLowerCase()) ||
+              arabicTextIncludes(permission.student?.name || '', permissionSearchTerm) ||
               permission.student?.national_id.includes(permissionSearchTerm)
             ).map(permission => (
               <div key={permission.id} className="border border-orange-200 rounded-lg p-4 bg-orange-50">

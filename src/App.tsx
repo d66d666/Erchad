@@ -14,6 +14,7 @@ import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import { openWhatsApp } from './lib/openWhatsApp'
+import { arabicTextIncludes } from './lib/normalizeArabic'
 import ActivateLicenseModal from './components/ActivateLicenseModal'
 import { isSubscriptionActive } from './lib/licenseKey'
 import {
@@ -370,7 +371,7 @@ function App() {
       groups.forEach(group => {
         const hasMatchingStudents = students.some(student =>
           student.group_id === group.id && (
-            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            arabicTextIncludes(student.name, searchTerm) ||
             student.national_id.includes(searchTerm) ||
             student.phone.includes(searchTerm) ||
             student.guardian_phone.includes(searchTerm)
@@ -1782,7 +1783,7 @@ function App() {
                           .filter(s => s.group_id === group.id)
                           .filter(s =>
                             searchTerm === '' ||
-                            s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            arabicTextIncludes(s.name, searchTerm) ||
                             s.national_id.includes(searchTerm) ||
                             s.phone.includes(searchTerm) ||
                             s.guardian_phone.includes(searchTerm)
@@ -1828,7 +1829,7 @@ function App() {
                                   .filter(s => s.group_id === group.id)
                                   .filter(s =>
                                     searchTerm === '' ||
-                                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    arabicTextIncludes(s.name, searchTerm) ||
                                     s.national_id.includes(searchTerm) ||
                                     s.phone.includes(searchTerm) ||
                                     s.guardian_phone.includes(searchTerm)

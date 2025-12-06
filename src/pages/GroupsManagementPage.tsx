@@ -225,7 +225,7 @@ export function GroupsManagementPage() {
             <h1 class="school-name">${schoolName}</h1>
             <div class="teacher-info">
               <div>برنامج إدارة الطلاب</div>
-              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+              <div>${teacherName || 'المعلم'}</div>
             </div>
           </div>
 
@@ -329,7 +329,7 @@ export function GroupsManagementPage() {
             <h1 class="school-name">${schoolName}</h1>
             <div class="teacher-info">
               <div>برنامج إدارة الطلاب</div>
-              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+              <div>${teacherName || 'المعلم'}</div>
             </div>
           </div>
 

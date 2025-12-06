@@ -231,7 +231,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 *الوقت:* ${now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *السبب:* ${reason}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}
+${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 
@@ -269,7 +269,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
 *الوقت:* ${permissionDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *السبب:* ${permission.reason}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}
+${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 
@@ -384,7 +384,7 @@ export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line">${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">إذن مغادرة طالب</div>
           </div>
           

@@ -299,7 +299,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line">${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">تقرير زيارة طالب</div>
           </div>
           
@@ -384,7 +384,7 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
 *السبب:* ${visit.reason}
 *الإجراء المتخذ:* ${visit.action_taken}${visit.referred_to !== 'لا يوجد' ? `\n*تم التحويل إلى:* ${visit.referred_to}` : ''}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}
+${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 

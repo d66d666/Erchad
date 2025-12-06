@@ -230,7 +230,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
 *الوقت:* ${violationDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}
 *نوع المخالفة:* ${violation.violation_type}
 
-الأستاذ ${teacherName || 'مسؤول النظام'}
+${teacherName || 'مسؤول النظام'}
 
 مع تحيات إدارة المدرسة`
 
@@ -342,7 +342,7 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
           <div class="header">
             <div class="header-line" style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${schoolName || 'اسم المدرسة'}</div>
             <div class="header-line">${systemDescription || 'برنامج إدارة الطلاب'}</div>
-            <div class="header-line">الأستاذ: ${teacherName || 'اسم المعلم'}</div>
+            <div class="header-line">${teacherName || 'اسم المعلم'}</div>
             <div class="header-line" style="font-weight: bold;">إشعار مخالفة سلوكية</div>
           </div>
           

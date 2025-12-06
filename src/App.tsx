@@ -821,7 +821,7 @@ function App() {
             <h1 class="school-name">${schoolName}</h1>
             <div class="teacher-info">
               <div>برنامج إدارة الطلاب</div>
-              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+              <div>${teacherName || 'المعلم'}</div>
             </div>
           </div>
 
@@ -1022,7 +1022,7 @@ function App() {
             <h1 class="school-name">${schoolName}</h1>
             <div class="teacher-info">
               <div>برنامج إدارة الطلاب</div>
-              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+              <div>${teacherName || 'المعلم'}</div>
             </div>
           </div>
 
@@ -1108,7 +1108,7 @@ function App() {
             <h1 class="school-name">${schoolName}</h1>
             <div class="teacher-info">
               <div>برنامج إدارة الطلاب</div>
-              <div>الأستاذ: ${teacherName || 'المعلم'}</div>
+              <div>${teacherName || 'المعلم'}</div>
             </div>
           </div>
 
@@ -2655,7 +2655,7 @@ function App() {
                   <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
                   <p className="font-bold mt-2">الرجاء السماح بدخول الطالب للفصل</p>
                   <p className="mt-2">اسم الطالب: <span className="font-bold">{allowEntryStudent.name}</span></p>
-                  <p>المرسل الأستاذ: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
+                  <p>المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
                 </div>
               </div>
 
@@ -2700,7 +2700,7 @@ function App() {
 *الرجاء السماح بدخول الطالب للفصل*
 
 اسم الطالب: *${allowEntryStudent.name}*
-المرسل الأستاذ: ${teacherName || 'مسؤول النظام'}`
+المرسل: ${teacherName || 'مسؤول النظام'}`
 
                     openWhatsApp(phone, message)
 

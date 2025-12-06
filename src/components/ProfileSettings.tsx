@@ -457,8 +457,13 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
                 <input
                   type="tel"
                   maxLength={10}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={teacherPhone}
-                  onChange={(e) => setTeacherPhone(e.target.value)}
+                  onChange={(e) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                    setTeacherPhone(numericValue)
+                  }}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
                   placeholder="05xxxxxxxx"
                 />

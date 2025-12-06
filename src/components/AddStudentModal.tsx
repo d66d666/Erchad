@@ -206,8 +206,8 @@ export function AddStudentModal({
                   pattern="[0-9]*"
                   value={formData.phone}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '')
-                    setFormData({ ...formData, phone: value })
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                    setFormData({ ...formData, phone: numericValue })
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="555555465"
@@ -226,8 +226,8 @@ export function AddStudentModal({
                   pattern="[0-9]*"
                   value={formData.guardian_phone}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '')
-                    setFormData({ ...formData, guardian_phone: value })
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                    setFormData({ ...formData, guardian_phone: numericValue })
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   placeholder="565464644"

@@ -486,8 +486,13 @@ function TeacherFormModal({ teacher, groups, onClose, onSave }: TeacherFormModal
             <input
               type="tel"
               maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                setPhone(numericValue)
+              }}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="05xxxxxxxx"
               required

@@ -541,8 +541,13 @@ export function AccountsManagementPage() {
                     <input
                       type="tel"
                       maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                        setFormData({ ...formData, phone: numericValue })
+                      }}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="05xxxxxxxx"
                       required
@@ -919,8 +924,13 @@ export function AccountsManagementPage() {
                     <input
                       type="tel"
                       maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={editFormData.phone}
-                      onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                        setEditFormData({ ...editFormData, phone: numericValue })
+                      }}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                       placeholder="05xxxxxxxx"
                       required

@@ -120,8 +120,13 @@ export function EditStudentModal({
                       type="tel"
                       required
                       maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                        setFormData({ ...formData, phone: numericValue })
+                      }}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                       placeholder="05xxxxxxxx"
                     />
@@ -135,8 +140,13 @@ export function EditStudentModal({
                       type="tel"
                       required
                       maxLength={10}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={formData.guardian_phone}
-                      onChange={(e) => setFormData({ ...formData, guardian_phone: e.target.value })}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                        setFormData({ ...formData, guardian_phone: numericValue })
+                      }}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                       placeholder="05xxxxxxxx"
                     />

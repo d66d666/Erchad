@@ -12,6 +12,16 @@ export function AccountsManagementPage() {
   const [showRenewalModal, setShowRenewalModal] = useState(false)
   const [renewalCode, setRenewalCode] = useState('')
   const [renewalMonths, setRenewalMonths] = useState('1')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    username: '',
+    password: '',
+    schoolName: '',
+    teacherName: '',
+    phone: '',
+    startDate: '',
+    endDate: ''
+  })
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -220,6 +230,77 @@ export function AccountsManagementPage() {
     }
   }
 
+  const handleOpenEditModal = async (account: LoginCredentials) => {
+    setSelectedAccount(account)
+
+    // جلب تاريخ الاشتراك من قاعدة البيانات
+    const subscription = await db.subscription.where('school_id').equals(account.id!).first()
+
+    setEditFormData({
+      username: account.username,
+      password: account.password_hash,
+      schoolName: account.school_name || '',
+      teacherName: account.teacher_name || '',
+      phone: account.phone || '',
+      startDate: subscription?.start_date ? new Date(subscription.start_date).toISOString().split('T')[0] : '',
+      endDate: subscription?.end_date ? new Date(subscription.end_date).toISOString().split('T')[0] : ''
+    })
+
+    setShowEditModal(true)
+  }
+
+  const handleUpdateAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedAccount) return
+
+    try {
+      // تحديث بيانات تسجيل الدخول
+      await db.login_credentials.update(selectedAccount.id!, {
+        username: editFormData.username,
+        password_hash: editFormData.password,
+        school_name: editFormData.schoolName,
+        teacher_name: editFormData.teacherName,
+        phone: editFormData.phone,
+        expiry_date: editFormData.endDate,
+        updated_at: new Date().toISOString()
+      })
+
+      // تحديث بيانات الاشتراك
+      const subscription = await db.subscription.where('school_id').equals(selectedAccount.id!).first()
+
+      if (subscription) {
+        await db.subscription.update(subscription.id!, {
+          start_date: editFormData.startDate,
+          end_date: editFormData.endDate
+        })
+      } else {
+        // إنشاء اشتراك جديد إذا لم يكن موجوداً
+        await db.subscription.add({
+          id: crypto.randomUUID(),
+          school_id: selectedAccount.id!,
+          start_date: editFormData.startDate,
+          end_date: editFormData.endDate,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+      }
+
+      setShowEditModal(false)
+      setSelectedAccount(null)
+      loadAccounts()
+      alert('تم تحديث الحساب بنجاح!')
+    } catch (error) {
+      console.error('Error updating account:', error)
+      alert('حدث خطأ أثناء تحديث الحساب')
+    }
+  }
+
+  const openWhatsApp = (phone: string, name: string) => {
+    const formattedPhone = phone.startsWith('0') ? '966' + phone.substring(1) : phone
+    const message = encodeURIComponent(`السلام عليكم ${name}`)
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -287,7 +368,19 @@ export function AccountsManagementPage() {
                         <div className="text-sm text-gray-600">{account.teacher_name || '-'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-600 font-mono">{account.phone || '-'}</div>
+                        {account.phone ? (
+                          <button
+                            onClick={() => openWhatsApp(account.phone || '', account.teacher_name || account.username)}
+                            className="text-sm text-green-600 hover:text-green-800 font-mono hover:underline flex items-center gap-1"
+                          >
+                            {account.phone}
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                          </button>
+                        ) : (
+                          <div className="text-sm text-gray-400">-</div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {account.expiry_date ? (
@@ -327,6 +420,13 @@ export function AccountsManagementPage() {
                         ) : (
                           <div className="flex items-center gap-2">
                             <button
+                              onClick={() => handleOpenEditModal(account)}
+                              className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="تعديل الحساب"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
                               onClick={() => handleGenerateRenewalCode(account)}
                               className="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition-colors"
                               title="إنشاء رمز تجديد"
@@ -339,13 +439,6 @@ export function AccountsManagementPage() {
                               title="تصدير التكوين"
                             >
                               <Download size={18} />
-                            </button>
-                            <button
-                              onClick={() => setEditingAccount(account)}
-                              className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="تعديل الصلاحية"
-                            >
-                              <Calendar size={18} />
                             </button>
                             {account.username !== 'Wael' && (
                               <button
@@ -734,6 +827,186 @@ export function AccountsManagementPage() {
                 حفظ وإرسال
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && selectedAccount && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-3 rounded-xl">
+                  <Edit2 className="text-blue-600" size={24} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">تعديل الحساب</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setSelectedAccount(null)
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateAccount} className="space-y-5">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-blue-900 mb-3">معلومات المدرسة</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      اسم المدرسة
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.schoolName}
+                      onChange={(e) => setEditFormData({ ...editFormData, schoolName: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      placeholder="مثال: مدرسة الملك عبدالله الابتدائية"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      اسم المعلم المسؤول
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.teacherName}
+                      onChange={(e) => setEditFormData({ ...editFormData, teacherName: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      placeholder="أدخل اسم المعلم المسؤول"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      رقم الجوال
+                    </label>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      value={editFormData.phone}
+                      onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      placeholder="05xxxxxxxx"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-green-900 mb-3">معلومات الدخول</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      اسم المستخدم
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.username}
+                      onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      placeholder="أدخل اسم المستخدم"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      كلمة المرور
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.password}
+                      onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                      placeholder="أدخل كلمة المرور"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
+                <h3 className="text-lg font-bold text-purple-900 mb-3">فترة الاشتراك</h3>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      تاريخ بداية الاشتراك
+                    </label>
+                    <input
+                      type="date"
+                      value={editFormData.startDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 text-right">
+                      تاريخ نهاية الاشتراك
+                    </label>
+                    <input
+                      type="date"
+                      value={editFormData.endDate}
+                      onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {editFormData.startDate && editFormData.endDate && (
+                  <div className="mt-4 bg-white rounded-lg p-3 border border-purple-300">
+                    <p className="text-sm text-gray-600 mb-1">مدة الاشتراك</p>
+                    <p className="text-lg font-bold text-purple-600">
+                      {Math.ceil((new Date(editFormData.endDate).getTime() - new Date(editFormData.startDate).getTime()) / (1000 * 60 * 60 * 24))} يوم
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm text-yellow-800">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="flex-shrink-0 mt-0.5" size={16} />
+                  <div>
+                    <p className="font-bold mb-1">ملاحظة مهمة:</p>
+                    <p>تأكد من صحة التواريخ والبيانات قبل الحفظ. التغييرات ستؤثر على الحساب فوراً.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setSelectedAccount(null)
+                  }}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <Save size={20} />
+                  حفظ التعديلات
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -291,12 +291,15 @@ function App() {
     setIsMasterAdmin(isMaster)
 
     if (loggedIn) {
-      Promise.all([
-        checkSubscription(),
-        fetchData(),
-        fetchTeachersCount(),
-        fetchTeachers()
-      ])
+      setLoading(false)
+      setTimeout(() => {
+        Promise.all([
+          checkSubscription(),
+          fetchData(),
+          fetchTeachersCount(),
+          fetchTeachers()
+        ]).catch(err => console.error('Data loading error:', err))
+      }, 50)
     } else {
       setLoading(false)
     }
@@ -430,12 +433,15 @@ function App() {
 
     setIsLoggedIn(true)
     setIsMasterAdmin(isMaster)
-    Promise.all([
-      checkSubscription(),
-      fetchData(),
-      fetchTeachersCount(),
-      fetchTeachers()
-    ])
+
+    setTimeout(() => {
+      Promise.all([
+        checkSubscription(),
+        fetchData(),
+        fetchTeachersCount(),
+        fetchTeachers()
+      ]).catch(err => console.error('Data loading error:', err))
+    }, 50)
   }
 
 

@@ -22,11 +22,7 @@ function createWindow() {
     },
     autoHideMenuBar: true,
     backgroundColor: '#ffffff',
-    show: false
-  });
-
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+    show: true
   });
 
   if (isDev) {

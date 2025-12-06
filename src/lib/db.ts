@@ -167,18 +167,23 @@ export class StudentsDatabase extends Dexie {
 
 export const db = new StudentsDatabase()
 
-// Initialize default login credentials only if database is completely empty
-db.on('ready', async () => {
-  const count = await db.login_credentials.count()
-
-  // فقط إذا كانت قاعدة البيانات فارغة تماماً
-  if (count === 0) {
-    await db.login_credentials.add({
-      id: crypto.randomUUID(),
-      username: 'admin',
-      password_hash: 'admin123',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
+// Initialize default login credentials - non-blocking
+const initializeDefaultCredentials = async () => {
+  try {
+    const count = await db.login_credentials.count()
+    if (count === 0) {
+      await db.login_credentials.add({
+        id: crypto.randomUUID(),
+        username: 'admin',
+        password_hash: 'admin123',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+    }
+  } catch (error) {
+    console.error('Failed to initialize credentials:', error)
   }
-})
+}
+
+// Initialize in background without blocking
+setTimeout(() => initializeDefaultCredentials(), 100)

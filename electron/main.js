@@ -14,10 +14,19 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true,
+      sandbox: false,
+      enableRemoteModule: false,
+      spellcheck: false
     },
     autoHideMenuBar: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    show: false
+  });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
   });
 
   if (isDev) {

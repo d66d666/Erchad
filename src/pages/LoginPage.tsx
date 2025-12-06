@@ -605,10 +605,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
               <input
                 type="text"
+                name="username"
+                id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full pr-12 pl-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
                 placeholder="أدخل اسم المستخدم"
+                autoComplete="off"
+                autoFocus
                 required
               />
             </div>
@@ -622,16 +626,20 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <Lock className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600 transition-colors" size={20} />
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="password"
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pr-12 pl-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 focus:bg-white"
                 placeholder="أدخل كلمة المرور"
+                autoComplete="off"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>

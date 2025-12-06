@@ -243,7 +243,7 @@ function App() {
     }
   }
 
-  const fetchData = async () => {
+  const fetchData = async (skipStats = false) => {
     try {
       setLoading(true)
 
@@ -256,32 +256,25 @@ function App() {
         userId ? db.teacher_profile.where('id').equals(userId).first() : Promise.resolve(null),
       ])
 
-      console.log('fetchData - userId:', userId, 'profileData:', profileData)
-
       setGroups(groupsData)
       setSpecialStatuses(statusesData)
       setStudents(studentsData as Student[])
 
       if (profileData) {
-        console.log('Setting profile data in App:', {
-          name: profileData.name,
-          phone: profileData.phone,
-          school_name: profileData.school_name,
-          system_description: profileData.system_description
-        })
         setTeacherName(profileData.name || '')
         setTeacherPhone(profileData.phone || '')
         setSchoolName(profileData.school_name || '')
         setSystemDescription(profileData.system_description || '')
       } else {
-        console.log('No profile data found, clearing fields')
         setTeacherName('')
         setTeacherPhone('')
         setSchoolName('')
         setSystemDescription('')
       }
 
-      await fetchTodayStats()
+      if (!skipStats) {
+        await fetchTodayStats()
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -298,11 +291,12 @@ function App() {
     setIsMasterAdmin(isMaster)
 
     if (loggedIn) {
-      checkSubscription()
-      fetchData()
-      fetchTodayStats()
-      fetchTeachersCount()
-      fetchTeachers()
+      Promise.all([
+        checkSubscription(),
+        fetchData(),
+        fetchTeachersCount(),
+        fetchTeachers()
+      ])
     } else {
       setLoading(false)
     }
@@ -436,11 +430,12 @@ function App() {
 
     setIsLoggedIn(true)
     setIsMasterAdmin(isMaster)
-    checkSubscription()
-    fetchData()
-    fetchTodayStats()
-    fetchTeachersCount()
-    fetchTeachers()
+    Promise.all([
+      checkSubscription(),
+      fetchData(),
+      fetchTeachersCount(),
+      fetchTeachers()
+    ])
   }
 
 
@@ -454,8 +449,8 @@ function App() {
         created_at: new Date().toISOString()
       }
       await db.special_statuses.add(newStatus)
+      setSpecialStatuses(prev => [...prev, newStatus])
       setNewStatusName('')
-      fetchData()
     } catch (error) {
       console.error('Error adding special status:', error)
       alert('حدث خطأ أثناء إضافة الحالة الخاصة')
@@ -474,7 +469,7 @@ function App() {
 
     try {
       await db.special_statuses.delete(statusId)
-      fetchData()
+      setSpecialStatuses(prev => prev.filter(s => s.id !== statusId))
     } catch (error) {
       console.error('Error deleting special status:', error)
       alert('حدث خطأ أثناء حذف الحالة الخاصة')
@@ -503,9 +498,9 @@ function App() {
       }
 
       await db.groups.add(newGroup)
+      setGroups(prev => [...prev, newGroup])
       setNewStage('')
       setNewGroupName('')
-      fetchData()
       alert('تمت إضافة المجموعة بنجاح')
     } catch (error) {
       console.error('Error adding group:', error)
@@ -525,7 +520,7 @@ function App() {
 
     try {
       await db.groups.delete(groupId)
-      fetchData()
+      setGroups(prev => prev.filter(g => g.id !== groupId))
       alert('تم حذف المجموعة بنجاح')
     } catch (error) {
       console.error('Error deleting group:', error)
@@ -1962,8 +1957,8 @@ function App() {
                                                               if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
                                                                 try {
                                                                   await db.students.delete(student.id)
+                                                                  setStudents(prev => prev.filter(s => s.id !== student.id))
                                                                   alert('تم حذف الطالب بنجاح')
-                                                                  fetchData()
                                                                   setStudentMenuOpen(null)
                                                                 } catch (error) {
                                                                   console.error('Error deleting student:', error)
@@ -2026,9 +2021,11 @@ function App() {
       {/* Modals */}
       {showProfileSettings && (
         <ProfileSettings
-          onClose={() => {
+          onClose={async (updated) => {
             setShowProfileSettings(false)
-            fetchData()
+            if (updated) {
+              await fetchData(true)
+            }
           }}
         />
       )}
@@ -2036,9 +2033,9 @@ function App() {
       <ExcelImportModal
         isOpen={showExcelImport}
         onClose={() => setShowExcelImport(false)}
-        onImportComplete={() => {
-          fetchData()
-          fetchTeachersCount()
+        onImportComplete={async () => {
+          await fetchData()
+          await fetchTeachersCount()
         }}
       />
 
@@ -2152,7 +2149,12 @@ function App() {
       {showAddStudentModal && (
         <AddStudentModal
           onClose={() => setShowAddStudentModal(false)}
-          onStudentAdded={fetchData}
+          onStudentAdded={async (newStudent) => {
+            if (newStudent) {
+              setStudents(prev => [...prev, newStudent])
+            }
+            await fetchTodayStats()
+          }}
         />
       )}
 
@@ -2764,7 +2766,7 @@ function App() {
                 <button
                   onClick={async () => {
                     try {
-                      await db.students.update(editingStudent.id, {
+                      const updatedData = {
                         name: editingStudent.name,
                         national_id: editingStudent.national_id,
                         phone: editingStudent.phone,
@@ -2772,9 +2774,12 @@ function App() {
                         group_id: editingStudent.group_id,
                         special_status_id: editingStudent.special_status_id,
                         updated_at: new Date().toISOString()
-                      })
+                      }
+                      await db.students.update(editingStudent.id, updatedData)
+                      setStudents(prev => prev.map(s =>
+                        s.id === editingStudent.id ? { ...s, ...updatedData } : s
+                      ))
                       alert('تم تحديث بيانات الطالب بنجاح')
-                      fetchData()
                       setShowEditModal(false)
                       setEditingStudent(null)
                     } catch (error) {

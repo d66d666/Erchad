@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Group, SpecialStatus } from '../types'
+import { Group, SpecialStatus, Student } from '../types'
 import { X } from 'lucide-react'
 import { db } from '../lib/db'
 
 interface AddStudentModalProps {
   onClose: () => void
   preselectedGroupId?: string
-  onStudentAdded?: () => void
+  onStudentAdded?: (newStudent: Student) => void
 }
 
 export function AddStudentModal({
@@ -102,18 +102,19 @@ export function AddStudentModal({
       }
 
       const newId = crypto.randomUUID()
-      await db.students.add({
+      const newStudent = {
         id: newId,
         ...data,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      })
+      }
+      await db.students.add(newStudent)
 
       alert('تم إضافة الطالب بنجاح')
 
       // تحديث البيانات في الصفحة الرئيسية
       if (onStudentAdded) {
-        onStudentAdded()
+        onStudentAdded(newStudent as Student)
       }
 
       onClose()

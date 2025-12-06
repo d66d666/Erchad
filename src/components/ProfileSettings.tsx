@@ -4,7 +4,7 @@ import { X, Save, User, Trash2, AlertTriangle, Lock, Key, ChevronDown, Calendar 
 import { formatSubscriptionDate, getDaysRemaining, isSubscriptionActive } from '../lib/licenseKey'
 
 interface ProfileSettingsProps {
-  onClose: () => void
+  onClose: (updated?: boolean) => void
 }
 
 export function ProfileSettings({ onClose }: ProfileSettingsProps) {
@@ -153,7 +153,7 @@ export function ProfileSettings({ onClose }: ProfileSettingsProps) {
       console.log('Verified saved profile:', savedProfile)
 
       alert('تم حفظ البيانات بنجاح')
-      onClose()
+      onClose(true)
 
       // تأخير بسيط للتأكد من اكتمال الحفظ
       setTimeout(() => {

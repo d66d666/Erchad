@@ -146,6 +146,22 @@ export class StudentsDatabase extends Dexie {
       subscription: 'id, school_id, is_active',
       activation_history: 'id, key_id, activation_date'
     })
+
+    this.version(10).stores({
+      groups: 'id, name, stage, display_order',
+      students: 'id, student_id, name, national_id, group_id, special_status_id',
+      special_statuses: 'id, name',
+      student_visits: 'id, student_id, visit_date',
+      student_permissions: 'id, student_id, permission_date',
+      student_violations: 'id, student_id, violation_date, violation_type',
+      teacher_profile: 'id',
+      login_credentials: 'id, username, expiry_date',
+      teachers: 'id, name, phone',
+      teacher_groups: 'id, teacher_id, group_id',
+      renewal_codes: 'id, code, username, used',
+      subscription: 'id, school_id, is_active, end_date',
+      activation_history: 'id, key_id, activation_date'
+    })
   }
 }
 

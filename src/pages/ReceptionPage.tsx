@@ -483,18 +483,40 @@ ${teacherName || 'مسؤول النظام'}
               <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl p-5 border-2 border-green-300 shadow-md">
                 <h3 className="font-bold text-green-900 mb-3 flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
-                  الطالب المحدد:
+                  بيانات الطالب
                 </h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-blue-700">الاسم:</span> <span className="text-gray-800">{selectedStudent.name}</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-blue-700">السجل المدني:</span> <span className="text-gray-800">{selectedStudent.national_id}</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-blue-700">الفصل:</span> <span className="text-gray-800">{selectedStudent.group?.name}</span></div>
-                  <div className="bg-white rounded-lg p-2"><span className="font-semibold text-blue-700">الصف:</span> <span className="text-gray-800">{selectedStudent.grade}</span></div>
-                  <div className="col-span-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg p-3 shadow-md">
-                    <span className="font-semibold">عدد الزيارات السابقة:</span>
-                    <span className="font-bold mr-2 text-2xl">{selectedStudent.visit_count || 0}</span>
-                  </div>
-                </div>
+                <table className="w-full">
+                  <tbody>
+                    <tr>
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">رقم الهوية / الإقامة</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.national_id}</td>
+                    </tr>
+                    <tr className="bg-gray-100">
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">الصف</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.grade}</td>
+                    </tr>
+                    <tr>
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">المجموعة</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.group?.name || 'غير محدد'}</td>
+                    </tr>
+                    <tr className="bg-gray-100">
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">المرحلة الدراسية</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.grade}</td>
+                    </tr>
+                    <tr>
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">رقم جوال الطالب</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.phone || 'غير محدد'}</td>
+                    </tr>
+                    <tr className="bg-gray-100">
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3 border-b border-gray-200">رقم جوال ولي الأمر</td>
+                      <td className="text-right px-4 py-3 border-b border-gray-200">{selectedStudent.guardian_phone}</td>
+                    </tr>
+                    <tr className="bg-yellow-100">
+                      <td className="bg-blue-500 text-white text-right font-semibold px-4 py-3">الحالة الخاصة</td>
+                      <td className="text-right px-4 py-3">{selectedStudent.special_status?.name || 'لا يوجد'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               <div>

@@ -463,6 +463,7 @@ function App() {
       await db.special_statuses.add(newStatus)
       setSpecialStatuses(prev => [...prev, newStatus])
       setNewStatusName('')
+      await fetchData(true)
     } catch (error) {
       console.error('Error adding special status:', error)
       setAlertMessage('حدث خطأ أثناء إضافة الحالة الخاصة')
@@ -486,6 +487,7 @@ function App() {
     try {
       await db.special_statuses.delete(statusId)
       setSpecialStatuses(prev => prev.filter(s => s.id !== statusId))
+      await fetchData(true)
     } catch (error) {
       console.error('Error deleting special status:', error)
       setAlertMessage('حدث خطأ أثناء حذف الحالة الخاصة')
@@ -519,6 +521,7 @@ function App() {
       setGroups(prev => [...prev, newGroup])
       setNewStage('')
       setNewGroupName('')
+      await fetchData(true)
       setAlertMessage('تمت إضافة المجموعة بنجاح')
       setAlertType('success')
       setShowAlert(true)
@@ -545,6 +548,7 @@ function App() {
     try {
       await db.groups.delete(groupId)
       setGroups(prev => prev.filter(g => g.id !== groupId))
+      await fetchData(true)
       setAlertMessage('تم حذف المجموعة بنجاح')
       setAlertType('success')
       setShowAlert(true)
@@ -1996,6 +2000,7 @@ function App() {
                                                                 try {
                                                                   await db.students.delete(student.id)
                                                                   setStudents(prev => prev.filter(s => s.id !== student.id))
+                                                                  await fetchTodayStats()
                                                                   setAlertMessage('تم حذف الطالب بنجاح')
                                                                   setAlertType('success')
                                                                   setShowAlert(true)
@@ -2039,7 +2044,13 @@ function App() {
           </div>
         )}
 
-        {currentPage === 'teachers' && <TeachersPage />}
+        {currentPage === 'teachers' && (
+          <TeachersPage
+            onDataChange={async () => {
+              await fetchTeachersCount()
+            }}
+          />
+        )}
 
         {currentPage === 'groups' && <GroupsManagementPage />}
 
@@ -2194,8 +2205,9 @@ function App() {
           onStudentAdded={async (newStudent) => {
             if (newStudent) {
               setStudents(prev => [...prev, newStudent])
+              await fetchTodayStats()
+              await fetchTeachersCount()
             }
-            await fetchTodayStats()
           }}
         />
       )}
@@ -2845,6 +2857,7 @@ function App() {
                       setStudents(prev => prev.map(s =>
                         s.id === editingStudent.id ? { ...s, ...updatedData } : s
                       ))
+                      await fetchTodayStats()
                       setAlertMessage('تم تحديث بيانات الطالب بنجاح')
                       setAlertType('success')
                       setShowAlert(true)

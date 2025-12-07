@@ -10,7 +10,11 @@ interface TeacherWithGroups extends Teacher {
   groups?: Group[]
 }
 
-export function TeachersPage() {
+interface TeachersPageProps {
+  onDataChange?: () => void
+}
+
+export function TeachersPage({ onDataChange }: TeachersPageProps = {}) {
   const [teachers, setTeachers] = useState<TeacherWithGroups[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,6 +48,10 @@ export function TeachersPage() {
     setTeachers(teachersWithGroups)
 
     setLoading(false)
+
+    if (onDataChange) {
+      onDataChange()
+    }
   }
 
   const handleAddNew = () => {

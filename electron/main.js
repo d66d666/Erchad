@@ -15,14 +15,24 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: true,
+      webSecurity: false,
       sandbox: false,
       enableRemoteModule: false,
-      spellcheck: false
+      spellcheck: false,
+      partition: 'persist:student-management'
     },
     autoHideMenuBar: true,
     backgroundColor: '#ffffff',
     show: true
+  });
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': ['default-src \'self\' \'unsafe-inline\' \'unsafe-eval\' data: blob:']
+      }
+    });
   });
 
   if (isDev) {

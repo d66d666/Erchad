@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { db } from './lib/db'
 import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
+import { SetupWizard } from './pages/SetupWizard'
 import { TeachersPage } from './pages/TeachersPage'
 import { GroupsManagementPage } from './pages/GroupsManagementPage'
 import { SpecialStatusPage } from './pages/SpecialStatusPage'
@@ -54,6 +55,8 @@ type Page = 'home' | 'groups' | 'special-status' | 'absence' | 'reception' | 'pe
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isMasterAdmin, setIsMasterAdmin] = useState(false)
+  const [needsSetup, setNeedsSetup] = useState(false)
+  const [checkingSetup, setCheckingSetup] = useState(true)
   const [students, setStudents] = useState<Student[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
@@ -287,26 +290,47 @@ function App() {
   }
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
-    const userId = localStorage.getItem('userId')
-    const isMaster = userId === 'master-admin'
+    const checkSetup = async () => {
+      try {
+        const credentialsCount = await db.login_credentials.count()
+        const setupCompleted = localStorage.getItem('setupCompleted') === 'true'
 
-    setIsLoggedIn(loggedIn)
-    setIsMasterAdmin(isMaster)
+        if (credentialsCount === 0 && !setupCompleted) {
+          setNeedsSetup(true)
+          setCheckingSetup(false)
+          return
+        }
 
-    if (loggedIn) {
-      setLoading(false)
-      setTimeout(() => {
-        Promise.all([
-          checkSubscription(),
-          fetchData(),
-          fetchTeachersCount(),
-          fetchTeachers()
-        ]).catch(err => console.error('Data loading error:', err))
-      }, 50)
-    } else {
-      setLoading(false)
+        setNeedsSetup(false)
+        setCheckingSetup(false)
+
+        const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
+        const userId = localStorage.getItem('userId')
+        const isMaster = userId === 'master-admin'
+
+        setIsLoggedIn(loggedIn)
+        setIsMasterAdmin(isMaster)
+
+        if (loggedIn) {
+          setLoading(false)
+          setTimeout(() => {
+            Promise.all([
+              checkSubscription(),
+              fetchData(),
+              fetchTeachersCount(),
+              fetchTeachers()
+            ]).catch(err => console.error('Data loading error:', err))
+          }, 50)
+        } else {
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('Setup check error:', err)
+        setCheckingSetup(false)
+      }
     }
+
+    checkSetup()
   }, [])
 
   async function fetchTeachers() {
@@ -1337,6 +1361,27 @@ function App() {
     { id: 'permission' as Page, label: 'الاستئذان', icon: LogOut, show: mainMenuItems.permission },
     { id: 'absence' as Page, label: 'المخالفات', icon: AlertCircle, show: mainMenuItems.violations },
   ]
+
+  if (checkingSetup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+          <p className="text-xl font-bold">جاري التحميل...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (needsSetup) {
+    return <SetupWizard onComplete={() => {
+      setNeedsSetup(false)
+      setIsLoggedIn(true)
+      fetchData()
+      fetchTeachersCount()
+      fetchTeachers()
+    }} />
+  }
 
   if (!isLoggedIn) {
     return <LoginPage onLogin={handleLogin} />

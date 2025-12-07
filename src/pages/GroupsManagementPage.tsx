@@ -38,11 +38,17 @@ export function GroupsManagementPage() {
   }, [])
 
   useEffect(() => {
-    const allStages = {} as Record<string, boolean>
-    groups.forEach(group => {
-      allStages[group.stage] = true
+    setExpandedStages(prev => {
+      const newStages = {} as Record<string, boolean>
+      groups.forEach(group => {
+        if (prev[group.stage] !== undefined) {
+          newStages[group.stage] = prev[group.stage]
+        } else {
+          newStages[group.stage] = false
+        }
+      })
+      return newStages
     })
-    setExpandedStages(allStages)
   }, [groups])
 
   const fetchGroups = async () => {

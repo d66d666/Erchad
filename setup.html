@@ -4,70 +4,296 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>إعداد النظام - تصفير قاعدة البيانات</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-
     * {
-      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .gradient-bg {
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
-    .card-shadow {
+    .container {
+      background: white;
+      border-radius: 24px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 32px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .icon-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(to bottom right, #ef4444, #ec4899);
+      border-radius: 50%;
+      margin-bottom: 16px;
+      animation: pulse 2s infinite;
     }
 
     @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
 
-    .pulse-animation {
-      animation: pulse 2s infinite;
+    .icon {
+      width: 40px;
+      height: 40px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 900;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 18px;
+    }
+
+    .alert-box {
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 2px solid;
+    }
+
+    .alert-danger {
+      background: linear-gradient(to right, #fef2f2, #fff7ed);
+      border-color: #fca5a5;
+    }
+
+    .alert-info {
+      background: linear-gradient(to right, #eff6ff, #ecfeff);
+      border-color: #93c5fd;
+    }
+
+    .alert-success {
+      background: linear-gradient(to right, #f0fdf4, #ecfdf5);
+      border-color: #86efac;
+    }
+
+    .alert-header {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .alert-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .alert-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .danger-title { color: #7f1d1d; }
+    .info-title { color: #1e3a8a; }
+    .success-title { color: #14532d; }
+
+    .danger-text { color: #991b1b; }
+    .info-text { color: #1e40af; }
+    .success-text { color: #166534; }
+
+    ul {
+      list-style: none;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    ul li {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bullet {
+      color: #dc2626;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .grid-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+    }
+
+    .progress-box {
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .progress-bar-container {
+      background: #e5e7eb;
+      border-radius: 9999px;
+      height: 12px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      background: linear-gradient(to right, #3b82f6, #9333ea);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+    }
+
+    button {
+      flex: 1;
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-danger {
+      background: linear-gradient(to right, #dc2626, #ec4899);
+      color: white;
+      box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(to right, #b91c1c, #db2777);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(to right, #6b7280, #4b5563);
+      color: white;
+      box-shadow: 0 4px 6px rgba(75, 85, 99, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(to right, #4b5563, #374151);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .footer {
+      margin-top: 32px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .footer p:last-child {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-6">
-  <div class="bg-white rounded-3xl card-shadow max-w-2xl w-full p-8">
-    <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-pink-600 rounded-full mb-4 pulse-animation">
-        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="icon-container">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
       </div>
-      <h1 class="text-4xl font-black text-gray-800 mb-2">إعداد النظام</h1>
-      <p class="text-gray-600 text-lg">تصفير قاعدة البيانات وإعادة التشغيل</p>
+      <h1>إعداد النظام</h1>
+      <p class="subtitle">تصفير قاعدة البيانات وإعادة التشغيل</p>
     </div>
 
-    <div class="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-2xl p-6 mb-6">
-      <div class="flex items-start gap-3">
-        <svg class="w-8 h-8 text-red-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+    <div class="alert-box alert-danger">
+      <div class="alert-header">
+        <svg class="alert-icon" style="fill: #dc2626;" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
         </svg>
-        <div>
-          <h3 class="font-bold text-red-900 text-xl mb-3">⚠️ تحذير هام جداً!</h3>
-          <ul class="text-sm text-red-800 space-y-2 leading-relaxed">
-            <li class="flex items-start gap-2">
-              <span class="text-red-600 font-bold">•</span>
+        <div style="flex: 1;">
+          <h3 class="alert-title danger-title">⚠️ تحذير هام جداً!</h3>
+          <ul class="danger-text">
+            <li>
+              <span class="bullet">•</span>
               <span><strong>سيتم حذف جميع البيانات بشكل نهائي</strong> ولا يمكن استرجاعها</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-red-600 font-bold">•</span>
+            <li>
+              <span class="bullet">•</span>
               <span>سيتم حذف: الطلاب، المعلمين، المجموعات، الزيارات، الاستئذانات، المخالفات، الحالات الخاصة</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-red-600 font-bold">•</span>
+            <li>
+              <span class="bullet">•</span>
               <span>سيتم حذف جميع الحسابات والإعدادات</span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-red-600 font-bold">•</span>
+            <li>
+              <span class="bullet">•</span>
               <span><strong>يُنصح بعمل نسخة احتياطية</strong> قبل التصفير</span>
             </li>
           </ul>
@@ -75,93 +301,82 @@
       </div>
     </div>
 
-    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-2xl p-6 mb-6">
-      <h3 class="font-bold text-blue-900 text-lg mb-3">📋 ما الذي سيحدث؟</h3>
-      <div class="grid grid-cols-2 gap-3 text-sm text-blue-800">
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+    <div class="alert-box alert-info">
+      <h3 class="alert-title info-title">📋 ما الذي سيحدث؟</h3>
+      <div class="grid info-text">
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف جميع الطلاب</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف جميع المعلمين</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف المجموعات</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف فئات الطلاب</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف الزيارات</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف الاستئذانات</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف المخالفات</span>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+        <div class="grid-item">
+          <div class="dot"></div>
           <span>حذف جميع الحسابات</span>
         </div>
       </div>
     </div>
 
-    <div id="successMessage" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-2xl p-6 mb-6">
-      <div class="flex items-center gap-3">
-        <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+    <div id="successMessage" class="alert-box alert-success hidden">
+      <div class="alert-header">
+        <svg class="alert-icon" style="fill: #16a34a;" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
         </svg>
         <div>
-          <h3 class="font-bold text-green-900 text-xl">✅ تم التصفير بنجاح!</h3>
-          <p class="text-green-800 mt-1">تم حذف جميع البيانات من قاعدة البيانات</p>
+          <h3 class="alert-title success-title">✅ تم التصفير بنجاح!</h3>
+          <p class="success-text" style="margin-top: 4px;">تم حذف جميع البيانات من قاعدة البيانات</p>
         </div>
       </div>
     </div>
 
-    <div id="progressBox" class="hidden mb-6">
-      <div class="bg-gray-200 rounded-full h-3 overflow-hidden">
-        <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-full transition-all duration-300" style="width: 0%"></div>
+    <div id="progressBox" class="progress-box">
+      <div class="progress-bar-container">
+        <div id="progressBar" class="progress-bar"></div>
       </div>
-      <p id="progressText" class="text-center text-gray-600 text-sm mt-2 font-medium">جاري التصفير...</p>
+      <p id="progressText" class="progress-text">جاري التصفير...</p>
     </div>
 
-    <div class="flex gap-4">
-      <button
-        id="resetBtn"
-        onclick="resetDatabase()"
-        class="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg text-lg"
-      >
-        <div class="flex items-center justify-center gap-3">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          <span>تصفير قاعدة البيانات</span>
-        </div>
+    <div class="buttons">
+      <button id="resetBtn" onclick="resetDatabase()" class="btn-danger">
+        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>تصفير قاعدة البيانات</span>
       </button>
 
-      <button
-        onclick="window.location.href='index.html'"
-        class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg text-lg"
-      >
-        <div class="flex items-center justify-center gap-3">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          <span>إلغاء</span>
-        </div>
+      <button onclick="window.location.href='index.html'" class="btn-secondary">
+        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>إلغاء</span>
       </button>
     </div>
 
-    <div class="mt-8 text-center text-gray-500 text-sm">
+    <div class="footer">
       <p>نظام إدارة الطلاب</p>
-      <p class="text-xs mt-1">الأستاذ وائل الفيفي - 0558890902</p>
+      <p>الأستاذ وائل الفيفي - 0558890902</p>
     </div>
   </div>
 
@@ -175,43 +390,44 @@
 
       if (!secondConfirm) return
 
-      document.getElementById('resetBtn').disabled = true
-      document.getElementById('resetBtn').classList.add('opacity-50', 'cursor-not-allowed')
+      const btn = document.getElementById('resetBtn')
+      btn.disabled = true
+      btn.style.opacity = '0.5'
+
       document.getElementById('progressBox').classList.remove('hidden')
       document.getElementById('successMessage').classList.add('hidden')
 
       try {
-        const databases = await indexedDB.databases()
-        const dbName = 'StudentManagementDB'
-
         updateProgress(20, 'جاري البحث عن قاعدة البيانات...')
 
-        if (databases.some(db => db.name === dbName)) {
-          updateProgress(40, 'جاري حذف قاعدة البيانات...')
+        // حذف قاعدة البيانات الرئيسية
+        const dbName = 'StudentsDatabase'
 
-          await new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(dbName)
+        updateProgress(40, 'جاري حذف قاعدة البيانات...')
 
-            request.onsuccess = () => {
-              console.log('تم حذف قاعدة البيانات بنجاح')
-              resolve()
-            }
+        await new Promise((resolve, reject) => {
+          const request = indexedDB.deleteDatabase(dbName)
 
-            request.onerror = () => {
-              console.error('خطأ في حذف قاعدة البيانات')
-              reject(request.error)
-            }
+          request.onsuccess = () => {
+            console.log('تم حذف قاعدة البيانات بنجاح')
+            resolve()
+          }
 
-            request.onblocked = () => {
-              console.warn('عملية الحذف محجوبة')
-              alert('⚠️ يرجى إغلاق جميع نوافذ النظام الأخرى والمحاولة مرة أخرى')
-              reject(new Error('Database deletion blocked'))
-            }
-          })
-        }
+          request.onerror = () => {
+            console.error('خطأ في حذف قاعدة البيانات')
+            reject(request.error)
+          }
+
+          request.onblocked = () => {
+            console.warn('عملية الحذف محجوبة')
+            alert('⚠️ يرجى إغلاق جميع نوافذ النظام الأخرى والمحاولة مرة أخرى')
+            reject(new Error('Database deletion blocked'))
+          }
+        })
 
         updateProgress(60, 'جاري تنظيف البيانات المحلية...')
 
+        // حذف جميع بيانات localStorage
         const keysToRemove = []
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
@@ -243,8 +459,8 @@
         console.error('خطأ في تصفير قاعدة البيانات:', error)
         alert('حدث خطأ أثناء تصفير قاعدة البيانات: ' + error.message)
 
-        document.getElementById('resetBtn').disabled = false
-        document.getElementById('resetBtn').classList.remove('opacity-50', 'cursor-not-allowed')
+        btn.disabled = false
+        btn.style.opacity = '1'
         document.getElementById('progressBox').classList.add('hidden')
       }
     }

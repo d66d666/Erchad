@@ -1999,8 +1999,7 @@ function App() {
                                                               if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
                                                                 try {
                                                                   await db.students.delete(student.id)
-                                                                  setStudents(prev => prev.filter(s => s.id !== student.id))
-                                                                  await fetchTodayStats()
+                                                                  await fetchData()
                                                                   setAlertMessage('تم حذف الطالب بنجاح')
                                                                   setAlertType('success')
                                                                   setShowAlert(true)
@@ -2204,8 +2203,7 @@ function App() {
           onClose={() => setShowAddStudentModal(false)}
           onStudentAdded={async (newStudent) => {
             if (newStudent) {
-              setStudents(prev => [...prev, newStudent])
-              await fetchTodayStats()
+              await fetchData()
               await fetchTeachersCount()
             }
           }}
@@ -2854,10 +2852,7 @@ function App() {
                         updated_at: new Date().toISOString()
                       }
                       await db.students.update(editingStudent.id, updatedData)
-                      setStudents(prev => prev.map(s =>
-                        s.id === editingStudent.id ? { ...s, ...updatedData } : s
-                      ))
-                      await fetchTodayStats()
+                      await fetchData()
                       setAlertMessage('تم تحديث بيانات الطالب بنجاح')
                       setAlertType('success')
                       setShowAlert(true)

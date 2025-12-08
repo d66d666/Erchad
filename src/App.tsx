@@ -486,6 +486,23 @@ function App() {
     setExpandedGroups(matchingGroups)
   }, [matchingGroups])
 
+  const filteredAdditionalStudents = useMemo(() => {
+    if (!additionalSearchTerm || !currentStudent) return []
+
+    const search = additionalSearchTerm.toLowerCase()
+    return students
+      .filter(s => {
+        const name = s.name.toLowerCase()
+        return s.id !== currentStudent.id &&
+               !additionalStudentIds.includes(s.id) &&
+               (name.includes(search) ||
+                s.national_id.includes(additionalSearchTerm) ||
+                s.phone.includes(additionalSearchTerm) ||
+                s.guardian_phone.includes(additionalSearchTerm))
+      })
+      .slice(0, 50)
+  }, [students, additionalSearchTerm, currentStudent, additionalStudentIds])
+
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')
@@ -2678,100 +2695,83 @@ function App() {
 
       {showAllowEntryModal && currentStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => {
-          setShowAllowEntryModal(false)
-          setCurrentStudent(null)
-          setAdditionalStudentIds([])
-          setAdditionalSearchTerm('')
-          setSelectedTeacherId('')
-        }}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-5 rounded-t-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <DoorOpen size={24} />
-                <h2 className="text-xl font-bold">السماح بدخول الفصل</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowAllowEntryModal(false)
-                  setCurrentStudent(null)
-                  setAdditionalStudentIds([])
-                  setAdditionalSearchTerm('')
-                  setSelectedTeacherId('')
-                }}
-                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              {/* معلومات الطالب الأساسي */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <h3 className="font-bold text-gray-800 mb-3 text-right">معلومات الطالب:</h3>
-                <div className="space-y-1 text-right text-sm">
-                  <p><span className="font-semibold">الاسم:</span> {currentStudent.name}</p>
-                  <p><span className="font-semibold">السجل المدني:</span> {currentStudent.national_id}</p>
-                  <p><span className="font-semibold">الصف:</span> {currentStudent.grade}</p>
-                  <p><span className="font-semibold">المجموعة:</span> {groups.find(g => g.id === currentStudent.group_id)?.name || '-'}</p>
+            setShowAllowEntryModal(false)
+            setCurrentStudent(null)
+            setAdditionalStudentIds([])
+            setAdditionalSearchTerm('')
+            setSelectedTeacherId('')
+          }}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-5 rounded-t-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <DoorOpen size={24} />
+                  <h2 className="text-xl font-bold">السماح بدخول الفصل</h2>
                 </div>
+                <button
+                  onClick={() => {
+                    setShowAllowEntryModal(false)
+                    setCurrentStudent(null)
+                    setAdditionalStudentIds([])
+                    setAdditionalSearchTerm('')
+                    setSelectedTeacherId('')
+                  }}
+                  className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  <X size={24} />
+                </button>
               </div>
-
-              {/* إضافة طلاب آخرين */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <h3 className="font-bold text-gray-800 mb-3 text-right">إضافة طلاب آخرين (اختياري):</h3>
-
-                {/* حقل البحث */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={additionalSearchTerm}
-                    onChange={(e) => setAdditionalSearchTerm(e.target.value)}
-                    placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
-                    className="w-full px-4 py-2.5 pr-10 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
-                  />
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                </div>
-
-                {/* نتائج البحث */}
-                {additionalSearchTerm && (
-                  <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
-                    {students
-                      .filter(s =>
-                        s.id !== currentStudent.id &&
-                        !additionalStudentIds.includes(s.id) &&
-                        (arabicTextIncludes(s.name, additionalSearchTerm) ||
-                         s.national_id.includes(additionalSearchTerm) ||
-                         s.phone.includes(additionalSearchTerm) ||
-                         s.guardian_phone.includes(additionalSearchTerm))
-                      )
-                      .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
-                      .slice(0, 50)
-                      .map(student => (
-                        <button
-                          key={student.id}
-                          onClick={() => {
-                            setAdditionalStudentIds([...additionalStudentIds, student.id])
-                            setAdditionalSearchTerm('')
-                          }}
-                          className="w-full text-right px-4 py-2.5 border-b border-gray-200 hover:bg-blue-50 transition-colors"
-                        >
-                          <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
-                          <p className="text-xs text-gray-600">
-                            {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
-                          </p>
-                        </button>
-                      ))}
-                    {students.filter(s =>
-                      s.id !== currentStudent.id &&
-                      !additionalStudentIds.includes(s.id) &&
-                      (arabicTextIncludes(s.name, additionalSearchTerm) ||
-                       s.national_id.includes(additionalSearchTerm) ||
-                       s.phone.includes(additionalSearchTerm) ||
-                       s.guardian_phone.includes(additionalSearchTerm))
-                    ).length === 0 && (
-                      <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
-                    )}
+              <div className="p-6 space-y-4">
+                {/* معلومات الطالب الأساسي */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="font-bold text-gray-800 mb-3 text-right">معلومات الطالب:</h3>
+                  <div className="space-y-1 text-right text-sm">
+                    <p><span className="font-semibold">الاسم:</span> {currentStudent.name}</p>
+                    <p><span className="font-semibold">السجل المدني:</span> {currentStudent.national_id}</p>
+                    <p><span className="font-semibold">الصف:</span> {currentStudent.grade}</p>
+                    <p><span className="font-semibold">المجموعة:</span> {groups.find(g => g.id === currentStudent.group_id)?.name || '-'}</p>
                   </div>
-                )}
+                </div>
+
+                {/* إضافة طلاب آخرين */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <h3 className="font-bold text-gray-800 mb-3 text-right">إضافة طلاب آخرين (اختياري):</h3>
+
+                  {/* حقل البحث */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={additionalSearchTerm}
+                      onChange={(e) => setAdditionalSearchTerm(e.target.value)}
+                      placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
+                      className="w-full px-4 py-2.5 pr-10 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                    />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  </div>
+
+                  {/* نتائج البحث */}
+                  {additionalSearchTerm && (
+                    <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
+                      {filteredAdditionalStudents.length === 0 ? (
+                        <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
+                      ) : (
+                        filteredAdditionalStudents.map(student => (
+                          <button
+                            key={student.id}
+                            onClick={() => {
+                              setAdditionalStudentIds([...additionalStudentIds, student.id])
+                              setAdditionalSearchTerm('')
+                            }}
+                            className="w-full text-right px-4 py-2.5 border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
+                          >
+                            <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
+                            <p className="text-xs text-gray-600">
+                              {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
+                            </p>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
 
                 {/* قائمة الطلاب المضافين */}
                 {additionalStudentIds.length > 0 && (

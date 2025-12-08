@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { db } from '../lib/db'
 import { Student, SpecialStatus, SchoolInfo } from '../types'
-import { Trash2, Edit2, MoreVertical, Printer, DoorOpen, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Trash2, Edit2, MoreVertical, Printer, DoorOpen } from 'lucide-react'
 import { AllowClassEntryModal } from './AllowClassEntryModal'
 
 interface StudentsListProps {
@@ -14,8 +14,6 @@ interface StudentsListProps {
   showSpecialStatus?: boolean
   showPermission?: boolean
 }
-
-const STUDENTS_PER_PAGE = 50
 
 export function StudentsList({
   students,
@@ -32,7 +30,6 @@ export function StudentsList({
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo | null>(null)
   const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     fetchSchoolInfo()
@@ -355,30 +352,6 @@ export function StudentsList({
     printWindow.document.close()
   }
 
-  const totalPages = Math.ceil(students.length / STUDENTS_PER_PAGE)
-
-  const paginatedStudents = useMemo(() => {
-    const startIndex = (currentPage - 1) * STUDENTS_PER_PAGE
-    const endIndex = startIndex + STUDENTS_PER_PAGE
-    return students.slice(startIndex, endIndex)
-  }, [students, currentPage])
-
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages)
-    }
-  }, [totalPages, currentPage])
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [students.length])
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    setExpandedId(null)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   if (students.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -399,29 +372,19 @@ export function StudentsList({
   const groupIndex = groupName.charCodeAt(0) % groupColors.length
   const colors = groupColors[groupIndex]
 
-  const startIndex = (currentPage - 1) * STUDENTS_PER_PAGE + 1
-  const endIndex = Math.min(currentPage * STUDENTS_PER_PAGE, students.length)
-
   return (
     <div className="space-y-2 mb-2">
         <div className={`${colors.header} text-white px-6 py-4 rounded-xl shadow-md mb-4`}>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">{groupName}</h3>
-            <div className="flex items-center gap-3">
-              {totalPages > 1 && (
-                <span className="bg-white/25 px-4 py-1.5 rounded-full text-sm font-medium">
-                  {startIndex} - {endIndex} من {students.length}
-                </span>
-              )}
-              <span className="bg-white/25 px-4 py-1.5 rounded-full text-sm font-medium">{students.length} طالب</span>
-            </div>
+            <span className="bg-white/25 px-4 py-1.5 rounded-full text-sm font-medium">{students.length} طالب</span>
           </div>
           {groupStage && (
             <p className="text-white/90 text-sm mt-1 font-medium">{groupStage}</p>
           )}
         </div>
         <div className="space-y-2 pb-2">
-          {paginatedStudents.map((student) => {
+          {students.map((student) => {
             const hasSpecialStatus = student.special_status_id !== null
             const bgColorClass = hasSpecialStatus
               ? 'bg-amber-50 border-amber-200'
@@ -527,62 +490,6 @@ export function StudentsList({
             )
           })}
       </div>
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2 bg-white rounded-xl shadow-md p-4 border border-gray-200">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-400"
-          >
-            <ChevronRight size={20} />
-            السابق
-          </button>
-
-          <div className="flex items-center gap-2">
-            {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
-              let pageNumber: number
-
-              if (totalPages <= 7) {
-                pageNumber = i + 1
-              } else if (currentPage <= 4) {
-                pageNumber = i + 1
-              } else if (currentPage >= totalPages - 3) {
-                pageNumber = totalPages - 6 + i
-              } else {
-                pageNumber = currentPage - 3 + i
-              }
-
-              return (
-                <button
-                  key={pageNumber}
-                  onClick={() => handlePageChange(pageNumber)}
-                  className={`w-10 h-10 rounded-lg font-bold transition-all ${
-                    currentPage === pageNumber
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-110'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {pageNumber}
-                </button>
-              )
-            })}
-          </div>
-
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-400"
-          >
-            التالي
-            <ChevronLeft size={20} />
-          </button>
-
-          <div className="mr-4 text-sm text-gray-600 font-medium">
-            صفحة {currentPage} من {totalPages}
-          </div>
-        </div>
-      )}
 
       <AllowClassEntryModal
         isOpen={showAllowEntryModal}

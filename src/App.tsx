@@ -166,6 +166,32 @@ function App() {
     })
   }
 
+  // دالة لاستخراج الرقم من اسم المجموعة للترتيب الصحيح
+  const extractGroupNumber = (groupName: string): number => {
+    const match = groupName.match(/\d+/)
+    return match ? parseInt(match[0]) : 999
+  }
+
+  // دالة لترتيب المجموعات حسب الرقم
+  const sortGroups = (groups: Group[]) => {
+    return groups.sort((a, b) => {
+      const numA = extractGroupNumber(a.name)
+      const numB = extractGroupNumber(b.name)
+
+      if (numA !== numB) {
+        return numA - numB
+      }
+
+      // إذا كان الرقم متساوي، رتب حسب الاسم
+      return a.name.localeCompare(b.name, 'ar')
+    })
+  }
+
+  // دالة لترتيب الطلاب أبجدياً
+  const sortStudentsAlphabetically = (students: Student[]) => {
+    return [...students].sort((a, b) => a.name.localeCompare(b.name, 'ar'))
+  }
+
   const checkSubscription = async () => {
     try {
       const userId = localStorage.getItem('userId')
@@ -1871,7 +1897,6 @@ function App() {
                     const filteredGroups = groups
                       .filter(g => stageFilter === 'all' || g.stage === stageFilter)
                       .filter(g => groupFilter === 'all' || g.id === groupFilter)
-                      .sort((a, b) => a.display_order - b.display_order)
 
                     const stages = sortStages(Array.from(new Set(filteredGroups.map(g => g.stage))))
 
@@ -1883,7 +1908,7 @@ function App() {
                     ]
 
                     return stages.map((stage, index) => {
-                      const stageGroups = filteredGroups.filter(g => g.stage === stage)
+                      const stageGroups = sortGroups(filteredGroups.filter(g => g.stage === stage))
                       const totalStageStudents = stageGroups.reduce((sum, group) => {
                         const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
                         return sum + groupStudents.length
@@ -1915,7 +1940,7 @@ function App() {
                           {isStageExpanded && (
                             <div className="space-y-3 pr-3 mt-3">
                               {stageGroups.map(group => {
-                                const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
+                                const groupStudents = sortStudentsAlphabetically(filteredStudents.filter(s => s.group_id === group.id))
 
                                 if (groupStudents.length === 0 && (debouncedSearchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
 

@@ -86,7 +86,9 @@ function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
+  const [currentStudent, setCurrentStudent] = useState<Student | null>(null)
+  const [additionalStudentIds, setAdditionalStudentIds] = useState<string[]>([])
+  const [selectedAdditionalId, setSelectedAdditionalId] = useState<string>('')
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
   const [teachers, setTeachers] = useState<any[]>([])
   const [showActivateLicense, setShowActivateLicense] = useState(false)
@@ -2028,6 +2030,10 @@ function App() {
                                                         <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
                                                           <button
                                                             onClick={() => {
+                                                              setCurrentStudent(student)
+                                                              setAdditionalStudentIds([])
+                                                              setSelectedAdditionalId('')
+                                                              setSelectedTeacherId('')
                                                               setShowAllowEntryModal(true)
                                                               setStudentMenuOpen(null)
                                                             }}
@@ -2670,10 +2676,12 @@ function App() {
         </div>
       )}
 
-      {showAllowEntryModal && (
+      {showAllowEntryModal && currentStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => {
           setShowAllowEntryModal(false)
-          setSelectedStudentIds([])
+          setCurrentStudent(null)
+          setAdditionalStudentIds([])
+          setSelectedAdditionalId('')
           setSelectedTeacherId('')
         }}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
@@ -2685,7 +2693,9 @@ function App() {
               <button
                 onClick={() => {
                   setShowAllowEntryModal(false)
-                  setSelectedStudentIds([])
+                  setCurrentStudent(null)
+                  setAdditionalStudentIds([])
+                  setSelectedAdditionalId('')
                   setSelectedTeacherId('')
                 }}
                 className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
@@ -2693,41 +2703,84 @@ function App() {
                 <X size={24} />
               </button>
             </div>
-            <div className="p-6">
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                <h3 className="font-bold text-gray-800 mb-3 text-right">اختر الطلاب:</h3>
-                <select
-                  multiple
-                  value={selectedStudentIds}
-                  onChange={(e) => {
-                    const options = Array.from(e.target.selectedOptions)
-                    setSelectedStudentIds(options.map(option => option.value))
-                  }}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                  style={{ minHeight: '200px' }}
-                >
-                  {students
-                    .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
-                    .map(student => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} - {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'}
-                      </option>
-                    ))}
-                </select>
-                <p className="text-xs text-gray-600 mt-2 text-right">
-                  {selectedStudentIds.length > 0
-                    ? `تم اختيار ${selectedStudentIds.length} طالب`
-                    : 'اضغط Ctrl/Cmd للاختيار المتعدد'}
-                </p>
+            <div className="p-6 space-y-4">
+              {/* معلومات الطالب الأساسي */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <h3 className="font-bold text-gray-800 mb-3 text-right">معلومات الطالب:</h3>
+                <div className="space-y-1 text-right text-sm">
+                  <p><span className="font-semibold">الاسم:</span> {currentStudent.name}</p>
+                  <p><span className="font-semibold">السجل المدني:</span> {currentStudent.national_id}</p>
+                  <p><span className="font-semibold">الصف:</span> {currentStudent.grade}</p>
+                  <p><span className="font-semibold">المجموعة:</span> {groups.find(g => g.id === currentStudent.group_id)?.name || '-'}</p>
+                </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+              {/* إضافة طلاب آخرين */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <h3 className="font-bold text-gray-800 mb-3 text-right">إضافة طلاب آخرين (اختياري):</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (selectedAdditionalId && !additionalStudentIds.includes(selectedAdditionalId) && selectedAdditionalId !== currentStudent.id) {
+                        setAdditionalStudentIds([...additionalStudentIds, selectedAdditionalId])
+                        setSelectedAdditionalId('')
+                      }
+                    }}
+                    disabled={!selectedAdditionalId}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <Plus size={18} />
+                    <span>إضافة</span>
+                  </button>
+                  <select
+                    value={selectedAdditionalId}
+                    onChange={(e) => setSelectedAdditionalId(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                  >
+                    <option value="">-- اختر طالب --</option>
+                    {students
+                      .filter(s => s.id !== currentStudent.id && !additionalStudentIds.includes(s.id))
+                      .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
+                      .map(student => (
+                        <option key={student.id} value={student.id}>
+                          {student.name} - {student.grade}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* قائمة الطلاب المضافين */}
+                {additionalStudentIds.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {additionalStudentIds.map((studentId) => {
+                      const student = students.find(s => s.id === studentId)
+                      if (!student) return null
+                      return (
+                        <div key={studentId} className="bg-white border border-gray-200 rounded-lg p-2 flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              setAdditionalStudentIds(additionalStudentIds.filter(id => id !== studentId))
+                            }}
+                            className="text-red-600 hover:text-red-700 p-1"
+                          >
+                            <X size={16} />
+                          </button>
+                          <p className="text-sm text-gray-800">{student.name} - {student.grade}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <p className="text-sm text-gray-700 text-center">
                   سيتم إرسال رسالة للمعلم المختار عبر واتساب
                 </p>
               </div>
 
-              <div className="mb-5">
+              {/* اختيار المعلم */}
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2 text-right">اختر المعلم</label>
                 <select
                   value={selectedTeacherId}
@@ -2741,38 +2794,45 @@ function App() {
                 </select>
               </div>
 
-              {selectedStudentIds.length > 0 && selectedTeacherId && (
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+              {/* معاينة الرسالة */}
+              {selectedTeacherId && (
+                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
                   <h4 className="font-bold text-green-900 mb-2 text-right flex items-center gap-2 justify-end">
                     <span>معاينة الرسالة:</span>
                     <Check size={18} />
                   </h4>
                   <div className="text-sm text-gray-800 text-right space-y-1 bg-white rounded-lg p-3">
                     <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
-                    <p className="font-bold mt-2">الرجاء السماح بدخول {selectedStudentIds.length === 1 ? 'الطالب' : 'الطلاب'} للفصل</p>
-                    {selectedStudentIds.length === 1 ? (
-                      <p className="mt-2">اسم الطالب: <span className="font-bold">{students.find(s => s.id === selectedStudentIds[0])?.name}</span></p>
-                    ) : (
+                    <p className="font-bold mt-2">
+                      الرجاء السماح بدخول {additionalStudentIds.length > 0 ? 'الطلاب' : 'الطالب'} للفصل
+                    </p>
+                    {additionalStudentIds.length > 0 ? (
                       <>
                         <p className="mt-2 font-bold">أسماء الطلاب:</p>
-                        {selectedStudentIds.slice(0, 3).map((id, index) => (
-                          <p key={id}>{index + 1}. {students.find(s => s.id === id)?.name}</p>
-                        ))}
-                        {selectedStudentIds.length > 3 && (
-                          <p>... و {selectedStudentIds.length - 3} آخرين</p>
-                        )}
+                        <p>1. {currentStudent.name}</p>
+                        {additionalStudentIds.map((studentId, index) => {
+                          const student = students.find(s => s.id === studentId)
+                          return student ? <p key={studentId}>{index + 2}. {student.name}</p> : null
+                        })}
                       </>
+                    ) : (
+                      <p className="mt-2">
+                        اسم الطالب: <span className="font-bold">{currentStudent.name}</span>
+                      </p>
                     )}
-                    <p>المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
+                    <p className="mt-2">المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-3">
+              {/* الأزرار */}
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => {
                     setShowAllowEntryModal(false)
-                    setSelectedStudentIds([])
+                    setCurrentStudent(null)
+                    setAdditionalStudentIds([])
+                    setSelectedAdditionalId('')
                     setSelectedTeacherId('')
                   }}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-xl font-bold transition-colors"
@@ -2783,13 +2843,6 @@ function App() {
                   onClick={() => {
                     if (!selectedTeacherId) {
                       setAlertMessage('الرجاء اختيار المعلم')
-                      setAlertType('error')
-                      setShowAlert(true)
-                      return
-                    }
-
-                    if (selectedStudentIds.length === 0) {
-                      setAlertMessage('الرجاء اختيار طالب واحد على الأقل')
                       setAlertType('error')
                       setShowAlert(true)
                       return
@@ -2811,28 +2864,33 @@ function App() {
                       return
                     }
 
-                    const selectedStudents = students.filter(s => selectedStudentIds.includes(s.id))
+                    const allStudentsList = [
+                      currentStudent,
+                      ...students.filter(s => additionalStudentIds.includes(s.id))
+                    ]
 
-                    let message = `السلام عليكم ورحمة الله وبركاته\n\n*الرجاء السماح بدخول ${selectedStudents.length === 1 ? 'الطالب' : 'الطلاب'} للفصل*\n\n`
+                    let message = `السلام عليكم ورحمة الله وبركاته\n\n*الرجاء السماح بدخول ${allStudentsList.length === 1 ? 'الطالب' : 'الطلاب'} للفصل*\n\n`
 
-                    if (selectedStudents.length === 1) {
-                      message += `اسم الطالب: *${selectedStudents[0].name}*\n`
+                    if (allStudentsList.length === 1) {
+                      message += `اسم الطالب: *${allStudentsList[0].name}*\n`
                     } else {
                       message += `أسماء الطلاب:\n`
-                      selectedStudents.forEach((student, index) => {
+                      allStudentsList.forEach((student, index) => {
                         message += `${index + 1}. ${student.name}\n`
                       })
                     }
 
-                    message += `المرسل: ${teacherName || 'مسؤول النظام'}`
+                    message += `\nالمرسل: ${teacherName || 'مسؤول النظام'}`
 
                     openWhatsApp(phone, message)
 
                     setShowAllowEntryModal(false)
-                    setSelectedStudentIds([])
+                    setCurrentStudent(null)
+                    setAdditionalStudentIds([])
+                    setSelectedAdditionalId('')
                     setSelectedTeacherId('')
                   }}
-                  disabled={!selectedTeacherId || selectedStudentIds.length === 0}
+                  disabled={!selectedTeacherId}
                   className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={20} />

@@ -14,6 +14,7 @@ import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { CustomAlert } from './components/CustomAlert'
+import { AllowClassEntryModal } from './components/AllowClassEntryModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import { openWhatsApp } from './lib/openWhatsApp'
 import { arabicTextIncludes } from './lib/normalizeArabic'
@@ -86,8 +87,6 @@ function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
-  const [allowEntryStudent, setAllowEntryStudent] = useState<Student | null>(null)
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
   const [teachers, setTeachers] = useState<any[]>([])
   const [showActivateLicense, setShowActivateLicense] = useState(false)
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
@@ -2028,7 +2027,6 @@ function App() {
                                                         <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
                                                           <button
                                                             onClick={() => {
-                                                              setAllowEntryStudent(student)
                                                               setShowAllowEntryModal(true)
                                                               setStudentMenuOpen(null)
                                                             }}
@@ -2671,129 +2669,10 @@ function App() {
         </div>
       )}
 
-      {showAllowEntryModal && allowEntryStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowAllowEntryModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-5 rounded-t-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <DoorOpen size={24} />
-                <h2 className="text-xl font-bold">السماح بدخول الفصل</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowAllowEntryModal(false)
-                  setAllowEntryStudent(null)
-                  setSelectedTeacherId('')
-                }}
-                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                <h3 className="font-bold text-gray-800 mb-2 text-right">معلومات الطالب:</h3>
-                <div className="space-y-1 text-sm text-right">
-                  <p className="text-gray-700"><span className="font-semibold">الاسم:</span> {allowEntryStudent.name}</p>
-                  <p className="text-gray-700"><span className="font-semibold">السجل المدني:</span> {allowEntryStudent.national_id}</p>
-                  <p className="text-gray-700"><span className="font-semibold">الصف:</span> {allowEntryStudent.grade}</p>
-                  <p className="text-gray-700"><span className="font-semibold">المجموعة:</span> {groups.find(g => g.id === allowEntryStudent.group_id)?.name || '-'}</p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
-                <p className="text-sm text-gray-700 text-center">
-                  سيتم إرسال رسالة للمعلم المختار عبر واتساب
-                </p>
-              </div>
-
-              <div className="mb-5">
-                <label className="block text-sm font-bold text-gray-700 mb-2 text-right">اختر المعلم</label>
-                <select
-                  value={selectedTeacherId}
-                  onChange={(e) => setSelectedTeacherId(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
-                >
-                  <option value="">-- اختر المعلم --</option>
-                  {teachers.map(teacher => (
-                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-4">
-                <h4 className="font-bold text-green-900 mb-2 text-right flex items-center gap-2 justify-end">
-                  <span>معاينة الرسالة:</span>
-                  <Check size={18} />
-                </h4>
-                <div className="text-sm text-gray-800 text-right space-y-1 bg-white rounded-lg p-3">
-                  <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
-                  <p className="font-bold mt-2">الرجاء السماح بدخول الطالب للفصل</p>
-                  <p className="mt-2">اسم الطالب: <span className="font-bold">{allowEntryStudent.name}</span></p>
-                  <p>المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowAllowEntryModal(false)
-                    setAllowEntryStudent(null)
-                    setSelectedTeacherId('')
-                  }}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-xl font-bold transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={() => {
-                    if (!selectedTeacherId) {
-                      setAlertMessage('الرجاء اختيار المعلم')
-                      setAlertType('error')
-                      setShowAlert(true)
-                      return
-                    }
-
-                    const selectedTeacher = teachers.find(t => t.id === selectedTeacherId)
-                    if (!selectedTeacher || !selectedTeacher.phone) {
-                      setAlertMessage('المعلم المختار لا يحتوي على رقم جوال')
-                      setAlertType('error')
-                      setShowAlert(true)
-                      return
-                    }
-
-                    const phone = formatPhoneForWhatsApp(selectedTeacher.phone)
-                    if (!phone) {
-                      setAlertMessage('رقم جوال المعلم غير صالح')
-                      setAlertType('error')
-                      setShowAlert(true)
-                      return
-                    }
-
-                    const message = `السلام عليكم ورحمة الله وبركاته
-
-*الرجاء السماح بدخول الطالب للفصل*
-
-اسم الطالب: *${allowEntryStudent.name}*
-المرسل: ${teacherName || 'مسؤول النظام'}`
-
-                    openWhatsApp(phone, message)
-
-                    setShowAllowEntryModal(false)
-                    setAllowEntryStudent(null)
-                    setSelectedTeacherId('')
-                  }}
-                  disabled={!selectedTeacherId}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <MessageCircle size={20} />
-                  <span>إرسال عبر واتساب</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AllowClassEntryModal
+        isOpen={showAllowEntryModal}
+        onClose={() => setShowAllowEntryModal(false)}
+      />
 
       {showEditModal && editingStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowEditModal(false)}>

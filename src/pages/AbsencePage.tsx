@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { db, StudentViolation } from '../lib/db'
+import { db, StudentViolation, useLiveQuery } from '../lib/db'
 import { Student } from '../types'
 import { AlertTriangle, Search, FileText, Printer, Calendar, Filter, Send, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
@@ -21,13 +21,31 @@ interface ViolationWithStudent extends StudentViolation {
   }
 }
 
-interface AbsencePageProps {
-  onUpdateStats?: () => void
-}
+export function AbsencePage() {
+  const students = useLiveQuery(() => db.students.toArray()) as Student[] || []
+  const violations = useLiveQuery(async () => {
+    const allViolations = await db.student_violations.reverse().sortBy('violation_date')
+    const withStudentData = await Promise.all(
+      allViolations.map(async (violation) => {
+        const student = await db.students.get(violation.student_id)
+        const violationCount = await db.student_violations.where('student_id').equals(violation.student_id).count()
+        const group = student?.group_id ? await db.groups.get(student.group_id) : null
+        return {
+          ...violation,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone || '',
+            violation_count: violationCount,
+            grade: student.grade,
+            group: group ? { name: group.name } : undefined
+          } : undefined
+        }
+      })
+    )
+    return withStudentData
+  }) as ViolationWithStudent[] || []
 
-export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
-  const [students, setStudents] = useState<Student[]>([])
-  const [violations, setViolations] = useState<ViolationWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [showAll, setShowAll] = useState(false)
@@ -50,13 +68,10 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
   const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
-    fetchStudents()
-    fetchViolations()
     fetchTeacherProfile()
   }, [])
 
   useEffect(() => {
-    fetchViolations(dateFilter, violationSearchTerm)
   }, [violationSearchTerm])
 
   async function fetchTeacherProfile() {
@@ -76,84 +91,6 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
     }
     if (profile?.system_description) {
       setSystemDescription(profile.system_description)
-    }
-  }
-
-  async function fetchStudents() {
-    try {
-      const allStudents = await db.students.toArray()
-      const groups = await db.groups.toArray()
-      const statuses = await db.special_statuses.toArray()
-
-      const studentsWithRelations = allStudents.map(student => {
-        const group = groups.find(g => g.id === student.group_id)
-        const special_status = statuses.find(s => s.id === student.special_status_id)
-        return {
-          ...student,
-          group: group ? { name: group.name } : undefined,
-          special_status: special_status ? { name: special_status.name } : undefined
-        }
-      })
-
-      setStudents(studentsWithRelations as Student[])
-    } catch (error) {
-      console.error('Error fetching students:', error)
-    }
-  }
-
-  async function fetchViolations(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
-    try {
-      let violationsData = await db.student_violations.orderBy('violation_date').reverse().toArray()
-
-      // تطبيق الفلاتر
-      if (searchQuery && searchQuery.trim() !== '') {
-        // لا تحديد بالتاريخ، جلب كل المخالفات للبحث
-        violationsData = violationsData.slice(0, 200)
-      } else if (filterDate) {
-        const startOfDay = new Date(filterDate)
-        startOfDay.setHours(0, 0, 0, 0)
-        const endOfDay = new Date(filterDate)
-        endOfDay.setHours(23, 59, 59, 999)
-
-        violationsData = violationsData.filter(v => {
-          const violationDate = new Date(v.violation_date)
-          return violationDate >= startOfDay && violationDate <= endOfDay
-        })
-      } else if (!viewAll) {
-        // عرض مخالفات اليوم الحالي فقط بشكل افتراضي
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const endOfToday = new Date()
-        endOfToday.setHours(23, 59, 59, 999)
-
-        violationsData = violationsData.filter(v => {
-          const violationDate = new Date(v.violation_date)
-          return violationDate >= today && violationDate <= endOfToday
-        })
-      }
-
-      const allStudents = await db.students.toArray()
-      const groups = await db.groups.toArray()
-
-      const violationsWithStudents = violationsData.map((violation) => {
-        const student = allStudents.find(s => s.id === violation.student_id)
-        const group = student ? groups.find(g => g.id === student.group_id) : undefined
-        return {
-          ...violation,
-          student: student ? {
-            name: student.name,
-            national_id: student.national_id,
-            guardian_phone: student.guardian_phone,
-            violation_count: student.violation_count || 0,
-            grade: student.grade || '',
-            group: group ? { name: group.name } : undefined
-          } : undefined
-        }
-      })
-
-      setViolations(violationsWithStudents)
-    } catch (error) {
-      console.error('Error fetching violations:', error)
     }
   }
 
@@ -187,9 +124,6 @@ export function AbsencePage({ onUpdateStats }: AbsencePageProps) {
       setShowAlert(true)
       setFormData({ violation_type: 'هروب من الحصة', description: '', action_taken: '', notes: '' })
       setSelectedStudent(null)
-      fetchStudents()
-      fetchViolations(dateFilter)
-      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving violation:', error)
       setAlertMessage('حدث خطأ أثناء الحفظ')
@@ -253,9 +187,6 @@ ${teacherName || 'مسؤول النظام'}
       setAlertMessage('تم حذف المخالفة بنجاح')
       setAlertType('success')
       setShowAlert(true)
-      fetchStudents()
-      fetchViolations(dateFilter)
-      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting violation:', error)
       setAlertMessage('حدث خطأ أثناء الحذف')
@@ -612,7 +543,6 @@ ${teacherName || 'مسؤول النظام'}
                 onClick={() => {
                   setDateFilter('')
                   setShowAll(false)
-                  fetchViolations()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
               >
@@ -623,7 +553,6 @@ ${teacherName || 'مسؤول النظام'}
               onClick={() => {
                 setShowAll(!showAll)
                 setDateFilter('')
-                fetchViolations('', '', !showAll)
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showAll
@@ -659,7 +588,6 @@ ${teacherName || 'مسؤول النظام'}
               <button
                 onClick={() => {
                   setViolationSearchTerm('')
-                  fetchViolations(dateFilter, '')
                 }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
@@ -701,7 +629,6 @@ ${teacherName || 'مسؤول النظام'}
                     value={dateFilter}
                     onChange={(e) => {
                       setDateFilter(e.target.value)
-                      fetchViolations(e.target.value)
                       setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg"
@@ -716,8 +643,7 @@ ${teacherName || 'مسؤول النظام'}
                   <button
                     onClick={() => {
                       setDateFilter('')
-                      fetchViolations()
-                      setShowFilters(false)
+                          setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
                   >

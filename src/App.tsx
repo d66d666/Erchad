@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { db } from './lib/db'
+import { db, useLiveQuery } from './lib/db'
 import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
 import { SetupWizard } from './pages/SetupWizard'
@@ -57,9 +57,9 @@ function App() {
   const [isMasterAdmin, setIsMasterAdmin] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
   const [checkingSetup, setCheckingSetup] = useState(true)
-  const [students, setStudents] = useState<Student[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
-  const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
+  const students = useLiveQuery(() => db.students.toArray()) as Student[] || []
+  const groups = useLiveQuery(() => db.groups.toArray()) as Group[] || []
+  const specialStatuses = useLiveQuery(() => db.special_statuses.toArray()) as SpecialStatus[] || []
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
@@ -90,7 +90,7 @@ function App() {
   const [additionalStudentIds, setAdditionalStudentIds] = useState<string[]>([])
   const [additionalSearchTerm, setAdditionalSearchTerm] = useState<string>('')
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
-  const [teachers, setTeachers] = useState<any[]>([])
+  const teachers = useLiveQuery(() => db.teachers.toArray()) || []
   const [showActivateLicense, setShowActivateLicense] = useState(false)
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
   const [schoolId, setSchoolId] = useState('')
@@ -120,9 +120,38 @@ function App() {
   const [stageFilter, setStageFilter] = useState<string>('all')
   const [groupFilter, setGroupFilter] = useState<string>('all')
   const [activityFilter, setActivityFilter] = useState<string>('all')
-  const [todayReceptionStudents, setTodayReceptionStudents] = useState<Set<string>>(new Set())
-  const [todayPermissionStudents, setTodayPermissionStudents] = useState<Set<string>>(new Set())
-  const [todayViolationStudents, setTodayViolationStudents] = useState<Set<string>>(new Set())
+  const todayReceptionStudents = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_visits.where('visit_date').between(todayStart, todayEnd, true, true).toArray()
+      .then(visits => new Set(visits.map(v => v.student_id)))
+  }) || new Set<string>()
+
+  const todayPermissionStudents = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_permissions.where('permission_date').between(todayStart, todayEnd, true, true).toArray()
+      .then(permissions => new Set(permissions.map(p => p.student_id)))
+  }) || new Set<string>()
+
+  const todayViolationStudents = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_violations.where('violation_date').between(todayStart, todayEnd, true, true).toArray()
+      .then(violations => new Set(violations.map(v => v.student_id)))
+  }) || new Set<string>()
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => {
@@ -234,67 +263,11 @@ function App() {
     }
   }
 
-  const fetchTodayStats = async () => {
-    try {
-      const now = new Date()
-      const year = now.getFullYear()
-      const month = String(now.getMonth() + 1).padStart(2, '0')
-      const day = String(now.getDate()).padStart(2, '0')
-      const todayStart = `${year}-${month}-${day}T00:00:00`
-      const todayEnd = `${year}-${month}-${day}T23:59:59`
-
-      const [visitsData, permissionsData, violationsData] = await Promise.all([
-        db.student_visits
-          .where('visit_date')
-          .between(todayStart, todayEnd, true, true)
-          .toArray(),
-        db.student_permissions
-          .where('permission_date')
-          .between(todayStart, todayEnd, true, true)
-          .toArray(),
-        db.student_violations
-          .where('violation_date')
-          .between(todayStart, todayEnd, true, true)
-          .toArray(),
-      ])
-
-      setTodayReceptionCount(visitsData.length)
-      setTodayPermissionsCount(permissionsData.length)
-      setTodayViolationsCount(violationsData.length)
-
-      setTodayReceptionStudents(new Set(visitsData.map(v => v.student_id)))
-      setTodayPermissionStudents(new Set(permissionsData.map(p => p.student_id)))
-      setTodayViolationStudents(new Set(violationsData.map(v => v.student_id)))
-    } catch (error) {
-      console.error('Error fetching today stats:', error)
-    }
-  }
-
-  const fetchTeachersCount = async () => {
-    try {
-      const count = await db.teachers.count()
-      setTotalTeachers(count)
-    } catch (error) {
-      console.error('Error fetching teachers count:', error)
-    }
-  }
-
-  const fetchData = async (skipStats = false) => {
+  const fetchData = async () => {
     try {
       setLoading(true)
-
       const userId = localStorage.getItem('userId')
-
-      const [groupsData, statusesData, studentsData, profileData] = await Promise.all([
-        db.groups.toArray(),
-        db.special_statuses.toArray(),
-        db.students.toArray(),
-        userId ? db.teacher_profile.where('id').equals(userId).first() : Promise.resolve(null),
-      ])
-
-      setGroups(groupsData)
-      setSpecialStatuses(statusesData)
-      setStudents(studentsData as Student[])
+      const profileData = userId ? await db.teacher_profile.where('id').equals(userId).first() : null
 
       if (profileData) {
         setTeacherName(profileData.name || '')
@@ -306,10 +279,6 @@ function App() {
         setTeacherPhone('')
         setSchoolName('')
         setSystemDescription('')
-      }
-
-      if (!skipStats) {
-        await fetchTodayStats()
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -346,7 +315,6 @@ function App() {
             Promise.all([
               checkSubscription(),
               fetchData(),
-              fetchTeachersCount(),
               fetchTeachers()
             ]).catch(err => console.error('Data loading error:', err))
           }, 50)
@@ -408,7 +376,6 @@ function App() {
 
   useEffect(() => {
     if (currentPage === 'home') {
-      fetchTeachersCount()
     }
   }, [currentPage])
 
@@ -763,10 +730,37 @@ function App() {
   }
 
   // إحصائيات اليوم الحالي
-  const [todayReceptionCount, setTodayReceptionCount] = useState(0)
-  const [todayPermissionsCount, setTodayPermissionsCount] = useState(0)
-  const [todayViolationsCount, setTodayViolationsCount] = useState(0)
-  const [totalTeachers, setTotalTeachers] = useState(0)
+  const todayReceptionCount = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_visits.where('visit_date').between(todayStart, todayEnd, true, true).count()
+  }) || 0
+
+  const todayPermissionsCount = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_permissions.where('permission_date').between(todayStart, todayEnd, true, true).count()
+  }) || 0
+
+  const todayViolationsCount = useLiveQuery(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const todayStart = `${year}-${month}-${day}T00:00:00`
+    const todayEnd = `${year}-${month}-${day}T23:59:59`
+    return db.student_violations.where('violation_date').between(todayStart, todayEnd, true, true).count()
+  }) || 0
+
+  const totalTeachers = useLiveQuery(() => db.teachers.count()) || 0
 
   const totalStudents = students.length
   const specialStatusCount = students.filter(s => s.special_status_id !== null).length
@@ -1432,7 +1426,6 @@ function App() {
       setNeedsSetup(false)
       setIsLoggedIn(true)
       fetchData()
-      fetchTeachersCount()
       fetchTeachers()
     }} />
   }
@@ -2116,7 +2109,6 @@ function App() {
         {currentPage === 'teachers' && (
           <TeachersPage
             onDataChange={async () => {
-              await fetchTeachersCount()
             }}
           />
         )}
@@ -2131,11 +2123,11 @@ function App() {
           />
         )}
 
-        {currentPage === 'reception' && <ReceptionPage onUpdateStats={fetchTodayStats} />}
+        {currentPage === 'reception' && <ReceptionPage />}
 
-        {currentPage === 'permission' && <PermissionPage onUpdateStats={fetchTodayStats} />}
+        {currentPage === 'permission' && <PermissionPage />}
 
-        {currentPage === 'absence' && <AbsencePage onUpdateStats={fetchTodayStats} />}
+        {currentPage === 'absence' && <AbsencePage />}
 
         {currentPage === 'accounts' && isMasterAdmin && <AccountsManagementPage />}
       </div>
@@ -2157,7 +2149,6 @@ function App() {
         onClose={() => setShowExcelImport(false)}
         onImportComplete={async () => {
           await fetchData()
-          await fetchTeachersCount()
         }}
       />
 
@@ -2274,7 +2265,6 @@ function App() {
           onStudentAdded={async (newStudent) => {
             if (newStudent) {
               await fetchData()
-              await fetchTeachersCount()
             }
           }}
         />

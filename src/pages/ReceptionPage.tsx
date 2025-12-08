@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { db, StudentVisit } from '../lib/db'
+import { db, StudentVisit, useLiveQuery } from '../lib/db'
 import { Student } from '../types'
 import { UserCheck, Search, FileText, Printer, Send, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
@@ -17,13 +17,28 @@ interface VisitWithStudent extends StudentVisit {
   }
 }
 
-interface ReceptionPageProps {
-  onUpdateStats?: () => void
-}
+export function ReceptionPage() {
+  const students = useLiveQuery(() => db.students.toArray()) as Student[] || []
+  const visits = useLiveQuery(async () => {
+    const allVisits = await db.student_visits.reverse().sortBy('visit_date')
+    const withStudentData = await Promise.all(
+      allVisits.map(async (visit) => {
+        const student = await db.students.get(visit.student_id)
+        const visitCount = await db.student_visits.where('student_id').equals(visit.student_id).count()
+        return {
+          ...visit,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone || '',
+            visit_count: visitCount
+          } : undefined
+        }
+      })
+    )
+    return withStudentData
+  }) as VisitWithStudent[] || []
 
-export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
-  const [students, setStudents] = useState<Student[]>([])
-  const [visits, setVisits] = useState<VisitWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
@@ -46,14 +61,8 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
   const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
-    fetchStudents()
-    fetchVisits()
     fetchTeacherProfile()
   }, [])
-
-  useEffect(() => {
-    fetchVisits(dateFilter, visitSearchTerm)
-  }, [visitSearchTerm])
 
   async function fetchTeacherProfile() {
     const userId = localStorage.getItem('userId')
@@ -72,78 +81,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
     }
     if (profile?.system_description) {
       setSystemDescription(profile.system_description)
-    }
-  }
-
-  async function fetchStudents() {
-    // قراءة من IndexedDB فقط
-    const allStudents = await db.students.toArray()
-    const groups = await db.groups.toArray()
-    const statuses = await db.special_statuses.toArray()
-
-    const studentsWithRelations = allStudents.map(student => {
-      const group = groups.find(g => g.id === student.group_id)
-      const special_status = statuses.find(s => s.id === student.special_status_id)
-      return {
-        ...student,
-        group: group ? { name: group.name } : undefined,
-        special_status: special_status ? { name: special_status.name } : undefined
-      }
-    })
-
-    setStudents(studentsWithRelations as Student[])
-  }
-
-  async function fetchVisits(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
-    try {
-      // قراءة من IndexedDB فقط
-      let visitsData = await db.student_visits.orderBy('visit_date').reverse().toArray()
-
-      // تطبيق الفلاتر
-      if (searchQuery && searchQuery.trim() !== '') {
-        // لا تحديد بالتاريخ، جلب كل الزيارات للبحث
-        visitsData = visitsData.slice(0, 200)
-      } else if (filterDate) {
-        const startOfDay = new Date(filterDate)
-        startOfDay.setHours(0, 0, 0, 0)
-        const endOfDay = new Date(filterDate)
-        endOfDay.setHours(23, 59, 59, 999)
-
-        visitsData = visitsData.filter(v => {
-          const visitDate = new Date(v.visit_date)
-          return visitDate >= startOfDay && visitDate <= endOfDay
-        })
-      } else if (!viewAll) {
-        // عرض زيارات اليوم الحالي فقط بشكل افتراضي
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const endOfToday = new Date()
-        endOfToday.setHours(23, 59, 59, 999)
-
-        visitsData = visitsData.filter(v => {
-          const visitDate = new Date(v.visit_date)
-          return visitDate >= today && visitDate <= endOfToday
-        })
-      }
-
-      const allStudents = await db.students.toArray()
-
-      const visitsWithStudents = visitsData.map((visit) => {
-        const student = allStudents.find(s => s.id === visit.student_id)
-        return {
-          ...visit,
-          student: student ? {
-            name: student.name,
-            national_id: student.national_id,
-            guardian_phone: student.guardian_phone,
-            visit_count: student.visit_count || 0
-          } : undefined
-        }
-      })
-
-      setVisits(visitsWithStudents)
-    } catch (error) {
-      console.error('Error fetching visits:', error)
     }
   }
 
@@ -179,9 +116,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       setShowAlert(true)
       setFormData({ reason: '', action_taken: '', referred_to: 'لا يوجد', notes: '' })
       setSelectedStudent(null)
-      fetchStudents()
-      fetchVisits(dateFilter)
-      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving visit:', error)
       setAlertMessage('حدث خطأ أثناء الحفظ')
@@ -208,8 +142,6 @@ export function ReceptionPage({ onUpdateStats }: ReceptionPageProps) {
       setAlertMessage('تم حذف الزيارة بنجاح')
       setAlertType('success')
       setShowAlert(true)
-      fetchStudents()
-      fetchVisits(dateFilter)
       if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting visit:', error)
@@ -626,7 +558,6 @@ ${teacherName || 'مسؤول النظام'}
                 onClick={() => {
                   setDateFilter('')
                   setShowAll(false)
-                  fetchVisits()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
               >
@@ -637,7 +568,6 @@ ${teacherName || 'مسؤول النظام'}
               onClick={() => {
                 setShowAll(!showAll)
                 setDateFilter('')
-                fetchVisits('', '', !showAll)
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showAll
@@ -671,7 +601,6 @@ ${teacherName || 'مسؤول النظام'}
               <button
                 onClick={() => {
                   setVisitSearchTerm('')
-                  fetchVisits(dateFilter, '')
                 }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
@@ -713,7 +642,6 @@ ${teacherName || 'مسؤول النظام'}
                     value={dateFilter}
                     onChange={(e) => {
                       setDateFilter(e.target.value)
-                      fetchVisits(e.target.value)
                       setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
@@ -728,8 +656,7 @@ ${teacherName || 'مسؤول النظام'}
                   <button
                     onClick={() => {
                       setDateFilter('')
-                      fetchVisits()
-                      setShowFilters(false)
+                          setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
                   >

@@ -428,7 +428,7 @@ function App() {
 
   // حساب الطلاب المفلترين مع useMemo لتحسين الأداء
   const filteredStudents = useMemo(() => {
-    const searchLower = debouncedSearchTerm.trim()
+    const searchLower = debouncedSearchTerm.trim().toLowerCase()
 
     return students.filter(s => {
       if (specialStatusFilter !== 'all' && s.special_status_id !== specialStatusFilter) {
@@ -446,9 +446,9 @@ function App() {
       }
 
       return arabicTextIncludes(s.name, searchLower) ||
-        s.national_id.includes(searchLower) ||
-        s.phone.includes(searchLower) ||
-        s.guardian_phone.includes(searchLower)
+        (s.national_id || '').toLowerCase().includes(searchLower) ||
+        (s.phone || '').toLowerCase().includes(searchLower) ||
+        (s.guardian_phone || '').toLowerCase().includes(searchLower)
     })
   }, [students, debouncedSearchTerm, specialStatusFilter, activityFilter, todayReceptionStudents, todayPermissionStudents, todayViolationStudents])
 

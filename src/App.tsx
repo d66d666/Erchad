@@ -2684,11 +2684,11 @@ function App() {
             setAdditionalSearchTerm('')
             setSelectedTeacherId('')
           }}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-5 rounded-t-2xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <DoorOpen size={24} />
-                  <h2 className="text-xl font-bold">السماح بدخول الفصل</h2>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <DoorOpen size={20} />
+                  <h2 className="text-lg font-bold">السماح بدخول الفصل</h2>
                 </div>
                 <button
                   onClick={() => {
@@ -2698,16 +2698,16 @@ function App() {
                     setAdditionalSearchTerm('')
                     setSelectedTeacherId('')
                   }}
-                  className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-blue-700 rounded-lg transition-colors"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-4 space-y-3 overflow-y-auto flex-1">
                 {/* معلومات الطالب الأساسي */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <h3 className="font-bold text-gray-800 mb-3 text-right">معلومات الطالب:</h3>
-                  <div className="space-y-1 text-right text-sm">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <h3 className="font-bold text-gray-800 mb-2 text-right text-sm">معلومات الطالب:</h3>
+                  <div className="space-y-0.5 text-right text-xs">
                     <p><span className="font-semibold">الاسم:</span> {currentStudent.name}</p>
                     <p><span className="font-semibold">السجل المدني:</span> {currentStudent.national_id}</p>
                     <p><span className="font-semibold">الصف:</span> {currentStudent.grade}</p>
@@ -2716,8 +2716,8 @@ function App() {
                 </div>
 
                 {/* إضافة طلاب آخرين */}
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                  <h3 className="font-bold text-gray-800 mb-3 text-right">إضافة طلاب آخرين (اختياري):</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <h3 className="font-bold text-gray-800 mb-2 text-right text-sm">إضافة طلاب آخرين (اختياري):</h3>
 
                   {/* حقل البحث */}
                   <div className="relative">
@@ -2726,9 +2726,9 @@ function App() {
                       value={additionalSearchTerm}
                       onChange={(e) => setAdditionalSearchTerm(e.target.value)}
                       placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
-                      className="w-full px-4 py-2.5 pr-10 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                      className="w-full px-3 py-2 pr-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-xs"
                     />
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   </div>
 
                   {/* نتائج البحث */}
@@ -2749,9 +2749,9 @@ function App() {
                     }).slice(0, 50)
 
                     return (
-                      <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
+                      <div className="mt-2 border border-gray-300 rounded-lg max-h-32 overflow-y-auto bg-white">
                         {filtered.length === 0 ? (
-                          <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
+                          <p className="text-center text-gray-500 text-xs py-2">لا توجد نتائج</p>
                         ) : (
                           filtered.map(student => (
                             <button
@@ -2760,11 +2760,11 @@ function App() {
                                 setAdditionalStudentIds([...additionalStudentIds, student.id])
                                 setAdditionalSearchTerm('')
                               }}
-                              className="w-full text-right px-4 py-2.5 border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
+                              className="w-full text-right px-3 py-2 border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
                             >
-                              <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
-                              <p className="text-xs text-gray-600">
-                                {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
+                              <p className="font-semibold text-gray-900 text-xs">{student.name}</p>
+                              <p className="text-[10px] text-gray-600">
+                                {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'}
                               </p>
                             </button>
                           ))
@@ -2775,7 +2775,7 @@ function App() {
 
                 {/* قائمة الطلاب المضافين */}
                 {additionalStudentIds.length > 0 && (
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-2 space-y-1.5">
                     {additionalStudentIds.map((studentId) => {
                       const student = students.find(s => s.id === studentId)
                       if (!student) return null
@@ -2785,11 +2785,11 @@ function App() {
                             onClick={() => {
                               setAdditionalStudentIds(additionalStudentIds.filter(id => id !== studentId))
                             }}
-                            className="text-red-600 hover:text-red-700 p-1"
+                            className="text-red-600 hover:text-red-700 p-0.5"
                           >
-                            <X size={16} />
+                            <X size={14} />
                           </button>
-                          <p className="text-sm text-gray-800">{student.name} - {student.grade}</p>
+                          <p className="text-xs text-gray-800">{student.name} - {student.grade}</p>
                         </div>
                       )
                     })}
@@ -2797,19 +2797,19 @@ function App() {
                 )}
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-sm text-gray-700 text-center">
+              <div className="bg-gray-50 border-t border-gray-200 px-4 py-2">
+                <p className="text-xs text-gray-600 text-center">
                   سيتم إرسال رسالة للمعلم المختار عبر واتساب
                 </p>
               </div>
 
               {/* اختيار المعلم */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 text-right">اختر المعلم</label>
+              <div className="px-4 pb-3">
+                <label className="block text-xs font-bold text-gray-700 mb-1.5 text-right">اختر المعلم</label>
                 <select
                   value={selectedTeacherId}
                   onChange={(e) => setSelectedTeacherId(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
                 >
                   <option value="">-- اختر المعلم --</option>
                   {teachers.map(teacher => (
@@ -2820,19 +2820,19 @@ function App() {
 
               {/* معاينة الرسالة */}
               {selectedTeacherId && (
-                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-                  <h4 className="font-bold text-green-900 mb-2 text-right flex items-center gap-2 justify-end">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mx-4 mb-3">
+                  <h4 className="font-bold text-green-900 mb-2 text-right flex items-center gap-1.5 justify-end text-xs">
                     <span>معاينة الرسالة:</span>
-                    <Check size={18} />
+                    <Check size={14} />
                   </h4>
-                  <div className="text-sm text-gray-800 text-right space-y-1 bg-white rounded-lg p-3">
+                  <div className="text-xs text-gray-800 text-right space-y-0.5 bg-white rounded-lg p-2">
                     <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
-                    <p className="font-bold mt-2">
+                    <p className="font-bold mt-1">
                       الرجاء السماح بدخول {additionalStudentIds.length > 0 ? 'الطلاب' : 'الطالب'} للفصل
                     </p>
                     {additionalStudentIds.length > 0 ? (
                       <>
-                        <p className="mt-2 font-bold">أسماء الطلاب:</p>
+                        <p className="mt-1 font-bold">أسماء الطلاب:</p>
                         <p>1. {currentStudent.name}</p>
                         {additionalStudentIds.map((studentId, index) => {
                           const student = students.find(s => s.id === studentId)
@@ -2840,17 +2840,17 @@ function App() {
                         })}
                       </>
                     ) : (
-                      <p className="mt-2">
+                      <p className="mt-1">
                         اسم الطالب: <span className="font-bold">{currentStudent.name}</span>
                       </p>
                     )}
-                    <p className="mt-2">المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
+                    <p className="mt-1">المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
                   </div>
                 </div>
               )}
 
               {/* الأزرار */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 p-3 bg-gray-50 border-t border-gray-200 flex-shrink-0">
                 <button
                   onClick={() => {
                     setShowAllowEntryModal(false)
@@ -2859,7 +2859,7 @@ function App() {
                     setAdditionalSearchTerm('')
                     setSelectedTeacherId('')
                   }}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-xl font-bold transition-colors"
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-lg font-bold transition-colors text-sm"
                 >
                   إلغاء
                 </button>
@@ -2915,10 +2915,10 @@ function App() {
                     setSelectedTeacherId('')
                   }}
                   disabled={!selectedTeacherId}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-3 py-2 rounded-lg font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm"
                 >
-                  <MessageCircle size={20} />
-                  <span>إرسال عبر واتساب</span>
+                  <MessageCircle size={16} />
+                  <span>إرسال</span>
                 </button>
               </div>
             </div>

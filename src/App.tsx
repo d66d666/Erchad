@@ -401,19 +401,32 @@ function App() {
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // حساب الطلاب المفلترين مع useMemo لتحسين الأداء
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const matchesSearch = debouncedSearchTerm === '' ||
+        arabicTextIncludes(s.name, debouncedSearchTerm) ||
+        s.national_id.includes(debouncedSearchTerm) ||
+        s.phone.includes(debouncedSearchTerm) ||
+        s.guardian_phone.includes(debouncedSearchTerm)
+
+      const matchesSpecialStatus = specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter
+
+      const matchesActivity = activityFilter === 'all' ||
+        (activityFilter === 'reception' && todayReceptionStudents.has(s.id)) ||
+        (activityFilter === 'permission' && todayPermissionStudents.has(s.id)) ||
+        (activityFilter === 'violation' && todayViolationStudents.has(s.id))
+
+      return matchesSearch && matchesSpecialStatus && matchesActivity
+    })
+  }, [students, debouncedSearchTerm, specialStatusFilter, activityFilter, todayReceptionStudents, todayPermissionStudents, todayViolationStudents])
+
   useEffect(() => {
-    if (debouncedSearchTerm.trim() !== '') {
+    if (debouncedSearchTerm.trim() !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all') {
       const matchingGroups = new Set<string>()
 
       groups.forEach(group => {
-        const hasMatchingStudents = students.some(student =>
-          student.group_id === group.id && (
-            arabicTextIncludes(student.name, debouncedSearchTerm) ||
-            student.national_id.includes(debouncedSearchTerm) ||
-            student.phone.includes(debouncedSearchTerm) ||
-            student.guardian_phone.includes(debouncedSearchTerm)
-          )
-        )
+        const hasMatchingStudents = filteredStudents.some(student => student.group_id === group.id)
 
         if (hasMatchingStudents) {
           matchingGroups.add(group.stage || '')
@@ -440,7 +453,7 @@ function App() {
     } else {
       setExpandedGroups(new Set())
     }
-  }, [debouncedSearchTerm, students, groups, stageFilter, groupFilter])
+  }, [debouncedSearchTerm, specialStatusFilter, activityFilter, filteredStudents, groups, stageFilter, groupFilter])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
@@ -1360,26 +1373,6 @@ function App() {
     `)
     printWindow.document.close()
   }
-
-  // حساب الطلاب المفلترين مع useMemo لتحسين الأداء
-  const filteredStudents = useMemo(() => {
-    return students.filter(s => {
-      const matchesSearch = debouncedSearchTerm === '' ||
-        arabicTextIncludes(s.name, debouncedSearchTerm) ||
-        s.national_id.includes(debouncedSearchTerm) ||
-        s.phone.includes(debouncedSearchTerm) ||
-        s.guardian_phone.includes(debouncedSearchTerm)
-
-      const matchesSpecialStatus = specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter
-
-      const matchesActivity = activityFilter === 'all' ||
-        (activityFilter === 'reception' && todayReceptionStudents.has(s.id)) ||
-        (activityFilter === 'permission' && todayPermissionStudents.has(s.id)) ||
-        (activityFilter === 'violation' && todayViolationStudents.has(s.id))
-
-      return matchesSearch && matchesSpecialStatus && matchesActivity
-    })
-  }, [students, debouncedSearchTerm, specialStatusFilter, activityFilter, todayReceptionStudents, todayPermissionStudents, todayViolationStudents])
 
   // أزرار التنقل
   const navItems = [

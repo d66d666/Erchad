@@ -14,6 +14,7 @@ import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { CustomAlert } from './components/CustomAlert'
+import { PaginatedStudentsList } from './components/PaginatedStudentsList'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import { openWhatsApp } from './lib/openWhatsApp'
 import { arabicTextIncludes } from './lib/normalizeArabic'
@@ -1949,128 +1950,42 @@ function App() {
 
                                     {isGroupExpanded && (
                                       <div className="p-3 pb-32">
-                                        {groupStudents.length === 0 ? (
-                                          <p className="text-center text-gray-500 py-4 text-sm">لا يوجد طلاب</p>
-                                        ) : (
-                                          <div className="space-y-2">
-                                            {groupStudents.map(student => {
-                                              const specialStatus = specialStatuses.find(ss => ss.id === student.special_status_id)
-                                              return (
-                                                <div
-                                                  key={student.id}
-                                                  className={`border rounded-lg p-3 transition-all relative ${
-                                                    specialStatus ? 'border-yellow-300 bg-yellow-50' : 'border-teal-200 bg-teal-50'
-                                                  }`}
-                                                >
-                                                  {specialStatus && (
-                                                    <div className="absolute top-2 left-8 px-2 py-0.5 rounded-md text-xs font-bold bg-purple-200 text-purple-800 z-10">
-                                                      {specialStatus.name}
-                                                    </div>
-                                                  )}
-                                                  <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                      <h4 className="text-base font-bold text-gray-900 mb-1.5">{student.name}</h4>
-                                                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-right mb-2">
-                                                        <p className="text-gray-700">السجل: {student.national_id}</p>
-                                                        <p className="text-gray-700">الصف: {student.grade}</p>
-                                                        <p className="text-gray-700">جوال: {student.phone}</p>
-                                                        <p className="text-gray-700">ولي أمر: {student.guardian_phone}</p>
-                                                      </div>
-                                                      <div className="flex gap-2 text-xs font-semibold">
-                                                        {mainMenuItems.reception && (
-                                                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
-                                                            الاستقبال: {student.visit_count || 0}
-                                                          </span>
-                                                        )}
-                                                        {mainMenuItems.permission && (
-                                                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md">
-                                                            الاستئذانات: {student.permission_count || 0}
-                                                          </span>
-                                                        )}
-                                                        {mainMenuItems.violations && (
-                                                          <span className="bg-red-100 text-red-700 px-2 py-1 rounded-md">
-                                                            المخالفات: {student.violation_count || 0}
-                                                          </span>
-                                                        )}
-                                                      </div>
-                                                    </div>
-                                                    <div className="relative">
-                                                      <button
-                                                        onClick={(e) => {
-                                                          e.stopPropagation()
-                                                          setStudentMenuOpen(studentMenuOpen === student.id ? null : student.id)
-                                                        }}
-                                                        className="p-2 hover:bg-white rounded-lg transition-colors"
-                                                      >
-                                                        <span className="text-2xl text-gray-600">⋮</span>
-                                                      </button>
-                                                      {studentMenuOpen === student.id && (
-                                                        <div className="absolute left-0 mt-1 w-52 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                                                          <button
-                                                            onClick={() => {
-                                                              setAllowEntryStudent(student)
-                                                              setShowAllowEntryModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-green-50 transition-colors flex items-center gap-3 text-sm font-medium text-green-700"
-                                                          >
-                                                            <DoorOpen size={16} />
-                                                            <span>سماح بدخول الفصل</span>
-                                                          </button>
-                                                          <button
-                                                            onClick={() => {
-                                                              setPrintStudent(student)
-                                                              setShowPrintModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-blue-50 transition-colors flex items-center gap-3 text-sm font-medium text-blue-700"
-                                                          >
-                                                            <Printer size={16} />
-                                                            <span>طباعة بيانات الطالب</span>
-                                                          </button>
-                                                          <button
-                                                            onClick={() => {
-                                                              setEditingStudent(student)
-                                                              setShowEditModal(true)
-                                                              setStudentMenuOpen(null)
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-gray-50 transition-colors flex items-center gap-3 text-sm font-medium text-gray-700"
-                                                          >
-                                                            <Edit size={16} />
-                                                            <span>تعديل</span>
-                                                          </button>
-                                                          <button
-                                                            onClick={async () => {
-                                                              if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
-                                                                try {
-                                                                  await db.students.delete(student.id)
-                                                                  await fetchData()
-                                                                  setAlertMessage('تم حذف الطالب بنجاح')
-                                                                  setAlertType('success')
-                                                                  setShowAlert(true)
-                                                                  setStudentMenuOpen(null)
-                                                                } catch (error) {
-                                                                  console.error('Error deleting student:', error)
-                                                                  setAlertMessage('حدث خطأ أثناء حذف الطالب')
-                                                                  setAlertType('error')
-                                                                  setShowAlert(true)
-                                                                }
-                                                              }
-                                                            }}
-                                                            className="w-full text-right px-4 py-2.5 hover:bg-red-50 transition-colors flex items-center gap-3 text-sm font-medium text-red-600"
-                                                          >
-                                                            <Trash2 size={16} />
-                                                            <span>حذف</span>
-                                                          </button>
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              )
-                                            })}
-                                          </div>
-                                        )}
+                                        <PaginatedStudentsList
+                                          students={groupStudents}
+                                          specialStatuses={specialStatuses}
+                                          studentMenuOpen={studentMenuOpen}
+                                          setStudentMenuOpen={setStudentMenuOpen}
+                                          onEditStudent={(student) => {
+                                            setEditingStudent(student)
+                                            setShowEditModal(true)
+                                          }}
+                                          onAllowEntry={(student) => {
+                                            setAllowEntryStudent(student)
+                                            setShowAllowEntryModal(true)
+                                          }}
+                                          onPrintStudent={(student) => {
+                                            setPrintStudent(student)
+                                            setShowPrintModal(true)
+                                          }}
+                                          onDeleteStudent={async (id) => {
+                                            if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
+                                              try {
+                                                await db.students.delete(id)
+                                                await fetchData()
+                                                setAlertMessage('تم حذف الطالب بنجاح')
+                                                setAlertType('success')
+                                                setShowAlert(true)
+                                              } catch (error) {
+                                                console.error('Error deleting student:', error)
+                                                setAlertMessage('حدث خطأ أثناء حذف الطالب')
+                                                setAlertType('error')
+                                                setShowAlert(true)
+                                              }
+                                            }
+                                          }}
+                                          loadingDelete={loadingDelete}
+                                          mainMenuItems={mainMenuItems}
+                                        />
                                       </div>
                                     )}
                                   </div>

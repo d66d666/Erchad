@@ -4,6 +4,7 @@ import { db } from '../lib/db'
 import { Group, Student, SpecialStatus } from '../types'
 import { AddStudentModal } from '../components/AddStudentModal'
 import { CustomAlert } from '../components/CustomAlert'
+import { normalizeArabicText } from '../lib/normalizeArabic'
 
 export function GroupsManagementPage() {
   const [groups, setGroups] = useState<Group[]>([])
@@ -104,6 +105,8 @@ export function GroupsManagementPage() {
     const hijriDate = now.toLocaleDateString('ar-SA-u-ca-islamic')
     const gregorianDate = now.toLocaleDateString('ar-SA')
     const time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+
+    const sortedStudents = sortStudentsAlphabetically(groupStudents)
 
     const printWindow = window.open('', '', 'width=1000,height=800')
     if (!printWindow) return
@@ -248,7 +251,7 @@ export function GroupsManagementPage() {
           </div>
 
           <div class="student-count-box">
-            عدد الطلاب: ${groupStudents.length}
+            عدد الطلاب: ${sortedStudents.length}
           </div>
 
           <table>
@@ -263,7 +266,7 @@ export function GroupsManagementPage() {
               </tr>
             </thead>
             <tbody>
-              ${groupStudents.map((student, index) => {
+              ${sortedStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
                   : ''
@@ -323,6 +326,7 @@ export function GroupsManagementPage() {
 
     const allGroupsHTML = sortedGroups.map((group, groupIndex) => {
       const groupStudents = students.filter(s => s.group_id === group.id)
+      const sortedStudents = sortStudentsAlphabetically(groupStudents)
 
       return `
         <div class="page-section" style="${groupIndex < sortedGroups.length - 1 ? 'page-break-after: always;' : ''}">
@@ -352,7 +356,7 @@ export function GroupsManagementPage() {
           </div>
 
           <div class="student-count-box">
-            عدد الطلاب: ${groupStudents.length}
+            عدد الطلاب: ${sortedStudents.length}
           </div>
 
           <table>
@@ -367,7 +371,7 @@ export function GroupsManagementPage() {
               </tr>
             </thead>
             <tbody>
-              ${groupStudents.map((student, index) => {
+              ${sortedStudents.map((student, index) => {
                 const specialStatus = student.special_status_id
                   ? specialStatuses.find(s => s.id === student.special_status_id)?.name || '-'
                   : ''
@@ -727,6 +731,14 @@ export function GroupsManagementPage() {
     return students.filter(s => s.group_id === groupId)
   }
 
+  const sortStudentsAlphabetically = (students: Student[]) => {
+    return [...students].sort((a, b) => {
+      const nameA = normalizeArabicText(a.name)
+      const nameB = normalizeArabicText(b.name)
+      return nameA.localeCompare(nameB, 'ar')
+    })
+  }
+
   const toggleStage = (stage: string) => {
     setExpandedStages(prev => ({
       ...prev,
@@ -906,7 +918,7 @@ export function GroupsManagementPage() {
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-200">
-                                        {groupStudents.map((student, idx) => (
+                                        {sortStudentsAlphabetically(groupStudents).map((student, idx) => (
                                           <tr key={student.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                             <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{student.name}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900 text-right">{student.civil_id || '-'}</td>

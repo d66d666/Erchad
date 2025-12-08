@@ -495,9 +495,7 @@ export function StudentsList({
         isOpen={showAllowEntryModal}
         onClose={() => {
           setShowAllowEntryModal(false)
-          setSelectedStudent(null)
         }}
-        student={selectedStudent}
       />
     </div>
   )

@@ -88,7 +88,7 @@ function App() {
   const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null)
   const [additionalStudentIds, setAdditionalStudentIds] = useState<string[]>([])
-  const [selectedAdditionalId, setSelectedAdditionalId] = useState<string>('')
+  const [additionalSearchTerm, setAdditionalSearchTerm] = useState<string>('')
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
   const [teachers, setTeachers] = useState<any[]>([])
   const [showActivateLicense, setShowActivateLicense] = useState(false)
@@ -2032,7 +2032,7 @@ function App() {
                                                             onClick={() => {
                                                               setCurrentStudent(student)
                                                               setAdditionalStudentIds([])
-                                                              setSelectedAdditionalId('')
+                                                              setAdditionalSearchTerm('')
                                                               setSelectedTeacherId('')
                                                               setShowAllowEntryModal(true)
                                                               setStudentMenuOpen(null)
@@ -2681,7 +2681,7 @@ function App() {
           setShowAllowEntryModal(false)
           setCurrentStudent(null)
           setAdditionalStudentIds([])
-          setSelectedAdditionalId('')
+          setAdditionalSearchTerm('')
           setSelectedTeacherId('')
         }}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
@@ -2695,7 +2695,7 @@ function App() {
                   setShowAllowEntryModal(false)
                   setCurrentStudent(null)
                   setAdditionalStudentIds([])
-                  setSelectedAdditionalId('')
+                  setAdditionalSearchTerm('')
                   setSelectedTeacherId('')
                 }}
                 className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
@@ -2718,36 +2718,60 @@ function App() {
               {/* إضافة طلاب آخرين */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <h3 className="font-bold text-gray-800 mb-3 text-right">إضافة طلاب آخرين (اختياري):</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      if (selectedAdditionalId && !additionalStudentIds.includes(selectedAdditionalId) && selectedAdditionalId !== currentStudent.id) {
-                        setAdditionalStudentIds([...additionalStudentIds, selectedAdditionalId])
-                        setSelectedAdditionalId('')
-                      }
-                    }}
-                    disabled={!selectedAdditionalId}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 whitespace-nowrap"
-                  >
-                    <Plus size={18} />
-                    <span>إضافة</span>
-                  </button>
-                  <select
-                    value={selectedAdditionalId}
-                    onChange={(e) => setSelectedAdditionalId(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
-                  >
-                    <option value="">-- اختر طالب --</option>
-                    {students
-                      .filter(s => s.id !== currentStudent.id && !additionalStudentIds.includes(s.id))
-                      .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
-                      .map(student => (
-                        <option key={student.id} value={student.id}>
-                          {student.name} - {student.grade}
-                        </option>
-                      ))}
-                  </select>
+
+                {/* حقل البحث */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={additionalSearchTerm}
+                    onChange={(e) => setAdditionalSearchTerm(e.target.value)}
+                    placeholder="ابحث عن طالب بالاسم، السجل المدني، أو رقم الجوال..."
+                    className="w-full px-4 py-2.5 pr-10 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                  />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 </div>
+
+                {/* نتائج البحث */}
+                {additionalSearchTerm && (
+                  <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
+                    {students
+                      .filter(s =>
+                        s.id !== currentStudent.id &&
+                        !additionalStudentIds.includes(s.id) &&
+                        (arabicTextIncludes(s.name, additionalSearchTerm) ||
+                         s.national_id.includes(additionalSearchTerm) ||
+                         s.phone.includes(additionalSearchTerm) ||
+                         s.guardian_phone.includes(additionalSearchTerm))
+                      )
+                      .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
+                      .slice(0, 50)
+                      .map(student => (
+                        <button
+                          key={student.id}
+                          onClick={() => {
+                            setAdditionalStudentIds([...additionalStudentIds, student.id])
+                            setAdditionalSearchTerm('')
+                          }}
+                          className="w-full text-right px-4 py-2.5 border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                        >
+                          <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
+                          <p className="text-xs text-gray-600">
+                            {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
+                          </p>
+                        </button>
+                      ))}
+                    {students.filter(s =>
+                      s.id !== currentStudent.id &&
+                      !additionalStudentIds.includes(s.id) &&
+                      (arabicTextIncludes(s.name, additionalSearchTerm) ||
+                       s.national_id.includes(additionalSearchTerm) ||
+                       s.phone.includes(additionalSearchTerm) ||
+                       s.guardian_phone.includes(additionalSearchTerm))
+                    ).length === 0 && (
+                      <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
+                    )}
+                  </div>
+                )}
 
                 {/* قائمة الطلاب المضافين */}
                 {additionalStudentIds.length > 0 && (
@@ -2832,7 +2856,7 @@ function App() {
                     setShowAllowEntryModal(false)
                     setCurrentStudent(null)
                     setAdditionalStudentIds([])
-                    setSelectedAdditionalId('')
+                    setAdditionalSearchTerm('')
                     setSelectedTeacherId('')
                   }}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-xl font-bold transition-colors"
@@ -2887,7 +2911,7 @@ function App() {
                     setShowAllowEntryModal(false)
                     setCurrentStudent(null)
                     setAdditionalStudentIds([])
-                    setSelectedAdditionalId('')
+                    setAdditionalSearchTerm('')
                     setSelectedTeacherId('')
                   }}
                   disabled={!selectedTeacherId}

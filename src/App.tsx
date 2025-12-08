@@ -429,57 +429,60 @@ function App() {
 
   // حساب الطلاب المفلترين مع useMemo لتحسين الأداء
   const filteredStudents = useMemo(() => {
+    const searchLower = debouncedSearchTerm.trim()
+
     return students.filter(s => {
-      const matchesSearch = debouncedSearchTerm === '' ||
-        arabicTextIncludes(s.name, debouncedSearchTerm) ||
-        s.national_id.includes(debouncedSearchTerm) ||
-        s.phone.includes(debouncedSearchTerm) ||
-        s.guardian_phone.includes(debouncedSearchTerm)
+      if (specialStatusFilter !== 'all' && s.special_status_id !== specialStatusFilter) {
+        return false
+      }
 
-      const matchesSpecialStatus = specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter
+      if (activityFilter !== 'all') {
+        if (activityFilter === 'reception' && !todayReceptionStudents.has(s.id)) return false
+        if (activityFilter === 'permission' && !todayPermissionStudents.has(s.id)) return false
+        if (activityFilter === 'violation' && !todayViolationStudents.has(s.id)) return false
+      }
 
-      const matchesActivity = activityFilter === 'all' ||
-        (activityFilter === 'reception' && todayReceptionStudents.has(s.id)) ||
-        (activityFilter === 'permission' && todayPermissionStudents.has(s.id)) ||
-        (activityFilter === 'violation' && todayViolationStudents.has(s.id))
+      if (searchLower === '') {
+        return true
+      }
 
-      return matchesSearch && matchesSpecialStatus && matchesActivity
+      return arabicTextIncludes(s.name, searchLower) ||
+        s.national_id.includes(searchLower) ||
+        s.phone.includes(searchLower) ||
+        s.guardian_phone.includes(searchLower)
     })
   }, [students, debouncedSearchTerm, specialStatusFilter, activityFilter, todayReceptionStudents, todayPermissionStudents, todayViolationStudents])
 
-  useEffect(() => {
+  const matchingGroups = useMemo(() => {
+    const result = new Set<string>()
+
     if (debouncedSearchTerm.trim() !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all') {
-      const matchingGroups = new Set<string>()
+      const studentGroupIds = new Set(filteredStudents.map(s => s.group_id))
 
       groups.forEach(group => {
-        const hasMatchingStudents = filteredStudents.some(student => student.group_id === group.id)
-
-        if (hasMatchingStudents) {
-          matchingGroups.add(group.stage || '')
-          matchingGroups.add(group.id)
+        if (studentGroupIds.has(group.id)) {
+          result.add(group.stage || '')
+          result.add(group.id)
         }
       })
-
-      setExpandedGroups(matchingGroups)
     } else if (stageFilter !== 'all' || groupFilter !== 'all') {
-      // إذا تم اختيار مرحلة أو مجموعة من الفلاتر، افتحها تلقائياً
-      const matchingGroups = new Set<string>()
-
       groups.forEach(group => {
         const stageMatches = stageFilter === 'all' || group.stage === stageFilter
         const groupMatches = groupFilter === 'all' || group.id === groupFilter
 
         if (stageMatches && groupMatches) {
-          matchingGroups.add(group.stage || '')
-          matchingGroups.add(group.id)
+          result.add(group.stage || '')
+          result.add(group.id)
         }
       })
-
-      setExpandedGroups(matchingGroups)
-    } else {
-      setExpandedGroups(new Set())
     }
+
+    return result
   }, [debouncedSearchTerm, specialStatusFilter, activityFilter, filteredStudents, groups, stageFilter, groupFilter])
+
+  useEffect(() => {
+    setExpandedGroups(matchingGroups)
+  }, [matchingGroups])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')

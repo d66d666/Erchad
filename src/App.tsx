@@ -2272,10 +2272,10 @@ function App() {
         <AddStudentModal
           onClose={() => setShowAddStudentModal(false)}
           onStudentAdded={async (newStudent) => {
-            if (newStudent) {
-              await fetchData()
-              await fetchTeachersCount()
-            }
+            // تحديث قائمة الطلاب مباشرة لتحديث العداد فوراً
+            setStudents(prevStudents => [...prevStudents, newStudent])
+            // إعادة جلب البيانات الكاملة في الخلفية
+            await fetchData()
           }}
         />
       )}

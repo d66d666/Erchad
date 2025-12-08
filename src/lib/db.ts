@@ -1,8 +1,6 @@
 import Dexie, { Table } from 'dexie'
 import { Student, Group, SpecialStatus, Teacher } from '../types'
 
-export { useLiveQuery } from 'dexie-react-hooks'
-
 export interface StudentVisit {
   id?: string
   student_id: string

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { db, StudentPermission, useLiveQuery } from '../lib/db'
+import { db, StudentPermission } from '../lib/db'
 import { Student } from '../types'
 import { LogOut, Search, Send, Clock, Printer, Calendar, Filter, Trash2, X } from 'lucide-react'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
@@ -18,30 +18,13 @@ interface PermissionWithStudent extends StudentPermission {
   }
 }
 
-export function PermissionPage() {
-  const students = useLiveQuery(() => db.students.toArray()) as Student[] || []
-  const permissions = useLiveQuery(async () => {
-    const allPermissions = await db.student_permissions.reverse().sortBy('permission_date')
-    const withStudentData = await Promise.all(
-      allPermissions.map(async (permission) => {
-        const student = await db.students.get(permission.student_id)
-        const permissionCount = await db.student_permissions.where('student_id').equals(permission.student_id).count()
-        const group = student?.group_id ? await db.groups.get(student.group_id) : null
-        return {
-          ...permission,
-          student: student ? {
-            name: student.name,
-            national_id: student.national_id,
-            guardian_phone: student.guardian_phone || '',
-            permission_count: permissionCount,
-            group: group ? { name: group.name } : undefined
-          } : undefined
-        }
-      })
-    )
-    return withStudentData
-  }) as PermissionWithStudent[] || []
+interface PermissionPageProps {
+  onUpdateStats?: () => void
+}
 
+export function PermissionPage({ onUpdateStats }: PermissionPageProps) {
+  const [students, setStudents] = useState<Student[]>([])
+  const [permissions, setPermissions] = useState<PermissionWithStudent[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [dateFilter, setDateFilter] = useState('')
@@ -62,10 +45,13 @@ export function PermissionPage() {
   const [alertType, setAlertType] = useState<'success' | 'error' | 'info'>('success')
 
   useEffect(() => {
+    fetchStudents()
+    fetchPermissions()
     fetchTeacherProfile()
   }, [])
 
   useEffect(() => {
+    fetchPermissions(dateFilter, permissionSearchTerm)
   }, [permissionSearchTerm])
 
   async function fetchTeacherProfile() {
@@ -85,6 +71,86 @@ export function PermissionPage() {
     }
     if (profile?.system_description) {
       setSystemDescription(profile.system_description)
+    }
+  }
+
+  async function fetchStudents() {
+    try {
+      const allStudents = await db.students.toArray()
+
+      const groups = await db.groups.toArray()
+      const statuses = await db.special_statuses.toArray()
+
+      const studentsWithRelations = allStudents.map(student => {
+        const group = groups.find(g => g.id === student.group_id)
+        const special_status = statuses.find(s => s.id === student.special_status_id)
+        return {
+          ...student,
+          group: group ? { name: group.name } : undefined,
+          special_status: special_status ? { name: special_status.name } : undefined
+        }
+      })
+
+      setStudents(studentsWithRelations as Student[])
+    } catch (error) {
+      console.error('Error in fetchStudents:', error)
+    }
+  }
+
+  async function fetchPermissions(filterDate?: string, searchQuery?: string, viewAll?: boolean) {
+    try {
+      // قراءة من IndexedDB فقط
+      let permissionsData = await db.student_permissions.orderBy('permission_date').reverse().toArray()
+
+      // تطبيق الفلاتر
+      if (searchQuery && searchQuery.trim() !== '') {
+        // لا تحديد بالتاريخ، جلب كل الاستئذانات للبحث
+        permissionsData = permissionsData.slice(0, 200)
+      } else if (filterDate) {
+        const startOfDay = new Date(filterDate)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(filterDate)
+        endOfDay.setHours(23, 59, 59, 999)
+
+        permissionsData = permissionsData.filter(p => {
+          const permissionDate = new Date(p.permission_date)
+          return permissionDate >= startOfDay && permissionDate <= endOfDay
+        })
+      } else if (!viewAll) {
+        // عرض استئذانات اليوم الحالي فقط بشكل افتراضي
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const endOfToday = new Date()
+        endOfToday.setHours(23, 59, 59, 999)
+
+        permissionsData = permissionsData.filter(p => {
+          const permissionDate = new Date(p.permission_date)
+          return permissionDate >= today && permissionDate <= endOfToday
+        })
+      }
+
+      // جلب المجموعات والطلاب
+      const groups = await db.groups.toArray()
+      const allStudents = await db.students.toArray()
+
+      const permissionsWithStudents = permissionsData.map((permission) => {
+        const student = allStudents.find(s => s.id === permission.student_id)
+        const group = student ? groups.find(g => g.id === student.group_id) : undefined
+        return {
+          ...permission,
+          student: student ? {
+            name: student.name,
+            national_id: student.national_id,
+            guardian_phone: student.guardian_phone,
+            permission_count: student.permission_count || 0,
+            group: group ? { name: group.name } : undefined
+          } : undefined
+        }
+      })
+
+      setPermissions(permissionsWithStudents)
+    } catch (error) {
+      console.error('Error in fetchPermissions:', error)
     }
   }
 
@@ -122,6 +188,9 @@ export function PermissionPage() {
       setShowAlert(true)
       setFormData({ reason: '', notes: '' })
       setSelectedStudent(null)
+      fetchStudents()
+      fetchPermissions(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error saving permission:', error)
       setAlertMessage('حدث خطأ أثناء الحفظ')
@@ -224,6 +293,9 @@ ${teacherName || 'مسؤول النظام'}
       setAlertMessage('تم حذف الاستئذان بنجاح')
       setAlertType('success')
       setShowAlert(true)
+      fetchStudents()
+      fetchPermissions(dateFilter)
+      if (onUpdateStats) onUpdateStats()
     } catch (error) {
       console.error('Error deleting permission:', error)
       setAlertMessage('حدث خطأ أثناء الحذف')
@@ -539,6 +611,7 @@ ${teacherName || 'مسؤول النظام'}
                 onClick={() => {
                   setDateFilter('')
                   setShowAll(false)
+                  fetchPermissions()
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors"
               >
@@ -549,6 +622,7 @@ ${teacherName || 'مسؤول النظام'}
               onClick={() => {
                 setShowAll(!showAll)
                 setDateFilter('')
+                fetchPermissions('', '', !showAll)
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showAll
@@ -582,6 +656,7 @@ ${teacherName || 'مسؤول النظام'}
               <button
                 onClick={() => {
                   setPermissionSearchTerm('')
+                  fetchPermissions(dateFilter, '')
                 }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
               >
@@ -623,6 +698,7 @@ ${teacherName || 'مسؤول النظام'}
                     value={dateFilter}
                     onChange={(e) => {
                       setDateFilter(e.target.value)
+                      fetchPermissions(e.target.value)
                       setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
@@ -637,7 +713,8 @@ ${teacherName || 'مسؤول النظام'}
                   <button
                     onClick={() => {
                       setDateFilter('')
-                          setShowFilters(false)
+                      fetchPermissions()
+                      setShowFilters(false)
                     }}
                     className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
                   >

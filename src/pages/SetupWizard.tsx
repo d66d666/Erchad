@@ -15,18 +15,18 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [stages, setStages] = useState<Record<string, boolean>>({
-    'الصف الأول الابتدائي': false,
-    'الصف الثاني الابتدائي': false,
-    'الصف الثالث الابتدائي': false,
-    'الصف الرابع الابتدائي': false,
-    'الصف الخامس الابتدائي': false,
-    'الصف السادس الابتدائي': false,
-    'الصف الأول المتوسط': false,
-    'الصف الثاني المتوسط': false,
-    'الصف الثالث المتوسط': false,
-    'الصف الأول الثانوي': false,
-    'الصف الثاني الثانوي': false,
-    'الصف الثالث الثانوي': false,
+    'أول ابتدائي': false,
+    'ثاني ابتدائي': false,
+    'ثالث ابتدائي': false,
+    'رابع ابتدائي': false,
+    'خامس ابتدائي': false,
+    'سادس ابتدائي': false,
+    'أول متوسط': false,
+    'ثاني متوسط': false,
+    'ثالث متوسط': false,
+    'الأول الثانوي': false,
+    'الثاني الثانوي': false,
+    'الثالث الثانوي': false,
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)

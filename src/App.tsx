@@ -35,6 +35,7 @@ import {
   Printer,
   MessageCircle,
   RotateCcw,
+  RefreshCw,
   X,
   Upload,
   FileSpreadsheet,
@@ -1652,6 +1653,19 @@ function App() {
                   </div>
                 )}
               </div>
+
+              <button
+                onClick={async () => {
+                  await Promise.all([
+                    fetchData(),
+                    fetchTeachersCount()
+                  ])
+                }}
+                className="text-gray-700 hover:text-blue-600 px-4 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 hover:bg-blue-50"
+                title="تحديث البيانات"
+              >
+                <RefreshCw size={20} />
+              </button>
 
               <button
                 onClick={() => setShowProfileSettings(true)}

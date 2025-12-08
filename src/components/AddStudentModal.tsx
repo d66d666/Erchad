@@ -105,9 +105,13 @@ export function AddStudentModal({
       }
 
       const newId = crypto.randomUUID()
-      const newStudent = {
+      const newStudent: Student = {
         id: newId,
         ...data,
+        status: 'نشط',
+        visit_count: 0,
+        permission_count: 0,
+        violation_count: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -115,7 +119,7 @@ export function AddStudentModal({
 
       // تحديث البيانات في الصفحة الرئيسية أولاً
       if (onStudentAdded) {
-        await onStudentAdded(newStudent as Student)
+        await onStudentAdded(newStudent)
       }
 
       setAlertMessage('تم إضافة الطالب بنجاح')

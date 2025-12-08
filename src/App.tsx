@@ -14,7 +14,6 @@ import { ProfileSettings } from './components/ProfileSettings'
 import { ExcelImportModal } from './components/ExcelImportModal'
 import { AddStudentModal } from './components/AddStudentModal'
 import { CustomAlert } from './components/CustomAlert'
-import { AllowClassEntryModal } from './components/AllowClassEntryModal'
 import { formatPhoneForWhatsApp } from './lib/formatPhone'
 import { openWhatsApp } from './lib/openWhatsApp'
 import { arabicTextIncludes } from './lib/normalizeArabic'
@@ -87,6 +86,8 @@ function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAllowEntryModal, setShowAllowEntryModal] = useState(false)
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('')
   const [teachers, setTeachers] = useState<any[]>([])
   const [showActivateLicense, setShowActivateLicense] = useState(false)
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
@@ -2669,10 +2670,179 @@ function App() {
         </div>
       )}
 
-      <AllowClassEntryModal
-        isOpen={showAllowEntryModal}
-        onClose={() => setShowAllowEntryModal(false)}
-      />
+      {showAllowEntryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => {
+          setShowAllowEntryModal(false)
+          setSelectedStudentIds([])
+          setSelectedTeacherId('')
+        }}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-5 rounded-t-2xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <DoorOpen size={24} />
+                <h2 className="text-xl font-bold">السماح بدخول الفصل</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAllowEntryModal(false)
+                  setSelectedStudentIds([])
+                  setSelectedTeacherId('')
+                }}
+                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
+                <h3 className="font-bold text-gray-800 mb-3 text-right">اختر الطلاب:</h3>
+                <select
+                  multiple
+                  value={selectedStudentIds}
+                  onChange={(e) => {
+                    const options = Array.from(e.target.selectedOptions)
+                    setSelectedStudentIds(options.map(option => option.value))
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                  style={{ minHeight: '200px' }}
+                >
+                  {students
+                    .sort((a, b) => a.name.localeCompare(b.name, 'ar'))
+                    .map(student => (
+                      <option key={student.id} value={student.id}>
+                        {student.name} - {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'}
+                      </option>
+                    ))}
+                </select>
+                <p className="text-xs text-gray-600 mt-2 text-right">
+                  {selectedStudentIds.length > 0
+                    ? `تم اختيار ${selectedStudentIds.length} طالب`
+                    : 'اضغط Ctrl/Cmd للاختيار المتعدد'}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                <p className="text-sm text-gray-700 text-center">
+                  سيتم إرسال رسالة للمعلم المختار عبر واتساب
+                </p>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-bold text-gray-700 mb-2 text-right">اختر المعلم</label>
+                <select
+                  value={selectedTeacherId}
+                  onChange={(e) => setSelectedTeacherId(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                >
+                  <option value="">-- اختر المعلم --</option>
+                  {teachers.map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedStudentIds.length > 0 && selectedTeacherId && (
+                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+                  <h4 className="font-bold text-green-900 mb-2 text-right flex items-center gap-2 justify-end">
+                    <span>معاينة الرسالة:</span>
+                    <Check size={18} />
+                  </h4>
+                  <div className="text-sm text-gray-800 text-right space-y-1 bg-white rounded-lg p-3">
+                    <p className="text-gray-600">السلام عليكم ورحمة الله وبركاته</p>
+                    <p className="font-bold mt-2">الرجاء السماح بدخول {selectedStudentIds.length === 1 ? 'الطالب' : 'الطلاب'} للفصل</p>
+                    {selectedStudentIds.length === 1 ? (
+                      <p className="mt-2">اسم الطالب: <span className="font-bold">{students.find(s => s.id === selectedStudentIds[0])?.name}</span></p>
+                    ) : (
+                      <>
+                        <p className="mt-2 font-bold">أسماء الطلاب:</p>
+                        {selectedStudentIds.slice(0, 3).map((id, index) => (
+                          <p key={id}>{index + 1}. {students.find(s => s.id === id)?.name}</p>
+                        ))}
+                        {selectedStudentIds.length > 3 && (
+                          <p>... و {selectedStudentIds.length - 3} آخرين</p>
+                        )}
+                      </>
+                    )}
+                    <p>المرسل: <span className="font-bold">{teacherName || 'مسؤول النظام'}</span></p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAllowEntryModal(false)
+                    setSelectedStudentIds([])
+                    setSelectedTeacherId('')
+                  }}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-xl font-bold transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={() => {
+                    if (!selectedTeacherId) {
+                      setAlertMessage('الرجاء اختيار المعلم')
+                      setAlertType('error')
+                      setShowAlert(true)
+                      return
+                    }
+
+                    if (selectedStudentIds.length === 0) {
+                      setAlertMessage('الرجاء اختيار طالب واحد على الأقل')
+                      setAlertType('error')
+                      setShowAlert(true)
+                      return
+                    }
+
+                    const selectedTeacher = teachers.find(t => t.id === selectedTeacherId)
+                    if (!selectedTeacher || !selectedTeacher.phone) {
+                      setAlertMessage('المعلم المختار لا يحتوي على رقم جوال')
+                      setAlertType('error')
+                      setShowAlert(true)
+                      return
+                    }
+
+                    const phone = formatPhoneForWhatsApp(selectedTeacher.phone)
+                    if (!phone) {
+                      setAlertMessage('رقم جوال المعلم غير صالح')
+                      setAlertType('error')
+                      setShowAlert(true)
+                      return
+                    }
+
+                    const selectedStudents = students.filter(s => selectedStudentIds.includes(s.id))
+
+                    let message = `السلام عليكم ورحمة الله وبركاته\n\n*الرجاء السماح بدخول ${selectedStudents.length === 1 ? 'الطالب' : 'الطلاب'} للفصل*\n\n`
+
+                    if (selectedStudents.length === 1) {
+                      message += `اسم الطالب: *${selectedStudents[0].name}*\n`
+                    } else {
+                      message += `أسماء الطلاب:\n`
+                      selectedStudents.forEach((student, index) => {
+                        message += `${index + 1}. ${student.name}\n`
+                      })
+                    }
+
+                    message += `المرسل: ${teacherName || 'مسؤول النظام'}`
+
+                    openWhatsApp(phone, message)
+
+                    setShowAllowEntryModal(false)
+                    setSelectedStudentIds([])
+                    setSelectedTeacherId('')
+                  }}
+                  disabled={!selectedTeacherId || selectedStudentIds.length === 0}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <MessageCircle size={20} />
+                  <span>إرسال عبر واتساب</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showEditModal && editingStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowEditModal(false)}>

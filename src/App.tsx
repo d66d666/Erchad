@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { db } from './lib/db'
 import { Student, Group, SpecialStatus } from './types'
 import { LoginPage } from './pages/LoginPage'
@@ -62,6 +62,7 @@ function App() {
   const [specialStatuses, setSpecialStatuses] = useState<SpecialStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState<Page>('home')
   const [showProfileSettings, setShowProfileSettings] = useState(false)
   const [teacherName, setTeacherName] = useState('')
@@ -391,17 +392,26 @@ function App() {
     }
   }, [studentMenuOpen])
 
+  // Debounce search term
   useEffect(() => {
-    if (searchTerm.trim() !== '') {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  useEffect(() => {
+    if (debouncedSearchTerm.trim() !== '') {
       const matchingGroups = new Set<string>()
 
       groups.forEach(group => {
         const hasMatchingStudents = students.some(student =>
           student.group_id === group.id && (
-            arabicTextIncludes(student.name, searchTerm) ||
-            student.national_id.includes(searchTerm) ||
-            student.phone.includes(searchTerm) ||
-            student.guardian_phone.includes(searchTerm)
+            arabicTextIncludes(student.name, debouncedSearchTerm) ||
+            student.national_id.includes(debouncedSearchTerm) ||
+            student.phone.includes(debouncedSearchTerm) ||
+            student.guardian_phone.includes(debouncedSearchTerm)
           )
         )
 
@@ -430,7 +440,7 @@ function App() {
     } else {
       setExpandedGroups(new Set())
     }
-  }, [searchTerm, students, groups, stageFilter, groupFilter])
+  }, [debouncedSearchTerm, students, groups, stageFilter, groupFilter])
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
@@ -1351,6 +1361,26 @@ function App() {
     printWindow.document.close()
   }
 
+  // حساب الطلاب المفلترين مع useMemo لتحسين الأداء
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const matchesSearch = debouncedSearchTerm === '' ||
+        arabicTextIncludes(s.name, debouncedSearchTerm) ||
+        s.national_id.includes(debouncedSearchTerm) ||
+        s.phone.includes(debouncedSearchTerm) ||
+        s.guardian_phone.includes(debouncedSearchTerm)
+
+      const matchesSpecialStatus = specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter
+
+      const matchesActivity = activityFilter === 'all' ||
+        (activityFilter === 'reception' && todayReceptionStudents.has(s.id)) ||
+        (activityFilter === 'permission' && todayPermissionStudents.has(s.id)) ||
+        (activityFilter === 'violation' && todayViolationStudents.has(s.id))
+
+      return matchesSearch && matchesSpecialStatus && matchesActivity
+    })
+  }, [students, debouncedSearchTerm, specialStatusFilter, activityFilter, todayReceptionStudents, todayPermissionStudents, todayViolationStudents])
+
   // أزرار التنقل
   const navItems = [
     { id: 'home' as Page, label: 'الصفحة الرئيسية', icon: Home, show: true },
@@ -1805,6 +1835,7 @@ function App() {
                       setGroupFilter('all')
                       setActivityFilter('all')
                       setSearchTerm('')
+                      setDebouncedSearchTerm('')
                       setExpandedGroups(new Set())
                     }}
                     className="w-full mt-4 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 border border-gray-300"
@@ -1861,27 +1892,11 @@ function App() {
                     return stages.map((stage, index) => {
                       const stageGroups = filteredGroups.filter(g => g.stage === stage)
                       const totalStageStudents = stageGroups.reduce((sum, group) => {
-                        const groupStudents = students
-                          .filter(s => s.group_id === group.id)
-                          .filter(s =>
-                            searchTerm === '' ||
-                            arabicTextIncludes(s.name, searchTerm) ||
-                            s.national_id.includes(searchTerm) ||
-                            s.phone.includes(searchTerm) ||
-                            s.guardian_phone.includes(searchTerm)
-                          )
-                          .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
-                          .filter(s => {
-                            if (activityFilter === 'all') return true
-                            if (activityFilter === 'reception') return todayReceptionStudents.has(s.id)
-                            if (activityFilter === 'permission') return todayPermissionStudents.has(s.id)
-                            if (activityFilter === 'violation') return todayViolationStudents.has(s.id)
-                            return true
-                          })
+                        const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
                         return sum + groupStudents.length
                       }, 0)
 
-                      if (totalStageStudents === 0 && (searchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
+                      if (totalStageStudents === 0 && (debouncedSearchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
 
                       const isStageExpanded = expandedGroups.has(stage)
                       const colors = stageColors[index % stageColors.length]
@@ -1907,25 +1922,9 @@ function App() {
                           {isStageExpanded && (
                             <div className="space-y-3 pr-3 mt-3">
                               {stageGroups.map(group => {
-                                const groupStudents = students
-                                  .filter(s => s.group_id === group.id)
-                                  .filter(s =>
-                                    searchTerm === '' ||
-                                    arabicTextIncludes(s.name, searchTerm) ||
-                                    s.national_id.includes(searchTerm) ||
-                                    s.phone.includes(searchTerm) ||
-                                    s.guardian_phone.includes(searchTerm)
-                                  )
-                                  .filter(s => specialStatusFilter === 'all' || s.special_status_id === specialStatusFilter)
-                                  .filter(s => {
-                                    if (activityFilter === 'all') return true
-                                    if (activityFilter === 'reception') return todayReceptionStudents.has(s.id)
-                                    if (activityFilter === 'permission') return todayPermissionStudents.has(s.id)
-                                    if (activityFilter === 'violation') return todayViolationStudents.has(s.id)
-                                    return true
-                                  })
+                                const groupStudents = filteredStudents.filter(s => s.group_id === group.id)
 
-                                if (groupStudents.length === 0 && (searchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
+                                if (groupStudents.length === 0 && (debouncedSearchTerm !== '' || specialStatusFilter !== 'all' || activityFilter !== 'all')) return null
 
                                 const isGroupExpanded = expandedGroups.has(group.id)
 

@@ -7,7 +7,7 @@ import { CustomAlert } from './CustomAlert'
 interface AddStudentModalProps {
   onClose: () => void
   preselectedGroupId?: string
-  onStudentAdded?: (newStudent: Student) => void
+  onStudentAdded?: (newStudent: Student) => void | Promise<void>
 }
 
 export function AddStudentModal({
@@ -113,13 +113,13 @@ export function AddStudentModal({
       }
       await db.students.add(newStudent)
 
+      // تحديث البيانات في الصفحة الرئيسية أولاً
+      if (onStudentAdded) {
+        await onStudentAdded(newStudent as Student)
+      }
+
       setAlertMessage('تم إضافة الطالب بنجاح')
       setShowAlert(true)
-
-      // تحديث البيانات في الصفحة الرئيسية
-      if (onStudentAdded) {
-        onStudentAdded(newStudent as Student)
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حدث خطأ ما')
     } finally {

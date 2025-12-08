@@ -1084,9 +1084,9 @@ export function GroupsManagementPage() {
       {showAddStudentModal && (
         <AddStudentModal
           onClose={() => setShowAddStudentModal(false)}
-          onStudentAdded={() => {
-            fetchStudents()
-            fetchStudentCounts()
+          onStudentAdded={async () => {
+            await fetchStudents()
+            await fetchStudentCounts()
           }}
         />
       )}

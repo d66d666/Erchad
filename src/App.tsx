@@ -486,23 +486,6 @@ function App() {
     setExpandedGroups(matchingGroups)
   }, [matchingGroups])
 
-  const filteredAdditionalStudents = useMemo(() => {
-    if (!additionalSearchTerm || !currentStudent) return []
-
-    const search = additionalSearchTerm.toLowerCase()
-    return students
-      .filter(s => {
-        const name = s.name.toLowerCase()
-        return s.id !== currentStudent.id &&
-               !additionalStudentIds.includes(s.id) &&
-               (name.includes(search) ||
-                s.national_id.includes(additionalSearchTerm) ||
-                s.phone.includes(additionalSearchTerm) ||
-                s.guardian_phone.includes(additionalSearchTerm))
-      })
-      .slice(0, 50)
-  }, [students, additionalSearchTerm, currentStudent, additionalStudentIds])
-
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('userId')
@@ -2749,29 +2732,46 @@ function App() {
                   </div>
 
                   {/* نتائج البحث */}
-                  {additionalSearchTerm && (
-                    <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
-                      {filteredAdditionalStudents.length === 0 ? (
-                        <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
-                      ) : (
-                        filteredAdditionalStudents.map(student => (
-                          <button
-                            key={student.id}
-                            onClick={() => {
-                              setAdditionalStudentIds([...additionalStudentIds, student.id])
-                              setAdditionalSearchTerm('')
-                            }}
-                            className="w-full text-right px-4 py-2.5 border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
-                          >
-                            <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
-                            <p className="text-xs text-gray-600">
-                              {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
-                            </p>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  )}
+                  {additionalSearchTerm && (() => {
+                    const search = additionalSearchTerm.trim().toLowerCase()
+                    const filtered = students.filter(s => {
+                      if (s.id === currentStudent.id || additionalStudentIds.includes(s.id)) return false
+
+                      const name = (s.name || '').toLowerCase().trim()
+                      const nationalId = (s.national_id || '').trim()
+                      const phone = (s.phone || '').trim()
+                      const guardianPhone = (s.guardian_phone || '').trim()
+
+                      return name.includes(search) ||
+                             nationalId.includes(search) ||
+                             phone.includes(search) ||
+                             guardianPhone.includes(search)
+                    }).slice(0, 50)
+
+                    return (
+                      <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white">
+                        {filtered.length === 0 ? (
+                          <p className="text-center text-gray-500 text-sm py-3">لا توجد نتائج</p>
+                        ) : (
+                          filtered.map(student => (
+                            <button
+                              key={student.id}
+                              onClick={() => {
+                                setAdditionalStudentIds([...additionalStudentIds, student.id])
+                                setAdditionalSearchTerm('')
+                              }}
+                              className="w-full text-right px-4 py-2.5 border-b border-gray-200 last:border-0 hover:bg-blue-50 transition-colors"
+                            >
+                              <p className="font-semibold text-gray-900 text-sm">{student.name}</p>
+                              <p className="text-xs text-gray-600">
+                                {student.grade} - {groups.find(g => g.id === student.group_id)?.name || '-'} - {student.national_id}
+                              </p>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )
+                  })()}
 
                 {/* قائمة الطلاب المضافين */}
                 {additionalStudentIds.length > 0 && (

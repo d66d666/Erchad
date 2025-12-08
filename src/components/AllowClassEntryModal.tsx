@@ -5,7 +5,7 @@ import { Teacher, Student } from '../types'
 import { formatPhoneForWhatsApp } from '../lib/formatPhone'
 import { openWhatsApp } from '../lib/openWhatsApp'
 import { CustomAlert } from './CustomAlert'
-import { normalizeArabic } from '../lib/normalizeArabic'
+import { arabicTextIncludes } from '../lib/normalizeArabic'
 
 interface AllowClassEntryModalProps {
   isOpen: boolean
@@ -21,6 +21,7 @@ export function AllowClassEntryModal({
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([])
   const [selectedTeacherId, setSelectedTeacherId] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
   const [counselorName, setCounselorName] = useState('')
   const [schoolName, setSchoolName] = useState('')
@@ -35,9 +36,18 @@ export function AllowClassEntryModal({
       fetchCounselorInfo()
       setSelectedStudentIds([])
       setSearchTerm('')
+      setDebouncedSearchTerm('')
       setSelectedTeacherId('')
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   const fetchTeachers = async () => {
     const data = await db.teachers.orderBy('name').toArray()
@@ -75,20 +85,16 @@ export function AllowClassEntryModal({
     }
   }
 
-  const arabicTextIncludes = (text: string, search: string) => {
-    return normalizeArabic(text).includes(normalizeArabic(search))
-  }
-
   const filteredStudents = useMemo(() => {
-    if (!searchTerm.trim()) return []
+    if (!debouncedSearchTerm.trim()) return []
 
     return students.filter(s =>
-      arabicTextIncludes(s.name, searchTerm) ||
-      s.national_id.includes(searchTerm) ||
-      s.phone.includes(searchTerm) ||
-      s.guardian_phone.includes(searchTerm)
+      arabicTextIncludes(s.name, debouncedSearchTerm) ||
+      s.national_id.includes(debouncedSearchTerm) ||
+      s.phone.includes(debouncedSearchTerm) ||
+      s.guardian_phone.includes(debouncedSearchTerm)
     ).slice(0, 50)
-  }, [students, searchTerm])
+  }, [students, debouncedSearchTerm])
 
   const selectedStudents = useMemo(() => {
     return students.filter(s => selectedStudentIds.includes(s.id))
@@ -201,7 +207,19 @@ export function AllowClassEntryModal({
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             </div>
 
-            {searchTerm && filteredStudents.length > 0 && (
+            {searchTerm && searchTerm !== debouncedSearchTerm && (
+              <div className="mt-2 text-center text-sm text-gray-500 py-2">
+                جاري البحث...
+              </div>
+            )}
+
+            {debouncedSearchTerm && filteredStudents.length === 0 && (
+              <div className="mt-2 text-center text-sm text-gray-500 py-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                لا توجد نتائج للبحث
+              </div>
+            )}
+
+            {debouncedSearchTerm && filteredStudents.length > 0 && (
               <div className="mt-2 border-2 border-gray-300 rounded-lg max-h-60 overflow-y-auto bg-white">
                 {filteredStudents.map((student) => {
                   const isSelected = selectedStudentIds.includes(student.id)
